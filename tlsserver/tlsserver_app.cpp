@@ -40,9 +40,12 @@ tlsserver_app::tlsserver_app(tlsserver_cfg* cfg
     if (m_grp_ctx.m_s_ssl_ctx)
     {
         SSL_CTX_set_min_proto_version (m_grp_ctx.m_s_ssl_ctx
-                                        , SSL3_VERSION);
+                                        , TLS1_2_VERSION);
         SSL_CTX_set_max_proto_version (m_grp_ctx.m_s_ssl_ctx
-                                        , TLS1_3_VERSION);
+                                        , TLS1_2_VERSION);
+
+        SSL_CTX_set_cipher_list (m_grp_ctx.m_s_ssl_ctx
+                                    , "AES128-SHA");
 
         SSL_CTX_set_mode(m_grp_ctx.m_s_ssl_ctx
                             , SSL_MODE_ENABLE_PARTIAL_WRITE);
