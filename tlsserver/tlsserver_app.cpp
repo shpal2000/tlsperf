@@ -148,7 +148,6 @@ void tlsserver_app::run_iter(bool tick_sec)
 
         j["appId"] = m_app_ctx.m_app_id;
         j["appGId"] = m_app_ctx.m_app_gid;
-        j["podIp"] = getenv ("MY_POD_IP");
 
         std::string s = j.dump();
 
