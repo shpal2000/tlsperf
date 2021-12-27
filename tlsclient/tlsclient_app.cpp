@@ -6,6 +6,7 @@ tlsclient_app::tlsclient_app(tlsclient_cfg* cfg
                                     , tlsclient_stats* gstats)
 {
     m_app_ctx.m_app_id = cfg->m_app_id;
+    m_app_ctx.m_app_gid = cfg->m_app_gid;
     m_app_ctx.m_server_ssl = cfg->server_ssl;
 
     m_app_ctx.m_send_recv_len = cfg->send_recv_len;
@@ -108,6 +109,7 @@ void tlsclient_app::run_iter(bool tick_sec)
         m_stats.dump_json (j);
 
         j["appId"] = m_app_ctx.m_app_id;
+        j["appGId"] = m_app_ctx.m_app_gid;
         j["podIp"] = getenv ("MY_POD_IP");
 
         std::string s = j.dump();
