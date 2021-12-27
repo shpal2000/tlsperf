@@ -19,16 +19,6 @@ async def api_get_deployments(request):
 async def api_get_stats(request):
     return web.json_response(gstats)
 
-async def api_get_tlsfront_stats(request):
-    results = {}
-    for k in gstats.keys():
-        if k.startswith('sslfront') \
-            or k.endswith('sslfront') \
-            or k.startswith('tlsfront') \
-            or k.endswith('tlsfront'):
-            results[k] = gstats[k]
-    return web.json_response(results)
-
 app = web.Application()
 
 app.add_routes([web.static('/build', 'public/build')])
@@ -42,10 +32,6 @@ app.add_routes([web.route('get'
                             , '/api/stats'
                             , api_get_stats)])
 
-app.add_routes([web.route('get'
-                            , '/api/tlsfront_stats'
-                            , api_get_tlsfront_stats)])
-
 app.add_routes([web.route('get', '/{tail:.*}', index_handle)])
 
 class StatsListener:
@@ -56,6 +42,7 @@ class StatsListener:
         message = data.decode()
         stats = json.loads(message)
         appId = stats['appId']
+        appGId = stats['appGId']
         podIp = stats['podIp']
         del stats['appId']
         del stats['podIp']
