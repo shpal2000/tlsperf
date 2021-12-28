@@ -54,8 +54,7 @@ RUN echo "/usr/local/tlsperf/lib" > /etc/ld.so.conf.d/tlsperf.conf
 RUN ldconfig -v
 COPY ./*.exe /usr/local/bin/
 RUN mkdir -p /tlsperf_web/
-COPY ../web/*.py /tlsperf_web/
-RUN mkdir -p /tlsperf_web/public
-COPY ../web/public/ /tlsperf_web/public/
+COPY ./web_deploy/ /tlsperf_web/
+
 
 ENV DEBIAN_FRONTEND=
