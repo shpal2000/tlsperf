@@ -28,7 +28,7 @@ async def api_get_stats(request):
     db = mongoClient[DB_NAME]
     stats_col = db[REALTIME_STATS]
     appGId = request.match_info['appGId']
-    gstats = stats_col.find_one ({'appGId' : appGId})
+    gstats = stats_col.find_one ({'appGId' : appGId}, {'_id' : False})
     if not gstats:
         gstats = {}
     return web.json_response(gstats)
@@ -65,9 +65,8 @@ class StatsListener:
         if not gstats:
             gstats = {'appGId' : appGId,
                         'stats' : {'sum' : [stats], appId : [stats]}}
+            stats_col.insert_one(gstats)
         else:
-            stats_col.remove ({'appGId' : appGId})
-
             if not gstats['stats'].get(appId):
                 gstats['stats'][appId] = [stats]
             else:
@@ -89,8 +88,8 @@ class StatsListener:
                                 sum_stats[k] = sum_stats[k]+ app_stats[k]
                 sum_stats_list.append(sum_stats)
             gstats['stats']['sum'] = sum_stats_list
+            stats_col.find_one_and_replace({'appGId' : appGId}, gstats)
 
-        stats_col.insert(gstats)
 
 def main ():
     global stats_ticks
