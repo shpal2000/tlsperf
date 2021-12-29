@@ -8,7 +8,7 @@
 import { children } from 'svelte/internal';
 
     export let node;
-    export let level=1;
+    export let level=0;
 
     let menuX;
     let menuY;

@@ -11,9 +11,9 @@
 		Name: 'Resources',
 		expanded: true,
 		children: [
-			{Name: 'Nodes', MenuItems: NodesMenuItems, expanded: false, children: [{Name: 'Node-1'}, {Name: 'Node-2'}, {Name: 'Node-3'}]},
-			{Name: 'Profile', MenuItems: ProfilesMenuItems, expanded: false, children: [{Name: 'TlsClient1'}, {Name: 'TlsClient2'}, {Name: 'TlsClient3'}]},
-			{Name: 'Runs', MenuItems: RunsMenuItems, children: [{Name: 'AES128-SHA1 CPS'}]}
+			{Name: 'Traffic Nodes', MenuItems: NodesMenuItems, expanded: false, children: [{Name: 'Node-1'}, {Name: 'Node-2'}, {Name: 'Node-3'}]},
+			{Name: 'Traffic Profiles', MenuItems: ProfilesMenuItems, expanded: false, children: [{Name: 'AES128-SHA1-Client@2000CPS'}, {Name: 'TlsClient2'}, {Name: 'TlsClient3'}]},
+			{Name: 'Test Runs', MenuItems: RunsMenuItems, children: [{Name: 'PnS-HCx-CPS', children: [{Name: 'Build - 12386'}, {Name: 'Build - 12387'}]}]}
 		]
 	};
 
