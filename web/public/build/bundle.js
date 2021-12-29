@@ -363,6 +363,69 @@ var app = (function () {
         }
     }
     const null_transition = { duration: 0 };
+    function create_in_transition(node, fn, params) {
+        let config = fn(node, params);
+        let running = false;
+        let animation_name;
+        let task;
+        let uid = 0;
+        function cleanup() {
+            if (animation_name)
+                delete_rule(node, animation_name);
+        }
+        function go() {
+            const { delay = 0, duration = 300, easing = identity, tick = noop$1, css } = config || null_transition;
+            if (css)
+                animation_name = create_rule(node, 0, 1, duration, delay, easing, css, uid++);
+            tick(0, 1);
+            const start_time = now() + delay;
+            const end_time = start_time + duration;
+            if (task)
+                task.abort();
+            running = true;
+            add_render_callback(() => dispatch(node, true, 'start'));
+            task = loop(now => {
+                if (running) {
+                    if (now >= end_time) {
+                        tick(1, 0);
+                        dispatch(node, true, 'end');
+                        cleanup();
+                        return running = false;
+                    }
+                    if (now >= start_time) {
+                        const t = easing((now - start_time) / duration);
+                        tick(t, 1 - t);
+                    }
+                }
+                return running;
+            });
+        }
+        let started = false;
+        return {
+            start() {
+                if (started)
+                    return;
+                started = true;
+                delete_rule(node);
+                if (is_function(config)) {
+                    config = config();
+                    wait().then(go);
+                }
+                else {
+                    go();
+                }
+            },
+            invalidate() {
+                started = false;
+            },
+            end() {
+                if (running) {
+                    cleanup();
+                    running = false;
+                }
+            }
+        };
+    }
     function create_bidirectional_transition(node, fn, params, intro) {
         let config = fn(node, params);
         let t = intro ? 0 : 1;
@@ -14399,6 +14462,20 @@ var app = (function () {
         return f * f * f + 1.0;
     }
 
+    function fly(node, { delay = 0, duration = 400, easing = cubicOut, x = 0, y = 0, opacity = 0 } = {}) {
+        const style = getComputedStyle(node);
+        const target_opacity = +style.opacity;
+        const transform = style.transform === 'none' ? '' : style.transform;
+        const od = target_opacity * (1 - opacity);
+        return {
+            delay,
+            duration,
+            easing,
+            css: (t, u) => `
+			transform: ${transform} translate(${(1 - t) * x}px, ${(1 - t) * y}px);
+			opacity: ${target_opacity - (od * u)}`
+        };
+    }
     function slide(node, { delay = 0, duration = 400, easing = cubicOut } = {}) {
         const style = getComputedStyle(node);
         const opacity = +style.opacity;
@@ -14606,11 +14683,11 @@ var app = (function () {
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[5] = list[i];
+    	child_ctx[7] = list[i];
     	return child_ctx;
     }
 
-    // (33:4) {:else}
+    // (42:4) {:else}
     function create_else_block(ctx) {
     	let openedicon;
     	let current;
@@ -14642,15 +14719,15 @@ var app = (function () {
     		block,
     		id: create_else_block.name,
     		type: "else",
-    		source: "(33:4) {:else}",
+    		source: "(42:4) {:else}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (31:4) {#if !node.expanded}
-    function create_if_block_1(ctx) {
+    // (40:4) {#if !node.expanded}
+    function create_if_block_2(ctx) {
     	let closedicon;
     	let current;
     	closedicon = new ClosedIcon({ $$inline: true });
@@ -14679,16 +14756,133 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block_1.name,
+    		id: create_if_block_2.name,
     		type: "if",
-    		source: "(31:4) {#if !node.expanded}",
+    		source: "(40:4) {#if !node.expanded}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (63:0) {#if node.expanded && node.children}
+    // (48:0) {#if node.showMenu}
+    function create_if_block_1(ctx) {
+    	let div2;
+    	let div1;
+    	let div0;
+    	let a0;
+    	let t1;
+    	let a1;
+    	let t3;
+    	let a2;
+    	let t5;
+    	let a3;
+    	let t7;
+    	let hr;
+    	let t8;
+    	let a4;
+    	let div2_intro;
+
+    	const block = {
+    		c: function create() {
+    			div2 = element("div");
+    			div1 = element("div");
+    			div0 = element("div");
+    			a0 = element("a");
+    			a0.textContent = "Dropdown item";
+    			t1 = space();
+    			a1 = element("a");
+    			a1.textContent = "Other dropdown item";
+    			t3 = space();
+    			a2 = element("a");
+    			a2.textContent = "Active dropdown item";
+    			t5 = space();
+    			a3 = element("a");
+    			a3.textContent = "Other dropdown item";
+    			t7 = space();
+    			hr = element("hr");
+    			t8 = space();
+    			a4 = element("a");
+    			a4.textContent = "With a divider";
+    			attr_dev(a0, "href", "#");
+    			attr_dev(a0, "class", "dropdown-item");
+    			add_location(a0, file$2, 51, 8, 1265);
+    			attr_dev(a1, "class", "dropdown-item");
+    			add_location(a1, file$2, 54, 8, 1345);
+    			attr_dev(a2, "href", "#");
+    			attr_dev(a2, "class", "dropdown-item is-active");
+    			add_location(a2, file$2, 57, 8, 1422);
+    			attr_dev(a3, "href", "#");
+    			attr_dev(a3, "class", "dropdown-item");
+    			add_location(a3, file$2, 60, 8, 1519);
+    			attr_dev(hr, "class", "dropdown-divider");
+    			add_location(hr, file$2, 63, 8, 1605);
+    			attr_dev(a4, "href", "#");
+    			attr_dev(a4, "class", "dropdown-item");
+    			add_location(a4, file$2, 64, 8, 1643);
+    			attr_dev(div0, "class", "dropdown-content");
+    			add_location(div0, file$2, 50, 6, 1226);
+    			attr_dev(div1, "class", "dropdown-menu");
+    			attr_dev(div1, "id", "dropdown-menu");
+    			attr_dev(div1, "role", "menu");
+    			add_location(div1, file$2, 49, 4, 1161);
+    			attr_dev(div2, "class", "dropdown is-active");
+    			set_style(div2, "position", "fixed");
+    			set_style(div2, "left", /*menuX*/ ctx[2] + "px");
+    			set_style(div2, "top", /*menuY*/ ctx[3] + "px");
+    			add_location(div2, file$2, 48, 2, 1035);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div2, anchor);
+    			append_dev(div2, div1);
+    			append_dev(div1, div0);
+    			append_dev(div0, a0);
+    			append_dev(div0, t1);
+    			append_dev(div0, a1);
+    			append_dev(div0, t3);
+    			append_dev(div0, a2);
+    			append_dev(div0, t5);
+    			append_dev(div0, a3);
+    			append_dev(div0, t7);
+    			append_dev(div0, hr);
+    			append_dev(div0, t8);
+    			append_dev(div0, a4);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*menuX*/ 4) {
+    				set_style(div2, "left", /*menuX*/ ctx[2] + "px");
+    			}
+
+    			if (dirty & /*menuY*/ 8) {
+    				set_style(div2, "top", /*menuY*/ ctx[3] + "px");
+    			}
+    		},
+    		i: function intro(local) {
+    			if (!div2_intro) {
+    				add_render_callback(() => {
+    					div2_intro = create_in_transition(div2, fly, { y: 100, duration: 500 });
+    					div2_intro.start();
+    				});
+    			}
+    		},
+    		o: noop$1,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div2);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_1.name,
+    		type: "if",
+    		source: "(48:0) {#if node.showMenu}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (73:0) {#if node.expanded && node.children}
     function create_if_block(ctx) {
     	let each_1_anchor;
     	let current;
@@ -14777,21 +14971,21 @@ var app = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(63:0) {#if node.expanded && node.children}",
+    		source: "(73:0) {#if node.expanded && node.children}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (64:4) {#each node.children as child}
+    // (74:4) {#each node.children as child}
     function create_each_block(ctx) {
     	let treenode;
     	let current;
 
     	treenode = new Treenode({
     			props: {
-    				node: /*child*/ ctx[5],
+    				node: /*child*/ ctx[7],
     				level: /*level*/ ctx[1] + 1
     			},
     			$$inline: true
@@ -14807,7 +15001,7 @@ var app = (function () {
     		},
     		p: function update(ctx, dirty) {
     			const treenode_changes = {};
-    			if (dirty & /*node*/ 1) treenode_changes.node = /*child*/ ctx[5];
+    			if (dirty & /*node*/ 1) treenode_changes.node = /*child*/ ctx[7];
     			if (dirty & /*level*/ 2) treenode_changes.level = /*level*/ ctx[1] + 1;
     			treenode.$set(treenode_changes);
     		},
@@ -14829,7 +15023,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(64:4) {#each node.children as child}",
+    		source: "(74:4) {#each node.children as child}",
     		ctx
     	});
 
@@ -14843,29 +15037,14 @@ var app = (function () {
     	let t0;
     	let t1_value = /*node*/ ctx[0].data + "";
     	let t1;
-    	let t2;
-    	let div2;
-    	let div1;
-    	let div0;
-    	let a0;
-    	let t4;
-    	let a1;
-    	let t6;
-    	let a2;
-    	let t8;
-    	let a3;
-    	let t10;
-    	let hr;
-    	let t11;
-    	let a4;
-    	let div2_class_value;
     	let li_transition;
-    	let t13;
-    	let if_block1_anchor;
+    	let t2;
+    	let t3;
+    	let if_block2_anchor;
     	let current;
     	let mounted;
     	let dispose;
-    	const if_block_creators = [create_if_block_1, create_else_block];
+    	const if_block_creators = [create_if_block_2, create_else_block];
     	const if_blocks = [];
 
     	function select_block_type(ctx, dirty) {
@@ -14875,7 +15054,8 @@ var app = (function () {
 
     	current_block_type_index = select_block_type(ctx);
     	if_block0 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-    	let if_block1 = /*node*/ ctx[0].expanded && /*node*/ ctx[0].children && create_if_block(ctx);
+    	let if_block1 = /*node*/ ctx[0].showMenu && create_if_block_1(ctx);
+    	let if_block2 = /*node*/ ctx[0].expanded && /*node*/ ctx[0].children && create_if_block(ctx);
 
     	const block = {
     		c: function create() {
@@ -14884,55 +15064,13 @@ var app = (function () {
     			t0 = space();
     			t1 = text(t1_value);
     			t2 = space();
-    			div2 = element("div");
-    			div1 = element("div");
-    			div0 = element("div");
-    			a0 = element("a");
-    			a0.textContent = "Dropdown item";
-    			t4 = space();
-    			a1 = element("a");
-    			a1.textContent = "Other dropdown item";
-    			t6 = space();
-    			a2 = element("a");
-    			a2.textContent = "Active dropdown item";
-    			t8 = space();
-    			a3 = element("a");
-    			a3.textContent = "Other dropdown item";
-    			t10 = space();
-    			hr = element("hr");
-    			t11 = space();
-    			a4 = element("a");
-    			a4.textContent = "With a divider";
-    			t13 = space();
     			if (if_block1) if_block1.c();
-    			if_block1_anchor = empty();
-    			attr_dev(a0, "href", "#");
-    			attr_dev(a0, "class", "dropdown-item");
-    			add_location(a0, file$2, 40, 12, 1029);
-    			attr_dev(a1, "class", "dropdown-item");
-    			add_location(a1, file$2, 43, 12, 1121);
-    			attr_dev(a2, "href", "#");
-    			attr_dev(a2, "class", "dropdown-item is-active");
-    			add_location(a2, file$2, 46, 12, 1210);
-    			attr_dev(a3, "href", "#");
-    			attr_dev(a3, "class", "dropdown-item");
-    			add_location(a3, file$2, 49, 12, 1319);
-    			attr_dev(hr, "class", "dropdown-divider");
-    			add_location(hr, file$2, 52, 12, 1417);
-    			attr_dev(a4, "href", "#");
-    			attr_dev(a4, "class", "dropdown-item");
-    			add_location(a4, file$2, 53, 12, 1459);
-    			attr_dev(div0, "class", "dropdown-content");
-    			add_location(div0, file$2, 39, 10, 986);
-    			attr_dev(div1, "class", "dropdown-menu");
-    			attr_dev(div1, "id", "dropdown-menu");
-    			attr_dev(div1, "role", "menu");
-    			add_location(div1, file$2, 38, 8, 917);
-    			attr_dev(div2, "class", div2_class_value = "dropdown " + (/*node*/ ctx[0].showMenu ? 'is-active' : ''));
-    			add_location(div2, file$2, 37, 4, 851);
+    			t3 = space();
+    			if (if_block2) if_block2.c();
+    			if_block2_anchor = empty();
     			set_style(li, "padding-left", /*level*/ ctx[1] * 1 + "rem");
-    			attr_dev(li, "class", "svelte-mjdssw");
-    			add_location(li, file$2, 24, 0, 521);
+    			attr_dev(li, "class", "svelte-1n578xc");
+    			add_location(li, file$2, 33, 0, 681);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -14942,32 +15080,19 @@ var app = (function () {
     			if_blocks[current_block_type_index].m(li, null);
     			append_dev(li, t0);
     			append_dev(li, t1);
-    			append_dev(li, t2);
-    			append_dev(li, div2);
-    			append_dev(div2, div1);
-    			append_dev(div1, div0);
-    			append_dev(div0, a0);
-    			append_dev(div0, t4);
-    			append_dev(div0, a1);
-    			append_dev(div0, t6);
-    			append_dev(div0, a2);
-    			append_dev(div0, t8);
-    			append_dev(div0, a3);
-    			append_dev(div0, t10);
-    			append_dev(div0, hr);
-    			append_dev(div0, t11);
-    			append_dev(div0, a4);
-    			insert_dev(target, t13, anchor);
+    			insert_dev(target, t2, anchor);
     			if (if_block1) if_block1.m(target, anchor);
-    			insert_dev(target, if_block1_anchor, anchor);
+    			insert_dev(target, t3, anchor);
+    			if (if_block2) if_block2.m(target, anchor);
+    			insert_dev(target, if_block2_anchor, anchor);
     			current = true;
 
     			if (!mounted) {
     				dispose = [
     					action_destroyer(clickOutside.call(null, li)),
-    					listen_dev(li, "click", /*onToggle*/ ctx[2], false, false, false),
-    					listen_dev(li, "contextmenu", prevent_default(/*onContextMenu*/ ctx[3]), false, true, false),
-    					listen_dev(li, "click_outside", /*onClickOutside*/ ctx[4], false, false, false)
+    					listen_dev(li, "click", /*onToggle*/ ctx[4], false, false, false),
+    					listen_dev(li, "contextmenu", prevent_default(/*onContextMenu*/ ctx[5]), false, true, false),
+    					listen_dev(li, "click_outside", /*onClickOutside*/ ctx[6], false, false, false)
     				];
 
     				mounted = true;
@@ -14998,15 +15123,11 @@ var app = (function () {
 
     			if ((!current || dirty & /*node*/ 1) && t1_value !== (t1_value = /*node*/ ctx[0].data + "")) set_data_dev(t1, t1_value);
 
-    			if (!current || dirty & /*node*/ 1 && div2_class_value !== (div2_class_value = "dropdown " + (/*node*/ ctx[0].showMenu ? 'is-active' : ''))) {
-    				attr_dev(div2, "class", div2_class_value);
-    			}
-
     			if (!current || dirty & /*level*/ 2) {
     				set_style(li, "padding-left", /*level*/ ctx[1] * 1 + "rem");
     			}
 
-    			if (/*node*/ ctx[0].expanded && /*node*/ ctx[0].children) {
+    			if (/*node*/ ctx[0].showMenu) {
     				if (if_block1) {
     					if_block1.p(ctx, dirty);
 
@@ -15014,16 +15135,34 @@ var app = (function () {
     						transition_in(if_block1, 1);
     					}
     				} else {
-    					if_block1 = create_if_block(ctx);
+    					if_block1 = create_if_block_1(ctx);
     					if_block1.c();
     					transition_in(if_block1, 1);
-    					if_block1.m(if_block1_anchor.parentNode, if_block1_anchor);
+    					if_block1.m(t3.parentNode, t3);
     				}
     			} else if (if_block1) {
+    				if_block1.d(1);
+    				if_block1 = null;
+    			}
+
+    			if (/*node*/ ctx[0].expanded && /*node*/ ctx[0].children) {
+    				if (if_block2) {
+    					if_block2.p(ctx, dirty);
+
+    					if (dirty & /*node*/ 1) {
+    						transition_in(if_block2, 1);
+    					}
+    				} else {
+    					if_block2 = create_if_block(ctx);
+    					if_block2.c();
+    					transition_in(if_block2, 1);
+    					if_block2.m(if_block2_anchor.parentNode, if_block2_anchor);
+    				}
+    			} else if (if_block2) {
     				group_outros();
 
-    				transition_out(if_block1, 1, 1, () => {
-    					if_block1 = null;
+    				transition_out(if_block2, 1, 1, () => {
+    					if_block2 = null;
     				});
 
     				check_outros();
@@ -15039,22 +15178,25 @@ var app = (function () {
     			});
 
     			transition_in(if_block1);
+    			transition_in(if_block2);
     			current = true;
     		},
     		o: function outro(local) {
     			transition_out(if_block0);
     			if (!li_transition) li_transition = create_bidirectional_transition(li, slide, {}, false);
     			li_transition.run(0);
-    			transition_out(if_block1);
+    			transition_out(if_block2);
     			current = false;
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(li);
     			if_blocks[current_block_type_index].d();
     			if (detaching && li_transition) li_transition.end();
-    			if (detaching) detach_dev(t13);
+    			if (detaching) detach_dev(t2);
     			if (if_block1) if_block1.d(detaching);
-    			if (detaching) detach_dev(if_block1_anchor);
+    			if (detaching) detach_dev(t3);
+    			if (if_block2) if_block2.d(detaching);
+    			if (detaching) detach_dev(if_block2_anchor);
     			mounted = false;
     			run_all(dispose);
     		}
@@ -15071,11 +15213,17 @@ var app = (function () {
     	return block;
     }
 
+    function dummy(e) {
+    	
+    }
+
     function instance$2($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('Treenode', slots, []);
     	let { node } = $$props;
     	let { level = 1 } = $$props;
+    	let menuX;
+    	let menuY;
 
     	function onToggle() {
     		$$invalidate(0, node.expanded = !node.expanded, node);
@@ -15084,6 +15232,8 @@ var app = (function () {
 
     	function onContextMenu(e) {
     		$$invalidate(0, node.showMenu = !node.showMenu, node);
+    		$$invalidate(2, menuX = e.clientX);
+    		$$invalidate(3, menuY = e.clientY);
     	}
 
     	function onClickOutside(e) {
@@ -15103,26 +15253,32 @@ var app = (function () {
 
     	$$self.$capture_state = () => ({
     		slide,
+    		fly,
     		ClosedIcon,
     		OpenedIcon,
     		clickOutside,
     		node,
     		level,
+    		menuX,
+    		menuY,
     		onToggle,
     		onContextMenu,
-    		onClickOutside
+    		onClickOutside,
+    		dummy
     	});
 
     	$$self.$inject_state = $$props => {
     		if ('node' in $$props) $$invalidate(0, node = $$props.node);
     		if ('level' in $$props) $$invalidate(1, level = $$props.level);
+    		if ('menuX' in $$props) $$invalidate(2, menuX = $$props.menuX);
+    		if ('menuY' in $$props) $$invalidate(3, menuY = $$props.menuY);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [node, level, onToggle, onContextMenu, onClickOutside];
+    	return [node, level, menuX, menuY, onToggle, onContextMenu, onClickOutside];
     }
 
     class Treenode extends SvelteComponentDev {
