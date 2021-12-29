@@ -14,7 +14,7 @@
 
     .sidebar {
         height: 100vh;
-        background: #f2f2f2;
+        background-color: lightgray;
     }
 
     ul {

@@ -1,46 +1,50 @@
 <script>
-    import { slide } from 'svelte/transition';
-    import { fly } from 'svelte/transition';
-    import ClosedIcon from './ClosedIcon.svelte';
-    import OpenedIcon from './OpenedIcon.svelte';
-    import CircleIcon from './CircleIcon.svelte';
-    import { clickOutside } from './clickOutside.js';
-import { children } from 'svelte/internal';
+  import { slide } from 'svelte/transition';
+  import { fly } from 'svelte/transition';
+  import ClosedIcon from './ClosedIcon.svelte';
+  import OpenedIcon from './OpenedIcon.svelte';
+  import CircleIcon from './CircleIcon.svelte';
+  import { clickOutside } from './clickOutside.js';
+  import { selectedNode } from './store.js';
+import { get } from 'svelte/store';
 
-    export let node;
-    export let level=0;
+  export let node;
+  export let level=0;
 
-    let menuX;
-    let menuY;
-    let showMenu;
+  let menuX;
+  let menuY;
+  let showMenu;
 
-    function onToggle() {
-        node.expanded = !node.expanded;
-        showMenu = false;
-    }
+  function onClick(e) {
+    selectedNode.update(name => node.Name);
+    node.expanded = !node.expanded;
+    showMenu = false;
+  }
 
-    function onContextMenu(e) {
-        showMenu = !showMenu;
-        menuX = e.clientX;
-        menuY = e.clientY;
-    }
+  function onContextMenu(e) {
+    selectedNode.update(name => node.Name);
+    showMenu = !showMenu;
+    menuX = e.clientX;
+    menuY = e.clientY;
+  }
 
-    function onClickOutside(e){
-        showMenu = false;
-    }
+  function onClickOutside(e){
+      showMenu = false;
+  }
 
-    function dummy(e){
+  function dummy(e){
 
-    }
+  }
 </script>
 
 
 <li use:clickOutside
-        on:click={onToggle} 
+        on:click={onClick} 
         style="padding-left:{level*1}rem" 
         transition:slide 
         on:contextmenu|preventDefault={onContextMenu}
-        on:click_outside={onClickOutside}>
+        on:click_outside={onClickOutside}
+        class:selected="{$selectedNode==node.Name}">
     {#if node.children}
       {#if !node.expanded}
         <ClosedIcon />
@@ -74,17 +78,22 @@ import { children } from 'svelte/internal';
 {/if}
 
 <style>
-    li {
-        border-bottom: solid 0px #eee;
-        margin: 0 0;
-        padding: 0.75rem;
-        display: flex;
-        cursor: pointer;
 
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        -o-user-select: none;
-        user-select: none;
-    }
+  .selected {
+    background-color:white;
+  }
+
+  li {
+      border-bottom: solid 0px aliceblue;
+      margin: 0 0;
+      padding: 0.75rem;
+      display: flex;
+      cursor: pointer;
+
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -o-user-select: none;
+      user-select: none;
+  }
 </style>

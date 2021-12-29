@@ -1,6 +1,5 @@
 <script>
 	import Navbar from "./Navbar.svelte";
-	import Deployment from "./Deployment.svelte";
 	import Sidebar from "./Sidebar.svelte";
 
     let NodesMenuItems = ['Add Node ...'];
