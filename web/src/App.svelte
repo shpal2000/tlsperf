@@ -3,13 +3,17 @@
 	import Deployment from "./Deployment.svelte";
 	import Sidebar from "./Sidebar.svelte";
 
+    let NodesMenuItems = ['Add Node ...'];
+	let ProfilesMenuItems = ['New Profile ...'];
+	let RunsMenuItems = ['New Run ...'];
+
 	let data = {
-		data: 'Resources',
-		expanded: false,
+		Name: 'Resources',
+		expanded: true,
 		children: [
-			{data: 'Nodes', expanded: false, children: [{data: 'Node-1'}, {data: 'Node-2'}, {data: 'Node-3'},]},
-			{data: 'Profile', expanded: false, children: [{data: 'TlsClient1'}, {data: 'TlsClient2'}, {data: 'TlsClient3'}]},
-			{data: 'Runs'}
+			{Name: 'Nodes', MenuItems: NodesMenuItems, expanded: false, children: [{Name: 'Node-1'}, {Name: 'Node-2'}, {Name: 'Node-3'}]},
+			{Name: 'Profile', MenuItems: ProfilesMenuItems, expanded: false, children: [{Name: 'TlsClient1'}, {Name: 'TlsClient2'}, {Name: 'TlsClient3'}]},
+			{Name: 'Runs', MenuItems: RunsMenuItems, children: [{Name: 'AES128-SHA1 CPS'}]}
 		]
 	};
 

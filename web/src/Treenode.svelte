@@ -3,26 +3,30 @@
     import { fly } from 'svelte/transition';
     import ClosedIcon from './ClosedIcon.svelte';
     import OpenedIcon from './OpenedIcon.svelte';
+    import CircleIcon from './CircleIcon.svelte';
     import { clickOutside } from './clickOutside.js';
+import { children } from 'svelte/internal';
 
     export let node;
     export let level=1;
+
     let menuX;
     let menuY;
+    let showMenu;
 
     function onToggle() {
         node.expanded = !node.expanded;
-        node.showMenu = false;
+        showMenu = false;
     }
 
     function onContextMenu(e) {
-        node.showMenu = !node.showMenu;
+        showMenu = !showMenu;
         menuX = e.clientX;
         menuY = e.clientY;
     }
 
     function onClickOutside(e){
-        node.showMenu = false;
+        showMenu = false;
     }
 
     function dummy(e){
@@ -37,34 +41,27 @@
         transition:slide 
         on:contextmenu|preventDefault={onContextMenu}
         on:click_outside={onClickOutside}>
-    {#if !node.expanded}
+    {#if node.children}
+      {#if !node.expanded}
         <ClosedIcon />
-    {:else}
+      {:else}
         <OpenedIcon />
+      {/if}
+    {:else}
+      <CircleIcon />
     {/if}
-    {node.data}
+    {node.Name}
 </li>
 
-{#if node.showMenu}
+{#if showMenu && node.MenuItems}
   <div class="dropdown is-active" style="position:fixed; left: {menuX}px; top: {menuY}px" in:fly="{{y:100, duration:500}}">
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
       <div class="dropdown-content">
-        <a href="#" class="dropdown-item">
-          Dropdown item
-        </a>
-        <a class="dropdown-item">
-          Other dropdown item
-        </a>
-        <a href="#" class="dropdown-item is-active">
-          Active dropdown item
-        </a>
-        <a href="#" class="dropdown-item">
-          Other dropdown item
-        </a>
-        <hr class="dropdown-divider">
-        <a href="#" class="dropdown-item">
-          With a divider
-        </a>
+        {#each node.MenuItems as menuItem}
+          <a href="#" class="dropdown-item">
+            {menuItem}
+          </a>
+        {/each}
       </div>
     </div>
   </div>
@@ -80,8 +77,14 @@
     li {
         border-bottom: solid 0px #eee;
         margin: 0 0;
-        padding: 1rem;
+        padding: 0.75rem;
         display: flex;
         cursor: pointer;
+
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -o-user-select: none;
+        user-select: none;
     }
 </style>
