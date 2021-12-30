@@ -25,14 +25,6 @@ var app = (function () {
     function safe_not_equal(a, b) {
         return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
     }
-    let src_url_equal_anchor;
-    function src_url_equal(element_src, url) {
-        if (!src_url_equal_anchor) {
-            src_url_equal_anchor = document.createElement('a');
-        }
-        src_url_equal_anchor.href = url;
-        return element_src === src_url_equal_anchor.href;
-    }
     function is_empty(obj) {
         return Object.keys(obj).length === 0;
     }
@@ -766,9 +758,6 @@ var app = (function () {
     	let nav;
     	let div0;
     	let a0;
-    	let img;
-    	let img_src_value;
-    	let t0;
     	let t1;
     	let a1;
     	let span0;
@@ -777,11 +766,15 @@ var app = (function () {
     	let t3;
     	let span2;
     	let t4;
-    	let div4;
+    	let div5;
     	let div1;
     	let t5;
+    	let div4;
     	let div3;
     	let div2;
+    	let button0;
+    	let t7;
+    	let button1;
     	let mounted;
     	let dispose;
 
@@ -790,8 +783,7 @@ var app = (function () {
     			nav = element("nav");
     			div0 = element("div");
     			a0 = element("a");
-    			img = element("img");
-    			t0 = text("\n\t\t\t    TLS Perf ");
+    			a0.textContent = "TLS Perf ";
     			t1 = space();
     			a1 = element("a");
     			span0 = element("span");
@@ -800,42 +792,50 @@ var app = (function () {
     			t3 = space();
     			span2 = element("span");
     			t4 = space();
-    			div4 = element("div");
+    			div5 = element("div");
     			div1 = element("div");
     			t5 = space();
+    			div4 = element("div");
     			div3 = element("div");
     			div2 = element("div");
-    			if (!src_url_equal(img.src, img_src_value = "/assets/tlspack.png")) attr_dev(img, "src", img_src_value);
-    			attr_dev(img, "width", "32");
-    			attr_dev(img, "height", "32");
-    			add_location(img, file$6, 11, 3, 329);
+    			button0 = element("button");
+    			button0.textContent = "Sign in";
+    			t7 = space();
+    			button1 = element("button");
+    			button1.textContent = "Sign up";
     			attr_dev(a0, "class", "navbar-item");
     			attr_dev(a0, "href", "https://www.tlspack.com");
     			add_location(a0, file$6, 9, 2, 222);
     			attr_dev(span0, "aria-hidden", "true");
-    			add_location(span0, file$6, 16, 3, 632);
+    			add_location(span0, file$6, 15, 3, 550);
     			attr_dev(span1, "aria-hidden", "true");
-    			add_location(span1, file$6, 17, 3, 668);
+    			add_location(span1, file$6, 16, 3, 586);
     			attr_dev(span2, "aria-hidden", "true");
-    			add_location(span2, file$6, 18, 3, 704);
+    			add_location(span2, file$6, 17, 3, 622);
     			attr_dev(a1, "role", "button");
     			attr_dev(a1, "class", "navbar-burger");
     			attr_dev(a1, "aria-label", "menu");
     			attr_dev(a1, "aria-expanded", "false");
     			attr_dev(a1, "data-target", "navbarTopMenu");
-    			add_location(a1, file$6, 15, 2, 483);
+    			add_location(a1, file$6, 14, 2, 401);
     			attr_dev(div0, "class", "navbar-brand");
     			add_location(div0, file$6, 8, 1, 193);
     			attr_dev(div1, "class", "navbar-start");
-    			add_location(div1, file$6, 23, 2, 828);
-    			attr_dev(div2, "class", "navbar-item");
-    			add_location(div2, file$6, 27, 3, 895);
-    			attr_dev(div3, "class", "navbar-end");
-    			add_location(div3, file$6, 26, 2, 867);
-    			attr_dev(div4, "id", "navbarTopMenu");
-    			attr_dev(div4, "class", "navbar-menu");
-    			toggle_class(div4, "is-active", /*isActive*/ ctx[0]);
-    			add_location(div4, file$6, 22, 1, 754);
+    			add_location(div1, file$6, 22, 2, 746);
+    			attr_dev(button0, "class", "button is-light is-small is-outlined");
+    			add_location(button0, file$6, 28, 5, 870);
+    			attr_dev(button1, "class", "button is-light is-small is-outlined");
+    			add_location(button1, file$6, 29, 5, 945);
+    			attr_dev(div2, "class", "buttons");
+    			add_location(div2, file$6, 27, 4, 843);
+    			attr_dev(div3, "class", "navbar-item");
+    			add_location(div3, file$6, 26, 3, 813);
+    			attr_dev(div4, "class", "navbar-end");
+    			add_location(div4, file$6, 25, 2, 785);
+    			attr_dev(div5, "id", "navbarTopMenu");
+    			attr_dev(div5, "class", "navbar-menu");
+    			toggle_class(div5, "is-active", /*isActive*/ ctx[0]);
+    			add_location(div5, file$6, 21, 1, 672);
     			attr_dev(nav, "class", "navbar is-dark is-spaced has-shadow");
     			attr_dev(nav, "role", "navigation");
     			attr_dev(nav, "aria-label", "main navigation");
@@ -848,8 +848,6 @@ var app = (function () {
     			insert_dev(target, nav, anchor);
     			append_dev(nav, div0);
     			append_dev(div0, a0);
-    			append_dev(a0, img);
-    			append_dev(a0, t0);
     			append_dev(div0, t1);
     			append_dev(div0, a1);
     			append_dev(a1, span0);
@@ -858,11 +856,15 @@ var app = (function () {
     			append_dev(a1, t3);
     			append_dev(a1, span2);
     			append_dev(nav, t4);
-    			append_dev(nav, div4);
-    			append_dev(div4, div1);
-    			append_dev(div4, t5);
+    			append_dev(nav, div5);
+    			append_dev(div5, div1);
+    			append_dev(div5, t5);
+    			append_dev(div5, div4);
     			append_dev(div4, div3);
     			append_dev(div3, div2);
+    			append_dev(div2, button0);
+    			append_dev(div2, t7);
+    			append_dev(div2, button1);
 
     			if (!mounted) {
     				dispose = [
@@ -875,7 +877,7 @@ var app = (function () {
     		},
     		p: function update(ctx, [dirty]) {
     			if (dirty & /*isActive*/ 1) {
-    				toggle_class(div4, "is-active", /*isActive*/ ctx[0]);
+    				toggle_class(div5, "is-active", /*isActive*/ ctx[0]);
     			}
     		},
     		i: noop,
@@ -2282,13 +2284,13 @@ var app = (function () {
     			div1 = element("div");
     			div1.textContent = "sidebar-contnet";
     			attr_dev(div0, "class", "column is-one-fifth");
-    			add_location(div0, file, 22, 1, 652);
+    			add_location(div0, file, 28, 1, 819);
     			attr_dev(div1, "class", "container");
-    			add_location(div1, file, 26, 2, 738);
+    			add_location(div1, file, 32, 2, 905);
     			attr_dev(div2, "class", "column");
-    			add_location(div2, file, 25, 1, 715);
+    			add_location(div2, file, 31, 1, 882);
     			attr_dev(div3, "class", "columns");
-    			add_location(div3, file, 21, 0, 629);
+    			add_location(div3, file, 27, 0, 796);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2340,6 +2342,7 @@ var app = (function () {
     	validate_slots('App', slots, []);
     	let NodesMenuItems = ['New Node ...', 'Add Folder ...'];
     	let ProfilesMenuItems = ['New Profile ...', 'Add Folder ...'];
+    	let ProfileMenuItems = ['Clone Profile ...'];
 
     	let data = {
     		Name: 'Resources',
@@ -2356,9 +2359,18 @@ var app = (function () {
     				MenuItems: ProfilesMenuItems,
     				expanded: false,
     				children: [
-    					{ Name: 'AES128-SHA1-Client@2000CPS' },
-    					{ Name: 'TlsClient2' },
-    					{ Name: 'TlsClient3' }
+    					{
+    						Name: 'AES128-SHA1-Client',
+    						MenuItems: ProfileMenuItems
+    					},
+    					{
+    						Name: 'TlsClient2',
+    						MenuItems: ProfileMenuItems
+    					},
+    					{
+    						Name: 'TlsClient3',
+    						MenuItems: ProfileMenuItems
+    					}
     				]
     			}
     		]
@@ -2375,12 +2387,14 @@ var app = (function () {
     		Sidebar,
     		NodesMenuItems,
     		ProfilesMenuItems,
+    		ProfileMenuItems,
     		data
     	});
 
     	$$self.$inject_state = $$props => {
     		if ('NodesMenuItems' in $$props) NodesMenuItems = $$props.NodesMenuItems;
     		if ('ProfilesMenuItems' in $$props) ProfilesMenuItems = $$props.ProfilesMenuItems;
+    		if ('ProfileMenuItems' in $$props) ProfileMenuItems = $$props.ProfileMenuItems;
     		if ('data' in $$props) $$invalidate(0, data = $$props.data);
     	};
 

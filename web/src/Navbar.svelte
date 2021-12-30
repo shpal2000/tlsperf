@@ -9,8 +9,7 @@
 	<div class="navbar-brand">
 		<a class="navbar-item" href="https://www.tlspack.com">
 			<!-- svelte-ignore a11y-missing-attribute -->
-			<img src="/assets/tlspack.png" width="32" height="32">
-			&nbsp;&nbsp;&nbsp;&nbsp;TLS Perf&nbsp;
+			TLS Perf&nbsp;
 		</a>
 		<!-- svelte-ignore a11y-missing-attribute -->
 		<a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarTopMenu" on:click="{() => isActive=!isActive}">
@@ -26,6 +25,10 @@
 
 		<div class="navbar-end">
 			<div class="navbar-item">
+				<div class="buttons">
+					<button class="button is-light is-small is-outlined">Sign in</button>
+					<button class="button is-light is-small is-outlined">Sign up</button>
+				</div>
 			</div>
 		</div>
 	</div>
