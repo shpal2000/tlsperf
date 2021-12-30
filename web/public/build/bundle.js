@@ -808,35 +808,35 @@ var app = (function () {
     			if (!src_url_equal(img.src, img_src_value = "/assets/tlspack.png")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "width", "32");
     			attr_dev(img, "height", "32");
-    			add_location(img, file$6, 11, 3, 319);
+    			add_location(img, file$6, 11, 3, 329);
     			attr_dev(a0, "class", "navbar-item");
     			attr_dev(a0, "href", "https://www.tlspack.com");
-    			add_location(a0, file$6, 9, 2, 212);
+    			add_location(a0, file$6, 9, 2, 222);
     			attr_dev(span0, "aria-hidden", "true");
-    			add_location(span0, file$6, 16, 3, 622);
+    			add_location(span0, file$6, 16, 3, 632);
     			attr_dev(span1, "aria-hidden", "true");
-    			add_location(span1, file$6, 17, 3, 658);
+    			add_location(span1, file$6, 17, 3, 668);
     			attr_dev(span2, "aria-hidden", "true");
-    			add_location(span2, file$6, 18, 3, 694);
+    			add_location(span2, file$6, 18, 3, 704);
     			attr_dev(a1, "role", "button");
     			attr_dev(a1, "class", "navbar-burger");
     			attr_dev(a1, "aria-label", "menu");
     			attr_dev(a1, "aria-expanded", "false");
     			attr_dev(a1, "data-target", "navbarTopMenu");
-    			add_location(a1, file$6, 15, 2, 473);
+    			add_location(a1, file$6, 15, 2, 483);
     			attr_dev(div0, "class", "navbar-brand");
-    			add_location(div0, file$6, 8, 1, 183);
+    			add_location(div0, file$6, 8, 1, 193);
     			attr_dev(div1, "class", "navbar-start");
-    			add_location(div1, file$6, 23, 2, 818);
+    			add_location(div1, file$6, 23, 2, 828);
     			attr_dev(div2, "class", "navbar-item");
-    			add_location(div2, file$6, 27, 3, 885);
+    			add_location(div2, file$6, 27, 3, 895);
     			attr_dev(div3, "class", "navbar-end");
-    			add_location(div3, file$6, 26, 2, 857);
+    			add_location(div3, file$6, 26, 2, 867);
     			attr_dev(div4, "id", "navbarTopMenu");
     			attr_dev(div4, "class", "navbar-menu");
     			toggle_class(div4, "is-active", /*isActive*/ ctx[0]);
-    			add_location(div4, file$6, 22, 1, 744);
-    			attr_dev(nav, "class", "navbar is-dark has-shadow");
+    			add_location(div4, file$6, 22, 1, 754);
+    			attr_dev(nav, "class", "navbar is-dark is-spaced has-shadow");
     			attr_dev(nav, "role", "navigation");
     			attr_dev(nav, "aria-label", "main navigation");
     			add_location(nav, file$6, 7, 0, 95);
@@ -2282,13 +2282,13 @@ var app = (function () {
     			div1 = element("div");
     			div1.textContent = "sidebar-contnet";
     			attr_dev(div0, "class", "column is-one-fifth");
-    			add_location(div0, file, 23, 1, 795);
+    			add_location(div0, file, 22, 1, 652);
     			attr_dev(div1, "class", "container");
-    			add_location(div1, file, 27, 2, 881);
+    			add_location(div1, file, 26, 2, 738);
     			attr_dev(div2, "class", "column");
-    			add_location(div2, file, 26, 1, 858);
+    			add_location(div2, file, 25, 1, 715);
     			attr_dev(div3, "class", "columns");
-    			add_location(div3, file, 22, 0, 772);
+    			add_location(div3, file, 21, 0, 629);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2338,9 +2338,8 @@ var app = (function () {
     function instance($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
-    	let NodesMenuItems = ['Add Node ...'];
-    	let ProfilesMenuItems = ['New Profile ...'];
-    	let RunsMenuItems = ['New Run ...'];
+    	let NodesMenuItems = ['New Node ...', 'Add Folder ...'];
+    	let ProfilesMenuItems = ['New Profile ...', 'Add Folder ...'];
 
     	let data = {
     		Name: 'Resources',
@@ -2361,16 +2360,6 @@ var app = (function () {
     					{ Name: 'TlsClient2' },
     					{ Name: 'TlsClient3' }
     				]
-    			},
-    			{
-    				Name: 'Test Runs',
-    				MenuItems: RunsMenuItems,
-    				children: [
-    					{
-    						Name: 'PnS-HCx-CPS',
-    						children: [{ Name: 'Build - 12386' }, { Name: 'Build - 12387' }]
-    					}
-    				]
     			}
     		]
     	};
@@ -2386,14 +2375,12 @@ var app = (function () {
     		Sidebar,
     		NodesMenuItems,
     		ProfilesMenuItems,
-    		RunsMenuItems,
     		data
     	});
 
     	$$self.$inject_state = $$props => {
     		if ('NodesMenuItems' in $$props) NodesMenuItems = $$props.NodesMenuItems;
     		if ('ProfilesMenuItems' in $$props) ProfilesMenuItems = $$props.ProfilesMenuItems;
-    		if ('RunsMenuItems' in $$props) RunsMenuItems = $$props.RunsMenuItems;
     		if ('data' in $$props) $$invalidate(0, data = $$props.data);
     	};
 
