@@ -1830,7 +1830,7 @@ var app = (function () {
     			if (if_block2) if_block2.c();
     			if_block2_anchor = empty();
     			set_style(li, "padding-left", /*level*/ ctx[1] * 1 + "rem");
-    			attr_dev(li, "class", "svelte-1jmsr7w");
+    			attr_dev(li, "class", "svelte-6gvmi1");
     			toggle_class(li, "selected", /*$selectedNode*/ ctx[5] == /*node*/ ctx[0].Name);
     			add_location(li, file$2, 40, 0, 839);
     		},
@@ -1994,7 +1994,7 @@ var app = (function () {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('Treenode', slots, []);
     	let { node } = $$props;
-    	let { level = 0 } = $$props;
+    	let { level = 1 } = $$props;
     	let menuX;
     	let menuY;
     	let showMenu;
@@ -2138,9 +2138,9 @@ var app = (function () {
     			div = element("div");
     			ul = element("ul");
     			create_component(treenode.$$.fragment);
-    			attr_dev(ul, "class", "svelte-fyormy");
+    			attr_dev(ul, "class", "svelte-10itb23");
     			add_location(ul, file$1, 6, 4, 113);
-    			attr_dev(div, "class", "sidebar svelte-fyormy");
+    			attr_dev(div, "class", "sidebar svelte-10itb23");
     			add_location(div, file$1, 5, 0, 87);
     		},
     		l: function claim(nodes) {

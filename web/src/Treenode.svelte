@@ -9,7 +9,7 @@
 import { get } from 'svelte/store';
 
   export let node;
-  export let level=0;
+  export let level=1;
 
   let menuX;
   let menuY;
@@ -80,7 +80,8 @@ import { get } from 'svelte/store';
 <style>
 
   .selected {
-    background-color:white;
+    background-color: darkgray;
+    color: white;
   }
 
   li {
