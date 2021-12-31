@@ -23,6 +23,12 @@ def localcmd(cmd_str, check_ouput=False):
 async def index_handle(request):
     return web.FileResponse('public/index.html')
 
+async def api_get_nodes(request):
+    return web.json_response(['Node-1', 'Node-2', 'Node-3', 'Node-4'])
+
+async def api_get_profiles(request):
+    return web.json_response(['TlsClient1', 'TlsClient2'])
+
 async def api_get_stats(request):
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
@@ -37,6 +43,14 @@ app = web.Application()
 
 app.add_routes([web.static('/build', 'public/build')])
 app.add_routes([web.static('/assets', 'public/assets')])
+
+app.add_routes([web.route('get'
+                            , '/api/nodes'
+                            , api_get_nodes)])
+
+app.add_routes([web.route('get'
+                            , '/api/nodes'
+                            , api_get_profiles)])
 
 app.add_routes([web.route('get'
                             , '/api/stats/{appGId:.*}'

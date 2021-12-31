@@ -9,7 +9,7 @@
 import { get } from 'svelte/store';
 
   export let node;
-  export let level=1;
+  export let level=2;
 
   let menuX;
   let menuY;
