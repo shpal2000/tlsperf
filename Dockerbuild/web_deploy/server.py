@@ -24,10 +24,10 @@ async def index_handle(request):
     return web.FileResponse('public/index.html')
 
 async def api_get_nodes(request):
-    return web.json_response(['Node-1', 'Node-2', 'Node-3', 'Node-4'])
+    return web.json_response([{'Name': 'Node-1'}, {'Name': 'Node-2'}, {'Name': 'Node-4'}])
 
 async def api_get_profiles(request):
-    return web.json_response(['TlsClient1', 'TlsClient2'])
+    return web.json_response([{'Name': 'TlsClient-1'}, {'Name': 'TlsClient-2'}, {'Name': 'TlsClient-4'}])
 
 async def api_get_stats(request):
     mongoClient = MongoClient(DB_CSTRING)
