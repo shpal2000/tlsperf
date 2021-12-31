@@ -49,7 +49,7 @@ app.add_routes([web.route('get'
                             , api_get_nodes)])
 
 app.add_routes([web.route('get'
-                            , '/api/nodes'
+                            , '/api/profiles'
                             , api_get_profiles)])
 
 app.add_routes([web.route('get'
