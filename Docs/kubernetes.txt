@@ -1,0 +1,76 @@
+sudo hostnamectl set-hostname kube-master
+
+sudo apt update
+sudo apt upgrade
+
+sudo apt -y install curl apt-transport-https
+
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+
+echo  "deb https://apt.kubernetes.io/ kubernetes-xenial main" >> ~/kubernetes.list
+sudo mv ~/kubernetes.list /etc/apt/sources.list.d/
+sudo apt update
+
+sudo apt -y install kubelet kubeadm kubectl kubernetes-cni
+sudo apt-mark hold kubelet kubeadm kubectl
+
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+sudo swapoff -a
+
+
+
+sudo apt install -y gnupg2 software-properties-common ca-certificates
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt update
+sudo apt install -y containerd.io docker-ce docker-ce-cli
+sudo mkdir -p /etc/systemd/system/docker.service.d
+
+sudo tee /etc/docker/daemon.json <<EOF
+{
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "100m"
+    },
+    "storage-driver": "overlay2"
+}
+EOF
+
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+sudo systemctl enable docker
+
+sudo sysctl --system
+
+
+#master node <<<<
+
+sudo systemctl enable kubelet
+
+sudo kubeadm config images pull
+
+sudo kubeadm init \
+    --pod-network-cidr=192.168.0.0/16 \
+    --control-plane-endpoint=<dns_name>
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# note for worker node: kubeadm join 172.31.27.11:6443 --token <> --discovery-token-ca-cert-hash sha256:<>
+
+
+kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
+
+#watch kubectl get pods --all-namespaces
+#kubectl get nodes
+#note: master node ready
+
+#master node >>>>
+
+
+#worker node <<<<
+#worker node >>>>
