@@ -1,4 +1,4 @@
-sudo hostnamectl set-hostname kube-master
+sudo hostnamectl set-hostname <kube-master | kube-node1 | kube-node2>
 
 sudo apt update
 sudo apt upgrade
@@ -59,7 +59,7 @@ mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-# note for worker node: kubeadm join 172.31.27.11:6443 --token <> --discovery-token-ca-cert-hash sha256:<>
+# note for worker node: kubeadm join <>:<> --token <> --discovery-token-ca-cert-hash sha256:<>
 
 
 kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
@@ -73,4 +73,5 @@ kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
 
 
 #worker node <<<<
+kubeadm join <>:<> --token <> --discovery-token-ca-cert-hash sha256:<>
 #worker node >>>>
