@@ -9,7 +9,7 @@ spec:
         {
           "type": "macvlan",
           "capabilities": { "ips": true },
-          "master": "ens192",
+          "master": "eth0",
           "mode": "bridge",
           "ipam": {
             "type": "static",
