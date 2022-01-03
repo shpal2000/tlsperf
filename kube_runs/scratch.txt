@@ -1,2 +1,6 @@
 kubectl taint nodes --all node-role.kubernetes.io/master-
 
+kubectl label nodes kube-master tgid=kube-master
+kubectl label nodes kube-node1 tgid=kube-node1
+kubectl label nodes kube-node2 tgid=kube-node2
+
