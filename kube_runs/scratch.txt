@@ -4,3 +4,8 @@ kubectl label nodes kube-master tgid=kube-master
 kubectl label nodes kube-node1 tgid=kube-node1
 kubectl label nodes kube-node2 tgid=kube-node2
 
+Clone this GitHub repository: https://github.com/k8snetworkplumbingwg/multus-cni.git
+apply a daemonset which installs Multus using to kubectl from this repo. 
+From the root directory of the clone, apply the daemonset YAML file:
+
+cat ./deployments/multus-daemonset-thick-plugin.yml | kubectl apply -f -
