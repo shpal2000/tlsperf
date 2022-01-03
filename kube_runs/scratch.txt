@@ -4,8 +4,23 @@ kubectl label nodes kube-master tgid=kube-master
 kubectl label nodes kube-node1 tgid=kube-node1
 kubectl label nodes kube-node2 tgid=kube-node2
 
+
+---
+
+
 Clone this GitHub repository: https://github.com/k8snetworkplumbingwg/multus-cni.git
 apply a daemonset which installs Multus using to kubectl from this repo. 
 From the root directory of the clone, apply the daemonset YAML file:
 
 cat ./deployments/multus-daemonset-thick-plugin.yml | kubectl apply -f -
+
+
+---
+https://github.com/weaveworks/weave/blob/master/site/kubernetes/kube-addon.md
+
+Before installing Weave Net, you should make sure the following ports are not blocked by your 
+firewall: TCP 6783 and UDP 6783/6784.
+
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+
