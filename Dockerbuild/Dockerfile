@@ -6,6 +6,7 @@ ARG USER_GID=$USER_UID
 RUN apt-get update \
     && apt-get -yq install apt-utils \
     && apt-get -yq install mongodb \
+    && apt-get -yq install npm \
     #
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
     && apt-get -yq install git iproute2 procps lsb-release \
