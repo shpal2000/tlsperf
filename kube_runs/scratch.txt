@@ -28,3 +28,6 @@ kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl versio
 
 npm config set strict-ssl false
 
+---
+sudo docker image build tlspack/tlsperf:latest .
+sudo docker push tlspack/tlsperf:latest
