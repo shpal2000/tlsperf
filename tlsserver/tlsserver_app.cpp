@@ -6,6 +6,7 @@ tlsserver_app::tlsserver_app(tlsserver_cfg* cfg
                                     , tlsserver_stats* gstats)
 {
     m_app_ctx.m_app_id = cfg->m_app_id;
+    m_app_ctx.m_app_gid = cfg->m_app_gid;
     m_app_ctx.m_server_ssl = cfg->server_ssl;
 
     m_app_ctx.m_send_recv_len = cfg->send_recv_len;
@@ -40,9 +41,12 @@ tlsserver_app::tlsserver_app(tlsserver_cfg* cfg
     if (m_grp_ctx.m_s_ssl_ctx)
     {
         SSL_CTX_set_min_proto_version (m_grp_ctx.m_s_ssl_ctx
-                                        , SSL3_VERSION);
+                                        , TLS1_2_VERSION);
         SSL_CTX_set_max_proto_version (m_grp_ctx.m_s_ssl_ctx
-                                        , TLS1_3_VERSION);
+                                        , TLS1_2_VERSION);
+
+        SSL_CTX_set_cipher_list (m_grp_ctx.m_s_ssl_ctx
+                                    , "AES128-SHA");
 
         SSL_CTX_set_mode(m_grp_ctx.m_s_ssl_ctx
                             , SSL_MODE_ENABLE_PARTIAL_WRITE);
@@ -143,7 +147,7 @@ void tlsserver_app::run_iter(bool tick_sec)
         m_stats.dump_json (j);
 
         j["appId"] = m_app_ctx.m_app_id;
-        j["podIp"] = getenv ("MY_POD_IP");
+        j["appGId"] = m_app_ctx.m_app_gid;
 
         std::string s = j.dump();
 

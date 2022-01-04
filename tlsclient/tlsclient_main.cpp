@@ -20,7 +20,7 @@ int main(int /*argc*/, char ** /*argv*/)
     tlsclient_stats app_gstats;
 
     app_cfg.m_app_id = cfg_json["app_id"].get<std::string>();
-
+    app_cfg.m_app_gid = cfg_json["app_gid"].get<std::string>();
 
     app_cfg.server_ip = cfg_json["server_ip"].get<std::string>();
     app_cfg.server_port = cfg_json["server_port"].get<int>();
