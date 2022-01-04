@@ -25,6 +25,7 @@ struct tlsserver_app_ctx
     tlsserver_socket* m_stats_sock;
 
     std::string m_app_id; 
+    std::string m_app_gid;
 
     int m_server_ssl;
 
