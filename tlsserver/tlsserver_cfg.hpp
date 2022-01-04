@@ -7,7 +7,8 @@
 struct tlsserver_cfg
 {
     std::string m_app_id;
-    
+    std::string m_app_gid;
+
     std::string server_ip;
     u_short server_port;
     int server_ssl;

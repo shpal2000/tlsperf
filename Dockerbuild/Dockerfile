@@ -1,6 +1,6 @@
 FROM ubuntu:focal
 ENV DEBIAN_FRONTEND=noninteractive
-ARG USERNAME=tlspack
+ARG USERNAME=tlsperf
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 RUN apt-get update \
@@ -48,12 +48,13 @@ RUN apt-get update \
     && apt-get clean -yq \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /usr/local/tlspack/lib
-COPY ./*.so /usr/local/tlspack/lib/
-RUN echo "/usr/local/tlspack/lib" > /etc/ld.so.conf.d/tlspack.conf
+RUN mkdir -p /usr/local/tlsperf/lib
+COPY ./*.so /usr/local/tlsperf/lib/
+RUN echo "/usr/local/tlsperf/lib" > /etc/ld.so.conf.d/tlsperf.conf
 RUN ldconfig -v
 COPY ./*.exe /usr/local/bin/
-RUN mkdir -p /tlspack_web/
-COPY web/ /tlspack_web/
+RUN mkdir -p /tlsperf_web/
+COPY ./web_deploy/ /tlsperf_web/
+
 
 ENV DEBIAN_FRONTEND=
