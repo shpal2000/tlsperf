@@ -23,7 +23,6 @@ RUN apt-get update \
     && apt-get -yq install openssh-client sshpass net-tools \
     && apt-get -yq install iptables \
     #
-    && mkdir /workspace \
     && cd / \
     && curl https://www.openssl.org/source/openssl-1.1.1d.tar.gz -o ./openssl-1.1.1d.tar.gz \
     && tar -xzvf ./openssl-1.1.1d.tar.gz \
@@ -39,7 +38,6 @@ RUN apt-get update \
     #
     && groupadd --gid $USER_GID $USERNAME \
     && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    # [Optional] Add sudo support for the non-root user
     && apt-get install -yq sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME\
     && chmod 0440 /etc/sudoers.d/$USERNAME \
@@ -50,5 +48,4 @@ RUN apt-get update \
     && apt-get autoremove -yq \
     && apt-get clean -yq \
     && rm -rf /var/lib/apt/lists/*
-# Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=
