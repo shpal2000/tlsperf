@@ -7,7 +7,37 @@ RUN apt-get update \
     && apt-get -yq install apt-utils \
     && apt-get -yq install mongodb \
     && apt-get -yq install npm \
+    && apt-get -yq install tmux \
     #
+    && echo "set -g mouse on" > /root/.tmux.conf \
+    && echo "set -g default-terminal 'screen-256color'" > /root/.tmux.conf \
+    && echo "set -g @plugin 'tmux-plugins/tpm'" > /root/.tmux.conf \
+    && echo "set -g @plugin 'tmux-plugins/tmux-resurrect'" > /root/.tmux.conf \
+    && echo "set -g @plugin 'tmux-plugins/tmux-yank'" > /root/.tmux.conf \
+    && echo "set -g @plugin 'tmux-plugins/tmux-copycat' " > /root/.tmux.conf \
+    && echo "run '~/.tmux/plugins/tpm/tpm'" > /root/.tmux.conf \
+    && echo "setw -g mode-keys vi " > /root/.tmux.conf \
+    && echo "set -g base-index 1" > /root/.tmux.conf \
+    && echo "setw -g pane-base-index 1" > /root/.tmux.conf \
+    && echo "set -g status-justify left" > /root/.tmux.conf \
+    && echo "set -g status-bg default" > /root/.tmux.conf \
+    && echo "set -g status-fg colour12" > /root/.tmux.conf \
+    && echo "set -g status-interval 2" > /root/.tmux.conf \
+    && echo "setw -g window-status-format ' #F#I:#W#F '" > /root/.tmux.conf \
+    && echo "setw -g window-status-current-format ' #F#I:#W#F '" > /root/.tmux.conf \
+    && echo "setw -g window-status-format '#[fg=magenta]#[bg=black] #I #[bg=cyan]#[fg=colour8] #W '" > /root/.tmux.conf \
+    && echo "setw -g window-status-current-format '#[bg=brightmagenta]#[fg=colour8] #I #[fg=colour8]#[bg=colour14] #W '" > /root/.tmux.conf \
+    && echo "set -g status-left ''" > /root/.tmux.conf \
+    && echo "set -g status-position bottom" > /root/.tmux.conf \
+    && echo "set -g status-bg colour234" > /root/.tmux.conf \
+    && echo "set -g status-fg colour137" > /root/.tmux.conf \
+    && echo "set -g status-left ''" > /root/.tmux.conf \
+    && echo "set -g status-right '#[fg=colour233,bg=colour241,bold] %d/%m #[fg=colour233,bg=colour245,bold] %H:%M:%S '" > /root/.tmux.conf \
+    && echo "set -g status-right-length 50" > /root/.tmux.conf \
+    && echo "set -g status-left-length 20" > /root/.tmux.conf \
+    && echo "setw -g window-status-current-format ' #I#[fg=colour250]:#[fg=colour255]#W#[fg=colour50]#F '" > /root/.tmux.conf \
+    && echo "setw -g window-status-format ' #I#[fg=colour237]:#[fg=colour250]#W#[fg=colour244]#F '" > /root/.tmux.conf \
+    && echo "" > /root/.tmux.conf \
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
     && apt-get -yq install git iproute2 procps lsb-release \
     # Install C++ tools
@@ -43,7 +73,7 @@ RUN apt-get update \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && sudo ldconfig -v \
     #
-    && pip3 install requests pytest aiohttp pymongo \
+    && pip3 install requests pytest aiohttp pymongo kubernetes\
     # Clean up
     && apt-get autoremove -yq \
     && apt-get clean -yq \
