@@ -34,7 +34,7 @@
             nodesData.MenuItems = NodesMenuItems;
 
             for (const node of nodeList) {
-                nodesData.children.push({Name: node.Name, MenuItems: []});
+                nodesData.children.push({Name: node.Name});
             }
         }
         return nodesData;
@@ -63,8 +63,6 @@
 </script>
 
 <div class="sidebar">
-
-    <br/>
 
     {#await nodesPromise}
         <p>Nodes waiting ...</p>
