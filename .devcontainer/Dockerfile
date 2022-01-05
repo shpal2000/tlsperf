@@ -73,7 +73,7 @@ RUN apt-get update \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && sudo ldconfig -v \
     #
-    && pip3 install requests pytest aiohttp pymongo kubernetes\
+    && pip3 install requests pytest aiohttp pymongo kubernetes \
     # Clean up
     && apt-get autoremove -yq \
     && apt-get clean -yq \
