@@ -100,7 +100,7 @@ spec:
     - name: config-volume
       configMap:
         name: tlsperf-web-dev-configmap
-  # serviceAccountName: tlsperf-admin
+  serviceAccountName: tlsperf-admin
   containers:
     - name: tlsperf-web-dev
       image: tlspack/tlsperf:latest

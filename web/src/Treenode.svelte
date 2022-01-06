@@ -1,4 +1,6 @@
 <script>
+  import { link } from "svelte-routing";
+
   import { slide } from 'svelte/transition';
   import { fly } from 'svelte/transition';
   import ClosedIcon from './ClosedIcon.svelte';
@@ -47,14 +49,13 @@ import { get } from 'svelte/store';
         class:selected="{$selectedNode==node.Name}">
     {#if node.children}
       {#if !node.expanded}
-        <ClosedIcon />
+        <ClosedIcon /> {node.Name}
       {:else}
-        <OpenedIcon />
+        <OpenedIcon /> {node.Name}
       {/if}
     {:else}
-      <CircleIcon />
+      <CircleIcon /> <a href="/node/{node.Name}" use:link>{node.Name}</a>
     {/if}
-    {node.Name}
 </li>
 
 {#if showMenu && node.MenuItems}
