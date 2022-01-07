@@ -2,6 +2,7 @@
 	import { Router, Route } from "svelte-routing";
 	import Home from "./routes/Home.svelte";
 	import Node from "./routes/Node.svelte";
+	import Profile from "./routes/Profile.svelte";
 	
 	import Navbar from "./Navbar.svelte";
 	import Sidebar from "./Sidebar.svelte";
@@ -20,10 +21,9 @@
 		<div class="container">
 
 			<Router url="{url}">
-				<div>
-				  <Route path="node/:id" component="{Node}" />
-				  <Route path="/"><Home /></Route>
-				</div>
+				<Route path="node/*nodeName" component={Node}/>
+				<Route path="profile/*profileName" component={Profile}/>
+				<Route path="/"><Home /></Route>
 			  </Router>
 
 

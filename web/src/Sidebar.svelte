@@ -1,32 +1,13 @@
 <script>
     import Treenode from "./Treenode.svelte";
 
-    let NodesMenuItems = ['New Node ...', 'Add Folder ...'];
-	let ProfilesMenuItems = ['New Profile ...', 'Add Folder ...'];
+    let NodesMenuItems = ['New Node ...'];
+	let ProfilesMenuItems = ['New Profile ...'];
 	let ProfileMenuItems = ['Clone Profile ...'];
-
-	// let nodes = {
-	// 	Name: 'Traffic Nodes',
-	// 	expanded: false,
-    //     MenuItems: NodesMenuItems,
-    //     children: [{Name: 'Node-1'}
-    //             , {Name: 'Node-2'}
-    //             , {Name: 'Node-3'}]
-	// };
-
-	// let profiles = {
-    //     Name: 'Traffic Profiles',
-    //     expanded: false,
-    //     MenuItems: ProfilesMenuItems,
-	// 	children: [{Name: 'AES128-SHA1-Client', MenuItems: ProfileMenuItems}
-    //             , {Name: 'TlsClient2', MenuItems: ProfileMenuItems}
-    //             , {Name: 'TlsClient3', MenuItems: ProfileMenuItems}]
-
-	// };
 
 	async function getNodes() {
 		const nodes = await fetch ('/api/nodes');
-        const nodesData = {Name: 'Traffic Nodes', expanded: false, MenuItems: ['Error!'], children: []};
+        const nodesData = {Name: 'Traffic Nodes', expanded: true, MenuItems: ['Error!'], children: []};
 
         if (nodes.ok) {
             const nodeList = await nodes.json();
@@ -34,7 +15,7 @@
             nodesData.MenuItems = NodesMenuItems;
 
             for (const node of nodeList) {
-                nodesData.children.push({Name: node.Name});
+                nodesData.children.push({Name: node.Name, UrlPath: '/node'});
             }
         }
         return nodesData;
@@ -42,7 +23,7 @@
 
 	async function getProfiles() {
 		const profiles = await fetch ('/api/profiles');
-        const profilesData = {Name: 'Traffic Profiles', expanded: false, MenuItems: ['Error!'], children: []};
+        const profilesData = {Name: 'Traffic Profiles', expanded: true, MenuItems: ['Error!'], children: []};
 
         if (profiles.ok) {
             const profileList = await profiles.json();
@@ -50,7 +31,7 @@
             profilesData.MenuItems = ProfilesMenuItems;
 
             for (const profile of profileList) {
-                profilesData.children.push({Name: profile.Name, MenuItems: ProfileMenuItems});
+                profilesData.children.push({Name: profile.Name, MenuItems: ProfileMenuItems, UrlPath: '/profile'});
             }
         }
         

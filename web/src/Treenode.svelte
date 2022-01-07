@@ -8,7 +8,7 @@
   import CircleIcon from './CircleIcon.svelte';
   import { clickOutside } from './clickOutside.js';
   import { selectedNode } from './store.js';
-import { get } from 'svelte/store';
+  import { get } from 'svelte/store';
 
   export let node;
   export let level=1;
@@ -34,9 +34,6 @@ import { get } from 'svelte/store';
       showMenu = false;
   }
 
-  function dummy(e){
-
-  }
 </script>
 
 
@@ -54,7 +51,7 @@ import { get } from 'svelte/store';
         <OpenedIcon /> {node.Name}
       {/if}
     {:else}
-      <CircleIcon /> <a href="/node/{node.Name}" use:link>{node.Name}</a>
+      <CircleIcon /> <a href="{node.UrlPath}/{node.Name}" use:link>{node.Name}</a>
     {/if}
 </li>
 
