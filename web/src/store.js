@@ -1,6 +1,10 @@
 import {writable} from 'svelte/store';
 
-export const selectedNode = writable('');
+export const selectedNode = writable({
+    Name: '',
+    ParentName: '', 
+    Type: ''
+});
 
 export const nodeTreeRoot = writable({
     Name: 'Traffic Nodes',
