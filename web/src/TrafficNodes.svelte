@@ -63,10 +63,10 @@
     let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.Name);
 
     nodeGroup.children.push({
-                              Name: 'Node5',
+                              Name: 'Node7',
                             });
     
-    $selectedNode.Name = 'Node5';
+    $selectedNode.Name = 'Node7';
     $selectedNode.ParentName = nodeGroup.Name;
     $selectedNode.Type = 'Node';
 
@@ -106,9 +106,11 @@
             on:addNode={() => showAddNode = true}
             />
 
-            {#each child.children as grandChild}
-              <Treenode node={grandChild} pnode={child} level={3} type='Node'/>
-            {/each}
+            {#if child.expanded && child.children}
+              {#each child.children as grandChild}
+                <Treenode node={grandChild} pnode={child} level={3} type='Node'/>
+              {/each}
+            {/if}
 
       {/each}
     {/if}

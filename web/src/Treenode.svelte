@@ -58,7 +58,7 @@
         style="padding-left:{level*1}rem" 
         transition:slide 
         on:contextmenu|preventDefault={onContextMenu}
-        class:selected="{$selectedNode.Name==node.Name && $selectedNode.ParentName==pnode.Name}">
+        class:selected="{$selectedNode.Name==node.Name && $selectedNode.ParentName==pnode.Name && $selectedNode.Type==type}">
     {#if node.children}
       {#if !node.expanded}
         <ClosedIcon /> {node.Name}
