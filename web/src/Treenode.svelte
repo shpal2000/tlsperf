@@ -19,6 +19,11 @@
 
   const dispatch = createEventDispatcher ();
 
+  function onDispatch(msg, details) {
+    dispatch (msg, details);
+    showMenu = false;
+  }
+
   function onClick(e) {
     selectedNode.update(name => node.Name);
     dispatch ('expandToggle', {});
@@ -39,12 +44,10 @@
 </script>
 
 
-<li use:clickOutside
-        on:click={onClick} 
+<li on:click={onClick} 
         style="padding-left:{level*1}rem" 
         transition:slide 
         on:contextmenu|preventDefault={onContextMenu}
-        on:click_outside={onClickOutside}
         class:selected="{$selectedNode==node.Name}">
     {#if node.children}
       {#if !node.expanded}
@@ -58,13 +61,14 @@
 </li>
 
 {#if showMenu && node.MenuItems}
-  <div class="dropdown is-active" style="position:fixed; left: {menuX}px; top: {menuY}px" in:fly="{{y:100, duration:500}}">
+  <div use:clickOutside on:click_outside={onClickOutside} class="dropdown is-active" style="position:fixed; left: {menuX}px; top: {menuY}px" in:fly="{{y:100, duration:500}}">
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
       <div class="dropdown-content">
         {#each node.MenuItems as menuItem}
-          <a href="#" class="dropdown-item">
+          <div class="dropdown-item"
+              on:click={() => onDispatch('addNodeGroup', {})}>
             {menuItem}
-          </a>
+          </div>
         {/each}
       </div>
     </div>

@@ -24,6 +24,7 @@ v1Api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
 DB_CSTRING = 'localhost:27017'
 DB_NAME = 'tlsperf_db'
 REALTIME_STATS = 'tlsperf_realtime_stats'
+NODE_GROUPS= 'tlsperf_node_groups'
 
 stats_ticks = 60
 
@@ -41,6 +42,28 @@ async def api_get_nodes(request):
     node_items = v1Api.list_node().items
     node_list= map(lambda n : {'Name' : n.metadata.name}, node_items)
     return web.json_response(list(node_list))
+
+async def api_get_node_groups(request):
+    mongoClient = MongoClient(DB_CSTRING)
+    db = mongoClient[DB_NAME]
+    node_group_col = db[NODE_GROUPS]
+    node_groups = node_group_col.find({})
+    if not node_groups:
+        return []
+    return web.json_response(list(node_groups))
+
+async def api_add_node_group(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        node_group_col = db[NODE_GROUPS]
+        node_group_col.insert_one(r_json) 
+        return web.json_response({'status' : 0})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
 
 async def api_get_profiles(request):
     return web.json_response([{'Name': 'TlsClient-1'}, {'Name': 'TlsClient-2'}, {'Name': 'TlsClient-4'}])
@@ -63,6 +86,14 @@ app.add_routes([web.static('/assets', 'public/assets')])
 app.add_routes([web.route('get'
                             , '/api/nodes'
                             , api_get_nodes)])
+
+app.add_routes([web.route('get'
+                            , '/api/node_groups'
+                            , api_get_node_groups)])
+
+app.add_routes([web.route('post'
+                            , '/api/node_groups'
+                            , api_add_node_group)])
 
 app.add_routes([web.route('get'
                             , '/api/profiles'
