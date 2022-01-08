@@ -1,6 +1,6 @@
 <script>
   import { link } from "svelte-routing";
-  import { createEventDispatcher } from "svelte";
+
   import { slide } from 'svelte/transition';
   import { fly } from 'svelte/transition';
   import ClosedIcon from './ClosedIcon.svelte';
@@ -11,37 +11,20 @@
   import { get } from 'svelte/store';
 
   export let node;
-  export let pnode;
-  export let type;
-  export let level;
+  export let level=1;
 
   let menuX;
   let menuY;
   let showMenu;
 
-
-
-  const dispatch = createEventDispatcher ();
-
-  function onDispatch(msg, details) {
-    dispatch (msg, details);
-    showMenu = false;
-  }
-
   function onClick(e) {
-    $selectedNode.Name = node.Name;
-    $selectedNode.ParentName = pnode.Name;
-    $selectedNode.Type = type;
-  
-    dispatch ('expandToggle', {});
+    selectedNode.update(name => node.Name);
+    node.expanded = !node.expanded;
     showMenu = false;
   }
 
   function onContextMenu(e) {
-    $selectedNode.Name = node.Name;
-    $selectedNode.ParentName = pnode.Name;
-    $selectedNode.Type = type;
-
+    selectedNode.update(name => node.Name);
     showMenu = !showMenu;
     menuX = e.clientX;
     menuY = e.clientY;
@@ -54,11 +37,13 @@
 </script>
 
 
-<li on:click={onClick} 
+<li use:clickOutside
+        on:click={onClick} 
         style="padding-left:{level*1}rem" 
         transition:slide 
         on:contextmenu|preventDefault={onContextMenu}
-        class:selected="{$selectedNode.Name==node.Name && $selectedNode.ParentName==pnode.Name && $selectedNode.Type==type}">
+        on:click_outside={onClickOutside}
+        class:selected="{$selectedNode==node.Name}">
     {#if node.children}
       {#if !node.expanded}
         <ClosedIcon /> {node.Name}
@@ -71,21 +56,24 @@
 </li>
 
 {#if showMenu && node.MenuItems}
-  <div use:clickOutside on:click_outside={onClickOutside} class="dropdown is-active" style="position:fixed; left: {menuX}px; top: {menuY}px" in:fly="{{y:100, duration:500}}">
+  <div class="dropdown is-active" style="position:fixed; left: {menuX}px; top: {menuY}px" in:fly="{{y:100, duration:500}}">
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
       <div class="dropdown-content">
         {#each node.MenuItems as menuItem}
-          <div class="dropdown-item"
-              on:click={() => onDispatch(menuItem.Event, menuItem.EventCtx)}>
-            {menuItem.Name}
-          </div>
+          <a href="#" class="dropdown-item">
+            {menuItem}
+          </a>
         {/each}
       </div>
     </div>
   </div>
 {/if}
 
-
+{#if node.expanded && node.children}
+    {#each node.children as child}
+        <svelte:self node={child} level={level+1} />
+    {/each}
+{/if}
 
 <style>
 

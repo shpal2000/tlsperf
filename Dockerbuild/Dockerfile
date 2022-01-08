@@ -6,7 +6,8 @@ ARG USER_GID=$USER_UID
 RUN apt-get update \
     && apt-get -yq install apt-utils \
     && apt-get -yq install mongodb \
-    #
+    && apt-get -yq install npm \
+    && apt-get -yq install tmux \
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
     && apt-get -yq install git iproute2 procps lsb-release \
     # Install C++ tools
@@ -42,7 +43,7 @@ RUN apt-get update \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && sudo ldconfig -v \
     #
-    && pip3 install requests pytest aiohttp pymongo \
+    && pip3 install requests pytest aiohttp pymongo kubernetes \
     # Clean up
     && apt-get autoremove -yq \
     && apt-get clean -yq \
@@ -53,8 +54,8 @@ COPY ./*.so /usr/local/tlsperf/lib/
 RUN echo "/usr/local/tlsperf/lib" > /etc/ld.so.conf.d/tlsperf.conf
 RUN ldconfig -v
 COPY ./*.exe /usr/local/bin/
+RUN mkdir -p /tlsperf_util/
 RUN mkdir -p /tlsperf_web/
 COPY ./web_deploy/ /tlsperf_web/
-
-
+COPY ./tmux.conf /tlsperf_util/
 ENV DEBIAN_FRONTEND=

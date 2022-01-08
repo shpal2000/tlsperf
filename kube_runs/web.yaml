@@ -31,7 +31,7 @@ spec:
     - name: config-volume
       configMap:
         name: tlsperf-web-configmap
-  serviceAccountName: tlsperf-admin
+  # serviceAccountName: tlsperf-admin
   containers:
     - name: tlsperf-web
       image: tlspack/tlsperf:latest
