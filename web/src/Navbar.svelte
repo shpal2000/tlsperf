@@ -1,4 +1,6 @@
 <script>
+	import { link } from "svelte-routing";
+	
 	let isActive=false;
 </script>
 
@@ -26,6 +28,7 @@
 		<div class="navbar-end">
 			<div class="navbar-item">
 				<div class="buttons">
+					<button class="button is-small is-dark"><a href="/" use:link>Home</a></button>
 					<button class="button is-light is-small is-outlined">Sign in</button>
 					<button class="button is-light is-small is-outlined">Sign up</button>
 				</div>

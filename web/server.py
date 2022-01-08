@@ -7,9 +7,24 @@ import subprocess
 import time
 from pymongo import MongoClient
 
+import kubernetes.client
+
+with open ('/var/run/secrets/kubernetes.io/serviceaccount/token') as f:
+    k8s_token = f.read()
+
+k8s_config = kubernetes.client.Configuration()
+k8s_config.api_key['authorization'] = k8s_token
+k8s_config.api_key_prefix['authorization'] = 'Bearer'
+k8s_config.host='https://kubernetes.default.svc'
+k8s_config.ssl_ca_cert='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+v1Api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
+
+
+
 DB_CSTRING = 'localhost:27017'
 DB_NAME = 'tlsperf_db'
 REALTIME_STATS = 'tlsperf_realtime_stats'
+NODE_GROUPS= 'tlsperf_node_groups'
 
 stats_ticks = 60
 
@@ -24,7 +39,31 @@ async def index_handle(request):
     return web.FileResponse('public/index.html')
 
 async def api_get_nodes(request):
-    return web.json_response([{'Name': 'Node-1'}, {'Name': 'Node-2'}, {'Name': 'Node-4'}])
+    node_items = v1Api.list_node().items
+    node_list= map(lambda n : {'Name' : n.metadata.name}, node_items)
+    return web.json_response(list(node_list))
+
+async def api_get_node_groups(request):
+    mongoClient = MongoClient(DB_CSTRING)
+    db = mongoClient[DB_NAME]
+    node_group_col = db[NODE_GROUPS]
+    node_groups = node_group_col.find({})
+    if not node_groups:
+        return []
+    return web.json_response(list(node_groups))
+
+async def api_add_node_group(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        node_group_col = db[NODE_GROUPS]
+        node_group_col.insert_one(r_json) 
+        return web.json_response({'status' : 0})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
 
 async def api_get_profiles(request):
     return web.json_response([{'Name': 'TlsClient-1'}, {'Name': 'TlsClient-2'}, {'Name': 'TlsClient-4'}])
@@ -47,6 +86,14 @@ app.add_routes([web.static('/assets', 'public/assets')])
 app.add_routes([web.route('get'
                             , '/api/nodes'
                             , api_get_nodes)])
+
+app.add_routes([web.route('get'
+                            , '/api/node_groups'
+                            , api_get_node_groups)])
+
+app.add_routes([web.route('post'
+                            , '/api/node_groups'
+                            , api_add_node_group)])
 
 app.add_routes([web.route('get'
                             , '/api/profiles'
