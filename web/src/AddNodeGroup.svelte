@@ -1,6 +1,15 @@
 <script>
     export let isActive;
 
+    import { createEventDispatcher } from "svelte";
+
+    const dispatch = createEventDispatcher ();
+
+    function onAddNodeGroupSuccess () {
+        dispatch ('addNodeGroupSuccess', {});
+        isActive=false;
+    }
+
 </script>
 
 <div class="modal {isActive ? 'is-active' : ''}">
@@ -14,7 +23,7 @@
         Node Group Name: --
       </section>
       <footer class="modal-card-foot">
-        <button class="button is-success" on:click={() => isActive=false}>Add</button>
+        <button class="button is-success" on:click={onAddNodeGroupSuccess}>Add</button>
         <button class="button" on:click={() => isActive=false}>Cancel</button>
       </footer>
     </div>

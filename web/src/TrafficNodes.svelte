@@ -22,7 +22,7 @@
 
 	async function getNodeGroups() {
 
-    let menuItems = ['Add Group ...'];
+    let menuItems = [{'Name': 'Add Group ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
 
 		const nodeGroups = await fetch ('/api/node_groups');
 
@@ -57,12 +57,14 @@
 
     {#if $nodeTreeRoot.expanded && $nodeTreeRoot.children}
       {#each $nodeTreeRoot.children as child}
-          <Treenode node={child} level={2}/>
+          <Treenode node={child} 
+            level={2}
+            />
       {/each}
     {/if}
   </ul>
   
-  <AddNodeGroup bind:isActive={showAddNodeGroup}/>
+  <AddNodeGroup bind:isActive={showAddNodeGroup} on:addNodeGroupSuccess={() => $nodeTreeRoot.children = $nodeTreeRoot.children + [{Name: 'Group1'}]}/>
 
 {/await}
 

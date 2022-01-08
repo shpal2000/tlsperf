@@ -66,8 +66,8 @@
       <div class="dropdown-content">
         {#each node.MenuItems as menuItem}
           <div class="dropdown-item"
-              on:click={() => onDispatch('addNodeGroup', {})}>
-            {menuItem}
+              on:click={() => onDispatch(menuItem.Event, menuItem.EventCtx)}>
+            {menuItem.Name}
           </div>
         {/each}
       </div>
