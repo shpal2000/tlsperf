@@ -11,11 +11,15 @@
   import { get } from 'svelte/store';
 
   export let node;
-  export let level=1;
+  export let pnode;
+  export let type;
+  export let level;
 
   let menuX;
   let menuY;
   let showMenu;
+
+
 
   const dispatch = createEventDispatcher ();
 
@@ -25,13 +29,19 @@
   }
 
   function onClick(e) {
-    selectedNode.update(name => node.Name);
+    $selectedNode.Name = node.Name;
+    $selectedNode.ParentName = pnode.Name;
+    $selectedNode.Type = type;
+  
     dispatch ('expandToggle', {});
     showMenu = false;
   }
 
   function onContextMenu(e) {
-    selectedNode.update(name => node.Name);
+    $selectedNode.Name = node.Name;
+    $selectedNode.ParentName = pnode.Name;
+    $selectedNode.Type = type;
+
     showMenu = !showMenu;
     menuX = e.clientX;
     menuY = e.clientY;
@@ -48,7 +58,7 @@
         style="padding-left:{level*1}rem" 
         transition:slide 
         on:contextmenu|preventDefault={onContextMenu}
-        class:selected="{$selectedNode==node.Name}">
+        class:selected="{$selectedNode.Name==node.Name && $selectedNode.ParentName==pnode.Name && $selectedNode.Type==type}">
     {#if node.children}
       {#if !node.expanded}
         <ClosedIcon /> {node.Name}

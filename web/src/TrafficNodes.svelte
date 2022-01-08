@@ -43,20 +43,36 @@
   function onAddNodeGroupSuccess () {
     let menuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
 
-    $nodeTreeRoot.children = [...$nodeTreeRoot.children
-                              , {
-                                  Name: 'Group1', 
+    $nodeTreeRoot.children.push({
+                                  Name: 'Group2', 
                                   children: [], 
                                   expanded: false,
                                   MenuItems: menuItems
-                                }];
+                                });
 
-    selectedNode.update(name => 'Group1');
+    $selectedNode.Name = 'Group2';
+    $selectedNode.ParentName = 'Traffic Nodes';
+    $selectedNode.Type = 'NodeGroup';
+
     $nodeTreeRoot.expanded = true;
+
+    $nodeTreeRoot.children = $nodeTreeRoot.children;
   }
 
   function onAddNodeSuccess () {
+    let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.Name);
 
+    nodeGroup.children.push({
+                              Name: 'Node7',
+                            });
+    
+    $selectedNode.Name = 'Node7';
+    $selectedNode.ParentName = nodeGroup.Name;
+    $selectedNode.Type = 'Node';
+
+    nodeGroup.expanded = true;
+
+    $nodeTreeRoot.children = $nodeTreeRoot.children;
   }
 
   let nodeGroupsPromise = getNodeGroups();
@@ -72,18 +88,30 @@
   <ul>
     <Treenode 
         node={$nodeTreeRoot}
-        level={1} 
+        pnode={$nodeTreeRoot}
+        level={1}
+        type='NodeTreeRoot'
         on:expandToggle={() => $nodeTreeRoot.expanded = !$nodeTreeRoot.expanded}
         on:addNodeGroup={() => showAddNodeGroup = true}
       />
 
     {#if $nodeTreeRoot.expanded && $nodeTreeRoot.children}
       {#each $nodeTreeRoot.children as child}
-          <Treenode node={child} 
+          <Treenode 
+            node={child}
+            pnode={$nodeTreeRoot}
             level={2}
+            type='NodeGroup'
             on:expandToggle={() => child.expanded = !child.expanded}
             on:addNode={() => showAddNode = true}
             />
+
+            {#if child.expanded && child.children}
+              {#each child.children as grandChild}
+                <Treenode node={grandChild} pnode={child} level={3} type='Node'/>
+              {/each}
+            {/if}
+
       {/each}
     {/if}
   </ul>
@@ -92,7 +120,7 @@
       on:addNodeGroupSuccess={onAddNodeGroupSuccess}/>
   
   <AddNode bind:isActive={showAddNode} 
-  on:addNodeSuccess={onAddNodeSuccess}/>
+    on:addNodeSuccess={onAddNodeSuccess}/>
 
 {/await}
 

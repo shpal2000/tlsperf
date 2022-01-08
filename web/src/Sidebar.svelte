@@ -1,6 +1,6 @@
 <script>
 
-    import TrafficProfiles from "./TrafficProfiles.svelte";
+    // import TrafficProfiles from "./TrafficProfiles.svelte";
     import TrafficNodes from "./TrafficNodes.svelte";
 </script>
 
@@ -8,7 +8,7 @@
 
     <TrafficNodes />
 
-    <TrafficProfiles />
+    <!-- <TrafficProfiles /> -->
 
 </div>
 
