@@ -1,7 +1,9 @@
 <script>
   import { nodeTreeRoot } from './store.js';
+  import { selectedNode } from './store.js';
   import Treenode from "./Treenode.svelte";
   import AddNodeGroup from "./AddNodeGroup.svelte";
+  import AddNode from "./AddNode.svelte";
 
 	// async function getNodes() {
 	// 	const nodes = await fetch ('/api/nodes');
@@ -38,8 +40,28 @@
         return 0;
 	}
 
+  function onAddNodeGroupSuccess () {
+    let menuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
+
+    $nodeTreeRoot.children = [...$nodeTreeRoot.children
+                              , {
+                                  Name: 'Group1', 
+                                  children: [], 
+                                  expanded: false,
+                                  MenuItems: menuItems
+                                }];
+
+    selectedNode.update(name => 'Group1');
+    $nodeTreeRoot.expanded = true;
+  }
+
+  function onAddNodeSuccess () {
+
+  }
+
   let nodeGroupsPromise = getNodeGroups();
   let showAddNodeGroup = false;
+  let showAddNode = false;
 
 </script>
 
@@ -59,12 +81,18 @@
       {#each $nodeTreeRoot.children as child}
           <Treenode node={child} 
             level={2}
+            on:expandToggle={() => child.expanded = !child.expanded}
+            on:addNode={() => showAddNode = true}
             />
       {/each}
     {/if}
   </ul>
   
-  <AddNodeGroup bind:isActive={showAddNodeGroup} on:addNodeGroupSuccess={() => $nodeTreeRoot.children = $nodeTreeRoot.children + [{Name: 'Group1'}]}/>
+  <AddNodeGroup bind:isActive={showAddNodeGroup} 
+      on:addNodeGroupSuccess={onAddNodeGroupSuccess}/>
+  
+  <AddNode bind:isActive={showAddNode} 
+  on:addNodeSuccess={onAddNodeSuccess}/>
 
 {/await}
 
