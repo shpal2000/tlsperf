@@ -13,19 +13,36 @@
 </script>
 
 <div class="modal {isActive ? 'is-active' : ''}">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-      <header class="modal-card-head">
-        <p class="modal-card-title">Modal title</p>
-        <button class="delete" aria-label="close"></button>
+    <div class="modal-card box">
+      <header>
+        <p class="modal-card-title">Add Node Group</p>
       </header>
       <section class="modal-card-body">
-        Node Group Name: --
+        <div class="field">
+          <!-- svelte-ignore a11y-label-has-associated-control -->
+          <label class="label">Name</label>
+          <div class="control">
+            <input class="input" type="text" placeholder="Text input">
+          </div>
+        </div>
+
+        <div class="field">
+          <!-- svelte-ignore a11y-label-has-associated-control -->
+          <label class="label">Notes</label>
+          <div class="control">
+            <textarea class="textarea" placeholder="Textarea"></textarea>
+          </div>
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button is-info" on:click={onAddNodeGroupSuccess}>Add</button>
+          </div>
+          <div class="control">
+            <button class="button is-info is-light" on:click={() => isActive=false}>Cancel</button>
+          </div>
+        </div>
       </section>
-      <footer class="modal-card-foot">
-        <button class="button is-success" on:click={onAddNodeGroupSuccess}>Add</button>
-        <button class="button" on:click={() => isActive=false}>Cancel</button>
-      </footer>
     </div>
 </div>
 
