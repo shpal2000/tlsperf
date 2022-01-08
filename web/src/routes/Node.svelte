@@ -1,5 +1,5 @@
 <script>
-    import { sideStore } from '../store';
+    import { nodeTreeRoot } from '../store';
     import { selectedNode } from '../store.js';
 
     import { onMount } from "svelte";
@@ -8,7 +8,7 @@
 
     onMount ( () => {
         selectedNode.update(name => nodeName);
-        $sideStore.NodeRoot.expanded = true;
+        $nodeTreeRoot.expanded = true;
     });
 
 </script>

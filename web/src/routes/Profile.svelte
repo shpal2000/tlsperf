@@ -2,7 +2,7 @@
     import { Route } from "svelte-routing";
     import { onMount } from "svelte";
     import { selectedNode } from '../store.js';
-    import { sideStore } from '../store';
+    import { profileTreeRoot } from '../store';
     
 
 
@@ -10,7 +10,7 @@
 
     onMount ( () => {
         selectedNode.update(name => profileName);
-        $sideStore.ProfileRoot.expanded = true;
+        $profileTreeRoot.expanded = true;
     });
     
 </script>
