@@ -1,6 +1,6 @@
 <script>
   import { link } from "svelte-routing";
-  import { createEventDispatcher } from "svelte";
+
   import { slide } from 'svelte/transition';
   import { fly } from 'svelte/transition';
   import ClosedIcon from './ClosedIcon.svelte';
@@ -17,11 +17,9 @@
   let menuY;
   let showMenu;
 
-  const dispatch = createEventDispatcher ();
-
   function onClick(e) {
     selectedNode.update(name => node.Name);
-    dispatch ('expandToggle', {});
+    node.expanded = !node.expanded;
     showMenu = false;
   }
 
@@ -71,7 +69,11 @@
   </div>
 {/if}
 
-
+{#if node.expanded && node.children}
+    {#each node.children as child}
+        <svelte:self node={child} level={level+1} />
+    {/each}
+{/if}
 
 <style>
 

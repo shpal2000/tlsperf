@@ -1,5 +1,7 @@
 <script>
-    import Treenode from "./Treenode.svelte";
+    import { sideStore } from "./store";
+    import TrafficProfiles from "./TrafficProfiles.svelte";
+    import TrafficNodes from "./TrafficNodes.svelte";
 
     let NodesMenuItems = ['New Node ...'];
 	let ProfilesMenuItems = ['New Profile ...'];
@@ -7,35 +9,33 @@
 
 	async function getNodes() {
 		const nodes = await fetch ('/api/nodes');
-        const nodesData = {Name: 'Traffic Nodes', expanded: true, MenuItems: ['Error!'], children: []};
 
         if (nodes.ok) {
             const nodeList = await nodes.json();
             
-            nodesData.MenuItems = NodesMenuItems;
+            $sideStore.NodeRoot.MenuItems = NodesMenuItems;
 
             for (const node of nodeList) {
-                nodesData.children.push({Name: node.Name, UrlPath: '/node'});
+                $sideStore.NodeRoot.children.push({Name: node.Name, UrlPath: '/node'});
             }
         }
-        return nodesData;
+        return 0;
 	}
 
 	async function getProfiles() {
 		const profiles = await fetch ('/api/profiles');
-        const profilesData = {Name: 'Traffic Profiles', expanded: true, MenuItems: ['Error!'], children: []};
 
         if (profiles.ok) {
             const profileList = await profiles.json();
             
-            profilesData.MenuItems = ProfilesMenuItems;
+            $sideStore.ProfileRoot.MenuItems = ProfilesMenuItems;
 
             for (const profile of profileList) {
-                profilesData.children.push({Name: profile.Name, MenuItems: ProfileMenuItems, UrlPath: '/profile'});
+                $sideStore.ProfileRoot.children.push({Name: profile.Name, MenuItems: ProfileMenuItems, UrlPath: '/profile'});
             }
         }
         
-        return profilesData;
+        return 0;
 	}
 
     let nodesPromise = getNodes();
@@ -47,19 +47,20 @@
 
     {#await nodesPromise}
         <p>Nodes waiting ...</p>
-    {:then nodes} 
+    {:then} 
         <ul>
-            <Treenode node={nodes}/>
+            <TrafficNodes />
         </ul>   
     {/await}
 
 
     {#await profilesPromise}
         <p>Profiles waiting ...</p>
-    {:then profiles}
+    {:then}
         <ul>
-            <Treenode node={profiles}/>
+            <TrafficProfiles />
         </ul>   
+
     {/await}
 
 </div>
