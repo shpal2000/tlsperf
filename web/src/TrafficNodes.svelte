@@ -8,43 +8,28 @@
   let rootMenuItems = [{'Name': 'Add Group ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
   let groupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
 
-  // async function getNodes() {
-	// 	const nodes = await fetch ('/api/nodes');
+  async function getNodeGroups() {
 
-  //       if (nodes.ok) {
-  //           const nodeList = await nodes.json();
-            
-  //           $nodeTreeRoot.MenuItems = menuItems;
+    const nodeGroups = await fetch ('/api/node_groups');
+    const nodes = await fetch ('/api/nodes');
 
-  //           for (const node of nodeList) {
-  //               $nodeTreeRoot.children.push({Name: node.Name, UrlPath: '/node'});
-  //           }
-  //       }
-  //       return 0;
-	// }
+      if (nodeGroups.ok && nodes.ok) {
+        const nodeGroupList = await nodeGroups.json();
+        const nodeList = await nodes.json();
+        
+        $nodeTreeRoot.MenuItems = rootMenuItems;
 
-  // let nodesPromise = getNodes();
+        for (const nodeGroup of nodeGroupList) {
+          const nodeGroupNodeList = nodeList.filter(n => n.NodeGroup==nodeGroup.Name);
 
-	async function getNodeGroups() {
+          nodeGroup.expanded = false;
+          nodeGroup.children = nodeGroupNodeList;
+          nodeGroup.MenuItems = groupMenuItems;
 
-
-		const nodeGroups = await fetch ('/api/node_groups');
-
-        if (nodeGroups.ok) {
-            const nodeGroupList = await nodeGroups.json();
-            
-            $nodeTreeRoot.MenuItems = rootMenuItems;
-
-            for (const nodeGroup of nodeGroupList) {
-                $nodeTreeRoot.children.push({
-                                            Name: nodeGroup.Name,
-                                            children: [],
-                                            expanded: false,
-                                            MenuItems: groupMenuItems
-                                          });
-            }
+          $nodeTreeRoot.children.push(nodeGroup);
         }
-        return 0;
+      }
+      return 0;
 	}
 
   function onAddNodeGroupSuccess (event) {
@@ -65,14 +50,15 @@
     $nodeTreeRoot.children = $nodeTreeRoot.children;
   }
 
-  function onAddNodeSuccess () {
+  function onAddNodeSuccess (event) {
+
     let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.Name);
 
     nodeGroup.children.push({
-                              Name: 'Node7',
+                              Name: event.detail.Name,
                             });
     
-    $selectedNode.Name = 'Node7';
+    $selectedNode.Name = event.detail.Name;
     $selectedNode.ParentName = nodeGroup.Name;
     $selectedNode.Type = 'Node';
 

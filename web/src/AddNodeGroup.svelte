@@ -2,7 +2,6 @@
     export let isActive;
     let Name = '';
     let Notes = '';
-    let Results = '';
 
     import { createEventDispatcher } from "svelte";
 
