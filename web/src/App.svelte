@@ -1,5 +1,6 @@
 <script>
 	import { nodeTreeRoot } from './store.js';
+	import { profileTreeRoot } from './store.js';
 
 	import { Router, Route } from "svelte-routing";
 
@@ -12,18 +13,24 @@
 
 	export let url = "";
 
-	let TrafficNodeMenuItems = [{'Name': 'Add Group ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
-	let NodegroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
+	let NodeGroupRootMenuItems = [{'Name': 'Add Group ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
+	let NodeGroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
+
+	let ProfileGroupRootMenuItems = [{'Name': 'Add Group ...', 'Event': 'addProfileGroup', 'EventCtx': {}}];
+	let ProfileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}];
 
 	async function getStorePopulated() {
 		const nodeGroups = await fetch ('/api/node_groups');
 		const nodes = await fetch ('/api/nodes');
 
+		const profileGroups = await fetch ('/api/profile_groups');
+		const profiles = await fetch ('/api/profiles');
+
 		if (nodeGroups.ok && nodes.ok) {
 			const nodeGroupList = await nodeGroups.json();
 			const nodeList = await nodes.json();
 
-			$nodeTreeRoot.MenuItems = TrafficNodeMenuItems;
+			$nodeTreeRoot.MenuItems = NodeGroupRootMenuItems;
 			
 			for (const nodeGroup of nodeGroupList) {
 				const nodeGroupNodeList = nodeList.filter(n => n.NodeGroup==nodeGroup.Name);
@@ -31,12 +38,31 @@
 
 				nodeGroup.expanded = false;
 				nodeGroup.children = nodeGroupNodeList2;
-				nodeGroup.MenuItems = NodegroupMenuItems;
+				nodeGroup.MenuItems = NodeGroupMenuItems;
 
-				nodeGroup.children = nodeGroupNodeList2
 				$nodeTreeRoot.children.push(nodeGroup);
 			}
 		}
+
+		if (profileGroups.ok && profiles.ok) {
+			const profileGroupList = await profileGroups.json();
+			const profileList = await profiles.json();
+
+			$profileTreeRoot.MenuItems = ProfileGroupRootMenuItems;
+			
+			for (const profileGroup of profileGroupList) {
+				const profileGroupNodeList = profileList.filter(n => n.NodeGroup==profileGroup.Name);
+          		const profileGroupNodeList2 = profileGroupNodeList.map (n => ({...n, UrlPath: '/profile/'+profileGroup.Name+'/' + n.Name}))
+
+				profileGroup.expanded = false;
+				profileGroup.children = profileGroupNodeList2;
+				profileGroup.MenuItems = ProfileGroupMenuItems;
+
+				$profileTreeRoot.children.push(profileGroup);
+			}
+		}
+
+
 		return 0;
 	}
 

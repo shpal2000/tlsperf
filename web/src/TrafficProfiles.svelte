@@ -1,49 +1,80 @@
 <script>
   import { profileTreeRoot } from './store.js';
+  import { selectedNode } from './store.js';
+  import { navigate } from "svelte-routing";
   import Treenode from "./Treenode.svelte";
+  import AddProfileGroup from "./AddProfileGroup.svelte";
+  import AddProfile from "./AddProfile.svelte";
 
-  let ProfilesMenuItems = ['New Profile ...'];
-	let ProfileMenuItems = ['Clone Profile ...'];
+  function onAddProfileGroupSuccess (event) {
+    let groupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}];
 
-	async function getProfiles() {
-		const profiles = await fetch ('/api/profiles');
+    $profileTreeRoot.children.push({
+                                  Name: event.detail.Name, 
+                                  children: [],
+                                  expanded: false,
+                                  MenuItems: groupMenuItems
+                                });
 
-        if (profiles.ok) {
-            const profileList = await profiles.json();
-            
-            $profileTreeRoot.MenuItems = ProfilesMenuItems;
+    $selectedNode.Name = event.detail.Name;
+    $selectedNode.ParentName = 'Traffic Profiles';
+    $selectedNode.Type = 'ProfileGroup';
 
-            for (const profile of profileList) {
-                $profileTreeRoot.children.push({Name: profile.Name, MenuItems: ProfileMenuItems, UrlPath: '/profile'});
-            }
-        }
-        
-        return 0;
-	}
+    $profileTreeRoot.expanded = true;
 
-  let profilesPromise = getProfiles();
+    $profileTreeRoot.children = $profileTreeRoot.children;
+  }
 
+  function onAddProfileSuccess (event) {
+
+    let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==$selectedNode.Name);
+    let urlPath = '/profile/'+profileGroup.Name+'/' + event.detail.Name
+
+    profileGroup.children.push({
+                              Name: event.detail.Name,
+                              UrlPath: urlPath
+                            });
+    
+    $selectedNode.Name = event.detail.Name;
+    $selectedNode.ParentName = profileGroup.Name;
+    $selectedNode.Type = 'Profile';
+
+    profileGroup.expanded = true;
+
+    $profileTreeRoot.children = $profileTreeRoot.children;
+
+    navigate(urlPath, {replace: true});
+  }
+  
+  let showAddProfileGroup = false;
+  let showAddProfile = false;
 </script>
 
 
-{#await profilesPromise}
-  <p>Profiles waiting ...</p>
-{:then}
-  <ul>
-    <Treenode 
-      node={$profileTreeRoot} 
-      level={1} 
-      on:expandToggle={() => $profileTreeRoot.expanded = !$profileTreeRoot.expanded}
-    />
 
-    {#if $profileTreeRoot.expanded && $profileTreeRoot.children}
-      {#each $profileTreeRoot.children as child}
-          <Treenode node={child} level={2} />
-      {/each}
-    {/if}
-  </ul> 
-{/await}
+<ul>
+  <Treenode 
+    node={$profileTreeRoot}
+    pnode={$profileTreeRoot}
+    level={1}
+    type='ProfileTreeRoot'
+    on:expandToggle={() => $profileTreeRoot.expanded = !$profileTreeRoot.expanded}
+    on:addProfileGroup={() => showAddProfileGroup = true}
+  />
 
+  {#if $profileTreeRoot.expanded && $profileTreeRoot.children}
+    {#each $profileTreeRoot.children as child}
+        <Treenode node={child} level={2} />
+    {/each}
+  {/if}
+</ul> 
+
+<AddProfileGroup bind:isActive={showAddProfileGroup} 
+    on:addProfileGroupSuccess={onAddProfileGroupSuccess}/>
+
+<AddProfile bind:isActive={showAddProfile} 
+    on:addProfileSuccess={onAddProfileSuccess}/>
+  
 <style>
     ul {
         list-style-type: none;
