@@ -1,15 +1,38 @@
 <script>
     export let isActive;
+    let Name = '';
+    let Notes = '';
+    let Results = '';
 
     import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher ();
 
-    function onAddNodeGroupSuccess () {
-        dispatch ('addNodeGroupSuccess', {});
-        isActive=false;
-    }
+    async function onAddNodeGroupSuccess () {
 
+      const res = await fetch ('/api/node_groups', {
+        method: 'POST',
+        body: JSON.stringify({
+          Name,
+          Notes
+        })
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+
+        if (json.status == 0){
+          dispatch ('addNodeGroupSuccess', {Name: Name});
+          isActive=false;
+        } else {
+          console.log(json);
+          alert (JSON.stringify(json))
+        }
+      } else {
+        console.log(res);
+        alert (JSON.stringify(res))
+      }
+    }
 </script>
 
 <div class="modal {isActive ? 'is-active' : ''}">
@@ -22,7 +45,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Name</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input">
+            <input class="input" type="text" placeholder="Text input" bind:value={Name}>
           </div>
         </div>
 
@@ -30,7 +53,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Notes</label>
           <div class="control">
-            <textarea class="textarea" placeholder="Textarea"></textarea>
+            <textarea class="textarea" placeholder="Textarea" bind:value={Notes}></textarea>
           </div>
         </div>
 

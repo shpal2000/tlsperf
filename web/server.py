@@ -47,7 +47,7 @@ async def api_get_node_groups(request):
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
     node_group_col = db[NODE_GROUPS]
-    node_groups = node_group_col.find({})
+    node_groups = node_group_col.find({}, {'_id' : False})
     if not node_groups:
         return []
     return web.json_response(list(node_groups))

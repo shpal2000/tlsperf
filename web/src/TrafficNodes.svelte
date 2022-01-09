@@ -5,7 +5,10 @@
   import AddNodeGroup from "./AddNodeGroup.svelte";
   import AddNode from "./AddNode.svelte";
 
-	// async function getNodes() {
+  let rootMenuItems = [{'Name': 'Add Group ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
+  let groupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
+
+  // async function getNodes() {
 	// 	const nodes = await fetch ('/api/nodes');
 
   //       if (nodes.ok) {
@@ -24,33 +27,36 @@
 
 	async function getNodeGroups() {
 
-    let menuItems = [{'Name': 'Add Group ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
 
 		const nodeGroups = await fetch ('/api/node_groups');
 
         if (nodeGroups.ok) {
             const nodeGroupList = await nodeGroups.json();
             
-            $nodeTreeRoot.MenuItems = menuItems;
+            $nodeTreeRoot.MenuItems = rootMenuItems;
 
             for (const nodeGroup of nodeGroupList) {
-                $nodeTreeRoot.children.push({Name: nodeGroup.Name});
+                $nodeTreeRoot.children.push({
+                                            Name: nodeGroup.Name,
+                                            children: [],
+                                            expanded: false,
+                                            MenuItems: groupMenuItems
+                                          });
             }
         }
         return 0;
 	}
 
-  function onAddNodeGroupSuccess () {
-    let menuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
+  function onAddNodeGroupSuccess (event) {
 
     $nodeTreeRoot.children.push({
-                                  Name: 'Group2', 
-                                  children: [], 
+                                  Name: event.detail.Name, 
+                                  children: [],
                                   expanded: false,
-                                  MenuItems: menuItems
+                                  MenuItems: groupMenuItems
                                 });
 
-    $selectedNode.Name = 'Group2';
+    $selectedNode.Name = event.detail.Name;
     $selectedNode.ParentName = 'Traffic Nodes';
     $selectedNode.Type = 'NodeGroup';
 
