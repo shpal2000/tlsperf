@@ -51,7 +51,7 @@
 			$profileTreeRoot.MenuItems = ProfileGroupRootMenuItems;
 			
 			for (const profileGroup of profileGroupList) {
-				const profileGroupNodeList = profileList.filter(n => n.NodeGroup==profileGroup.Name);
+				const profileGroupNodeList = profileList.filter(n => n.ProfileGroup==profileGroup.Name);
           		const profileGroupNodeList2 = profileGroupNodeList.map (n => ({...n, UrlPath: '/profile/'+profileGroup.Name+'/' + n.Name}))
 
 				profileGroup.expanded = false;
