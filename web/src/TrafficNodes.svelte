@@ -5,52 +5,43 @@
   import AddNodeGroup from "./AddNodeGroup.svelte";
   import AddNode from "./AddNode.svelte";
 
-	// async function getNodes() {
-	// 	const nodes = await fetch ('/api/nodes');
+  let rootMenuItems = [{'Name': 'Add Group ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
+  let groupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
 
-  //       if (nodes.ok) {
-  //           const nodeList = await nodes.json();
-            
-  //           $nodeTreeRoot.MenuItems = menuItems;
+  async function getNodeGroups() {
 
-  //           for (const node of nodeList) {
-  //               $nodeTreeRoot.children.push({Name: node.Name, UrlPath: '/node'});
-  //           }
-  //       }
-  //       return 0;
-	// }
+    const nodeGroups = await fetch ('/api/node_groups');
+    const nodes = await fetch ('/api/nodes');
 
-  // let nodesPromise = getNodes();
+      if (nodeGroups.ok && nodes.ok) {
+        const nodeGroupList = await nodeGroups.json();
+        const nodeList = await nodes.json();
+        
+        $nodeTreeRoot.MenuItems = rootMenuItems;
 
-	async function getNodeGroups() {
+        for (const nodeGroup of nodeGroupList) {
+          const nodeGroupNodeList = nodeList.filter(n => n.NodeGroup==nodeGroup.Name);
 
-    let menuItems = [{'Name': 'Add Group ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
+          nodeGroup.expanded = false;
+          nodeGroup.children = nodeGroupNodeList;
+          nodeGroup.MenuItems = groupMenuItems;
 
-		const nodeGroups = await fetch ('/api/node_groups');
-
-        if (nodeGroups.ok) {
-            const nodeGroupList = await nodeGroups.json();
-            
-            $nodeTreeRoot.MenuItems = menuItems;
-
-            for (const nodeGroup of nodeGroupList) {
-                $nodeTreeRoot.children.push({Name: nodeGroup.Name});
-            }
+          $nodeTreeRoot.children.push(nodeGroup);
         }
-        return 0;
+      }
+      return 0;
 	}
 
-  function onAddNodeGroupSuccess () {
-    let menuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
+  function onAddNodeGroupSuccess (event) {
 
     $nodeTreeRoot.children.push({
-                                  Name: 'Group2', 
-                                  children: [], 
+                                  Name: event.detail.Name, 
+                                  children: [],
                                   expanded: false,
-                                  MenuItems: menuItems
+                                  MenuItems: groupMenuItems
                                 });
 
-    $selectedNode.Name = 'Group2';
+    $selectedNode.Name = event.detail.Name;
     $selectedNode.ParentName = 'Traffic Nodes';
     $selectedNode.Type = 'NodeGroup';
 
@@ -59,14 +50,15 @@
     $nodeTreeRoot.children = $nodeTreeRoot.children;
   }
 
-  function onAddNodeSuccess () {
+  function onAddNodeSuccess (event) {
+
     let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.Name);
 
     nodeGroup.children.push({
-                              Name: 'Node7',
+                              Name: event.detail.Name,
                             });
     
-    $selectedNode.Name = 'Node7';
+    $selectedNode.Name = event.detail.Name;
     $selectedNode.ParentName = nodeGroup.Name;
     $selectedNode.Type = 'Node';
 

@@ -1,13 +1,43 @@
 <script>
+    import { selectedNode } from './store.js';
+
     export let isActive;
+    let Name = '';
+    let SshIP = '';
+    let SshUser = '';
+    let SshPass = '';
 
     import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher ();
 
-    function onAddNodeSuccess () {
-        dispatch ('addNodeSuccess', {});
-        isActive=false;
+    async function onAddNodeSuccess () {
+
+      const res = await fetch ('/api/nodes', {
+        method: 'POST',
+        body: JSON.stringify({
+          Name,
+          SshIP,
+          SshUser,
+          SshPass,
+          NodeGroup : $selectedNode.Name
+        })
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+
+        if (json.status == 0){
+          dispatch ('addNodeSuccess', {Name: Name});
+          isActive=false;
+        } else {
+          console.log(json);
+          alert (JSON.stringify(json))
+        }
+      } else {
+        console.log(res);
+        alert (JSON.stringify(res))
+      }
     }
 
 </script>
@@ -22,7 +52,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Name</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input">
+            <input class="input" type="text" placeholder="Text input" bind:value={Name}>
           </div>
         </div>
 
@@ -30,7 +60,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Ssh IP</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input">
+            <input class="input" type="text" placeholder="Text input" bind:value={SshIP}>
           </div>
         </div>
 
@@ -38,7 +68,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Ssh User</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input">
+            <input class="input" type="text" placeholder="Text input" bind:value={SshUser}>
           </div>
         </div>
 
@@ -46,7 +76,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Ssh Pass</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input">
+            <input class="input" type="password" placeholder="Text input" bind:value={SshPass}>
           </div>
         </div>
 
