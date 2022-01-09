@@ -83,8 +83,8 @@
 			<div class="container">
 
 				<Router url="{url}">
-					<Route path="node/*nodeInfo" component={Node}/>
-					<Route path="profile/*profileName" component={Profile}/>
+					<Route path="node/*nodeUrlPath" component={Node}/>
+					<Route path="profile/*profileUrlPath" component={Profile}/>
 					<Route path="/"><Home /></Route>
 				</Router>
 

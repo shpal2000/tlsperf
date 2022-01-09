@@ -4,20 +4,20 @@
 
     import { onMount } from "svelte";
     
-    export let nodeInfo;
+    export let nodeUrlPath;
 
 
     onMount ( () => {
-        const nodeInfoList = nodeInfo.trim().split('/');
+        const nodeUrlPathSplit = nodeUrlPath.trim().split('/');
 
-        $selectedNode.ParentName = nodeInfoList[0];
-        $selectedNode.Name = nodeInfoList[1];
+        $selectedNode.ParentName = nodeUrlPathSplit[0];
+        $selectedNode.Name = nodeUrlPathSplit[1];
         $selectedNode.Type = 'Node';
 
 
         console.log($nodeTreeRoot.children);
 
-        let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==nodeInfoList[0]);
+        let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==nodeUrlPathSplit[0]);
 
         console.log(nodeGroup);
         nodeGroup.expanded = true;
@@ -28,7 +28,7 @@
 
 </script>
 <p>
-    Node - {nodeInfo.trim().split('/')[1]}
+    Node - {nodeUrlPath.trim().split('/')[1]}
     <br/>
-    NodeGroup - {nodeInfo.trim().split('/')[0]}
+    NodeGroup - {nodeUrlPath.trim().split('/')[0]}
 </p>
