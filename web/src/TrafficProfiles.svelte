@@ -64,7 +64,21 @@
 
   {#if $profileTreeRoot.expanded && $profileTreeRoot.children}
     {#each $profileTreeRoot.children as child}
-        <Treenode node={child} level={2} />
+        <Treenode 
+          node={child}
+          pnode={$profileTreeRoot}
+          level={2}
+          type='ProfileGroup'
+          on:expandToggle={() => child.expanded = !child.expanded}
+          on:addProfile={() => showAddProfile = true}
+          />
+
+          {#if child.expanded && child.children}
+            {#each child.children as grandChild}
+              <Treenode node={grandChild} pnode={child} level={3} type='Profile'/>
+            {/each}
+          {/if}
+
     {/each}
   {/if}
 </ul> 
