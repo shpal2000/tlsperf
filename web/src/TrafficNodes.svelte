@@ -1,6 +1,7 @@
 <script>
   import { nodeTreeRoot } from './store.js';
   import { selectedNode } from './store.js';
+  import { navigate } from "svelte-routing";
   import Treenode from "./Treenode.svelte";
   import AddNodeGroup from "./AddNodeGroup.svelte";
   import AddNode from "./AddNode.svelte";
@@ -27,9 +28,11 @@
   function onAddNodeSuccess (event) {
 
     let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.Name);
+    let urlPath = '/node/'+nodeGroup.Name+'/' + event.detail.Name
 
     nodeGroup.children.push({
                               Name: event.detail.Name,
+                              UrlPath: urlPath
                             });
     
     $selectedNode.Name = event.detail.Name;
@@ -39,6 +42,8 @@
     nodeGroup.expanded = true;
 
     $nodeTreeRoot.children = $nodeTreeRoot.children;
+
+    navigate(urlPath, {replace: true});
   }
 
   let showAddNodeGroup = false;

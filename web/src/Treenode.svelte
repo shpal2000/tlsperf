@@ -1,5 +1,5 @@
 <script>
-  import { link } from "svelte-routing";
+  import { navigate } from "svelte-routing";
   import { createEventDispatcher } from "svelte";
   import { slide } from 'svelte/transition';
   import { fly } from 'svelte/transition';
@@ -35,6 +35,10 @@
   
     dispatch ('expandToggle', {});
     showMenu = false;
+
+    if (node.UrlPath) {
+      navigate(node.UrlPath, {replace: true});
+    }
   }
 
   function onContextMenu(e) {
@@ -66,7 +70,7 @@
         <OpenedIcon /> {node.Name}
       {/if}
     {:else}
-      <CircleIcon /> <a href="{node.UrlPath}" use:link>{node.Name}</a>
+      <CircleIcon /> {node.Name}
     {/if}
 </li>
 
