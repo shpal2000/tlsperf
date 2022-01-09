@@ -9,7 +9,7 @@
 
 <nav class="navbar is-dark is-spaced has-shadow" role="navigation" aria-label="main navigation">
 	<div class="navbar-brand">
-		<a class="navbar-item" href="https://www.tlspack.com">
+		<a class="navbar-item" use:link href="/">
 			<!-- svelte-ignore a11y-missing-attribute -->
 			TLS Perf&nbsp;
 		</a>
@@ -28,7 +28,6 @@
 		<div class="navbar-end">
 			<div class="navbar-item">
 				<div class="buttons">
-					<button class="button is-small is-dark"><a href="/" use:link>Home</a></button>
 					<button class="button is-light is-small is-outlined">Sign in</button>
 					<button class="button is-light is-small is-outlined">Sign up</button>
 				</div>
