@@ -66,7 +66,7 @@
         <OpenedIcon /> {node.Name}
       {/if}
     {:else}
-      <CircleIcon /> <a href="{node.UrlPath}/{node.Name}" use:link>{node.Name}</a>
+      <CircleIcon /> <a href="{node.UrlPath}" use:link>{node.Name}</a>
     {/if}
 </li>
 
