@@ -26,6 +26,8 @@ DB_NAME = 'tlsperf_db'
 REALTIME_STATS = 'tlsperf_realtime_stats'
 NODE_GROUPS= 'tlsperf_node_groups'
 NODE_LISTS= 'tlsperf_node_list'
+PROFILE_GROUPS= 'tlsperf_profile_groups'
+PROFILE_LISTS= 'tlsperf_profile_list'
 
 stats_ticks = 60
 
@@ -48,7 +50,6 @@ async def api_get_nodes(request):
     if not nodes:
         return []
     return web.json_response(list(nodes))
-
     # node_items = v1Api.list_node().items
     # node_list= map(lambda n : {'Name' : n.metadata.name}, node_items)
     # return web.json_response(list(node_list))
@@ -89,7 +90,48 @@ async def api_add_node_group(request):
         return web.json_response({'status' : -1, 'message': 'tbd'})
 
 async def api_get_profiles(request):
-    return web.json_response([{'Name': 'TlsClient-1'}, {'Name': 'TlsClient-2'}, {'Name': 'TlsClient-4'}])
+    mongoClient = MongoClient(DB_CSTRING)
+    db = mongoClient[DB_NAME]
+    profile_col = db[PROFILE_LISTS]
+    profiles = profile_col.find({}, {'_id' : False})
+    if not profiles:
+        return []
+    return web.json_response(list(profiles))
+
+async def api_add_profile(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_col = db[PROFILE_LISTS]
+        profile_col.insert_one(r_json) 
+        return web.json_response({'status' : 0})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
+
+async def api_get_profile_groups(request):
+    mongoClient = MongoClient(DB_CSTRING)
+    db = mongoClient[DB_NAME]
+    profile_group_col = db[PROFILE_GROUPS]
+    profile_groups = profile_group_col.find({}, {'_id' : False})
+    if not profile_groups:
+        return []
+    return web.json_response(list(profile_groups))
+
+async def api_add_profile_group(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_group_col = db[PROFILE_GROUPS]
+        profile_group_col.insert_one(r_json) 
+        return web.json_response({'status' : 0})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
 
 async def api_get_stats(request):
     mongoClient = MongoClient(DB_CSTRING)
@@ -125,6 +167,18 @@ app.add_routes([web.route('post'
 app.add_routes([web.route('get'
                             , '/api/profiles'
                             , api_get_profiles)])
+
+app.add_routes([web.route('post'
+                            , '/api/profiles'
+                            , api_add_profile)])
+
+app.add_routes([web.route('get'
+                            , '/api/profile_groups'
+                            , api_get_profile_groups)])
+
+app.add_routes([web.route('post'
+                            , '/api/profile_groups'
+                            , api_add_profile_group)])
 
 app.add_routes([web.route('get'
                             , '/api/stats/{appGId:.*}'
