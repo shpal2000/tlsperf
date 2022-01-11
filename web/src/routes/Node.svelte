@@ -28,7 +28,7 @@
 
 </script>
 <p>
-    Node - {nodeUrlPath.trim().split('/')[1]}
+    <!-- Node - {nodeUrlPath.trim().split('/')[1]}
     <br/>
-    NodeGroup - {nodeUrlPath.trim().split('/')[0]}
+    NodeGroup - {nodeUrlPath.trim().split('/')[0]} -->
 </p>

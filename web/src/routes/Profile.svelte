@@ -28,7 +28,7 @@
 
 </script>
 <p>
-    Profile - {profileUrlPath.trim().split('/')[1]}
+    <!-- Profile - {profileUrlPath.trim().split('/')[1]}
     <br/>
-    ProfileGroup - {profileUrlPath.trim().split('/')[0]}
+    ProfileGroup - {profileUrlPath.trim().split('/')[0]} -->
 </p>
