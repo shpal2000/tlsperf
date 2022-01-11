@@ -43,6 +43,7 @@
 </script>
 
 <div class="modal {isActive ? 'is-active' : ''}">
+    <div class="modal-background"></div>
     <div class="modal-card box">
       <header>
         <p class="modal-card-title">Add Profile</p>

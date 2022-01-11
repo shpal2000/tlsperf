@@ -101,7 +101,7 @@
   li {
       border-bottom: solid 0px aliceblue;
       margin: 0 0;
-      padding: 0.25rem;
+      padding: 0.60rem;
       display: flex;
       cursor: pointer;
 

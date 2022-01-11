@@ -27,8 +27,31 @@
     });
 
 </script>
+
+<style>
+    .mymargin {
+        margin-top: 2rem;
+        margin-right: 1.6rem;
+    }
+</style>
+
+
 <p>
     <!-- Profile - {profileUrlPath.trim().split('/')[1]}
     <br/>
     ProfileGroup - {profileUrlPath.trim().split('/')[0]} -->
 </p>
+    <div class="tabs is-boxed mymargin">
+        <ul>
+          <li class="is-active">
+            <a>
+              <span>Config</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span>Run</span>
+            </a>
+          </li>
+        </ul>
+      </div>
