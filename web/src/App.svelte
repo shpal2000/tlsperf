@@ -13,10 +13,10 @@
 
 	export let url = "";
 
-	let NodeGroupRootMenuItems = [{'Name': 'Add Group ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
+	let NodeGroupRootMenuItems = [{'Name': 'Add Folder ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
 	let NodeGroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
 
-	let ProfileGroupRootMenuItems = [{'Name': 'Add Group ...', 'Event': 'addProfileGroup', 'EventCtx': {}}];
+	let ProfileGroupRootMenuItems = [{'Name': 'Add Folder ...', 'Event': 'addProfileGroup', 'EventCtx': {}}];
 	let ProfileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}];
 
 	async function getStorePopulated() {

@@ -52,31 +52,47 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Name</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input" bind:value={Name}>
+            <input class="input is-info" type="text" placeholder="Text input" bind:value={Name}>
           </div>
         </div>
 
         <div class="field">
           <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Ssh IP</label>
-          <div class="control">
-            <input class="input" type="text" placeholder="Text input" bind:value={SshIP}>
+          <label class="label">Type</label>
+          <div class="select is-fullwidth is-info">
+            <select class="">
+              <option>Select Type</option>
+              <option>TLS Client, TLS Server</option>
+              <option>TLS Client Only</option>
+              <option>TLS Server Only</option>
+              <option>TCP Client, TCP Server</option>
+              <option>TCP Client Only</option>
+              <option>TCP Server Only</option>
+            </select>
           </div>
         </div>
 
         <div class="field">
           <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Ssh User</label>
-          <div class="control">
-            <input class="input" type="text" placeholder="Text input" bind:value={SshUser}>
+          <label class="label">Client Port</label>
+          <div class="select is-fullwidth is-info">
+            <select class="">
+              <option>Select Port</option>
+              <option>G1:N1:ens192</option>
+              <option>G1:N1:ens224</option>
+            </select>
           </div>
         </div>
 
         <div class="field">
           <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Ssh Pass</label>
-          <div class="control">
-            <input class="input" type="password" placeholder="Text input" bind:value={SshPass}>
+          <label class="label">Server Port</label>
+          <div class="select is-fullwidth is-info">
+            <select class="">
+              <option>Select Port</option>
+              <option>G1:N1:ens192</option>
+              <option>G1:N1:ens224</option>
+            </select>
           </div>
         </div>
 

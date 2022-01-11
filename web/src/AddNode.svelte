@@ -52,7 +52,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Name</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input" bind:value={Name}>
+            <input class="input is-info" type="text" placeholder="Text input" bind:value={Name}>
           </div>
         </div>
 
@@ -60,7 +60,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Ssh IP</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input" bind:value={SshIP}>
+            <input class="input is-info" type="text" placeholder="Text input" bind:value={SshIP}>
           </div>
         </div>
 
@@ -68,7 +68,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Ssh User</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input" bind:value={SshUser}>
+            <input class="input is-info" type="text" placeholder="Text input" bind:value={SshUser}>
           </div>
         </div>
 
@@ -76,7 +76,7 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Ssh Pass</label>
           <div class="control">
-            <input class="input" type="password" placeholder="Text input" bind:value={SshPass}>
+            <input class="input is-info" type="password" placeholder="Text input" bind:value={SshPass}>
           </div>
         </div>
 
