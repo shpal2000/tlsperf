@@ -30,18 +30,25 @@
 
 <style>
     .mymargin {
-        margin-top: 2rem;
-        margin-right: 1.6rem;
+        margin-top: 0.5rem;
     }
 </style>
 
 
-<p>
-    <!-- Profile - {profileUrlPath.trim().split('/')[1]}
+<!-- <p>
+    Profile - {profileUrlPath.trim().split('/')[1]}
     <br/>
-    ProfileGroup - {profileUrlPath.trim().split('/')[0]} -->
-</p>
-    <div class="tabs is-boxed mymargin">
+    ProfileGroup - {profileUrlPath.trim().split('/')[0]}
+</p> -->
+<nav class="breadcrumb has-succeeds-separator mymargin is-right" aria-label="breadcrumbs">
+  <ul>
+    <li class="is-active"><a href="#">Traffic Profiles</a></li>
+    <li class="is-active"><a href="#">abc</a></li>
+    <li class="is-active"><a href="#">sdfasd</a></li>
+  </ul>
+</nav>
+
+    <div class="tabs is-boxed is-left">
         <ul>
           <li class="is-active">
             <a>
@@ -51,6 +58,11 @@
           <li>
             <a>
               <span>Run</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span>Results</span>
             </a>
           </li>
         </ul>

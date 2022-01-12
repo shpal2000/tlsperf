@@ -11,7 +11,7 @@ import { text } from "svelte/internal";
 <nav class="navbar mynavbar is-dark is-spaced has-shadow" role="navigation" aria-label="main navigation">
 	<div class="navbar-brand">
 		<a class="navbar-item" use:link href="/">
-			<p class="is-size-5">MyTLS&nbsp;</p>
+			<p class="is-size-5">MyTLS</p>
 		</a>
 		<!-- svelte-ignore a11y-missing-attribute -->
 		<a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarTopMenu" on:click="{() => isActive=!isActive}">
