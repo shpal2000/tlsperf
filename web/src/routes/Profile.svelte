@@ -1,10 +1,12 @@
 <script>
     import { profileTreeRoot } from '../store';
     import { selectedNode } from '../store.js';
+    import CsGroup from '../CsGroup.svelte';
 
     import { onMount } from "svelte";
     
     export let profileUrlPath;
+    let cs_groups = [{}];
 
 
     onMount ( () => {
@@ -28,19 +30,12 @@
 
 </script>
 
-<style>
-    .mymargin {
-        margin-top: 0.5rem;
-    }
-</style>
-
-
 <!-- <p>
     Profile - {profileUrlPath.trim().split('/')[1]}
     <br/>
     ProfileGroup - {profileUrlPath.trim().split('/')[0]}
 </p> -->
-<nav class="breadcrumb has-succeeds-separator mymargin is-right" aria-label="breadcrumbs">
+<nav class="breadcrumb has-succeeds-separator is-right" aria-label="breadcrumbs">
   <ul>
     <li class="is-active"><a href="#">Traffic Profiles</a></li>
     <li class="is-active"><a href="#">abc</a></li>
@@ -66,4 +61,27 @@
             </a>
           </li>
         </ul>
+
       </div>
+
+      <div class="container profile-content">
+        <div class="columns is-gapless">
+          <div class="column"></div>
+
+          <div class="column is-10">
+            {#each cs_groups as cs_group}
+              <CsGroup bind:cs_group={cs_group}/>
+            {/each} 
+          </div>
+          <div class="column"></div>
+        </div>
+
+      </div>
+
+
+
+<style>
+    .main-tab-margin {
+      margin-right: 1.6rem;
+    }
+</style>

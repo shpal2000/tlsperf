@@ -75,19 +75,18 @@
 {#await nodeGroupsPromise}
 	<p>Waiting ...</p>
 {:then}
-	<div class="columns">
+	<div class="columns is-gapless">
 		<div class="column is-one-fifth">
 			<Sidebar />
 		</div>
 		<div class="column">
-			<div class="container">
+			<div class="container rightbar">
 
 				<Router url="{url}">
 					<Route path="node/*nodeUrlPath" component={Node}/>
 					<Route path="profile/*profileUrlPath" component={Profile}/>
 					<Route path="/"><Home /></Route>
 				</Router>
-
 
 			</div>
 		</div>
@@ -96,5 +95,8 @@
 
 
 <style>
-
+    .rightbar {
+        height: calc(100vh - 5.25rem);
+        overflow: scroll;
+    }
 </style>

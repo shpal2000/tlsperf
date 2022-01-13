@@ -3365,7 +3365,7 @@ button.dropdown-item {
     .modal-card {
       margin: 0 auto;
       max-height: calc(100vh - 40px);
-      width: 490px; } }
+      width: 400px; } }
 
 .modal-close {
   background: none;
