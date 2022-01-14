@@ -15,7 +15,7 @@
 <style>
 
     .sidebar {
-        height: calc(100vh - 5.25rem);
+        height: calc(100vh - 3.25rem);
         border-right: 1px solid lightgrey;
         overflow: scroll;
     }
