@@ -8,10 +8,10 @@ import { text } from "svelte/internal";
 <svelte:window on:resize="{() => isActive=false}"/>
 
 
-<nav class="navbar mynavbar is-dark is-spaced has-shadow" role="navigation" aria-label="main navigation">
+<nav class="navbar mynavbar is-dark has-shadow" role="navigation" aria-label="main navigation">
 	<div class="navbar-brand">
 		<a class="navbar-item" use:link href="/">
-			<p class="is-size-5">MyTLS</p>
+			<p class="is-size-6">MyTLS</p>
 		</a>
 		<!-- svelte-ignore a11y-missing-attribute -->
 		<a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarTopMenu" on:click="{() => isActive=!isActive}">
@@ -28,8 +28,8 @@ import { text } from "svelte/internal";
 		<div class="navbar-end">
 			<div class="navbar-item">
 				<div class="buttons">
-					<button class="button is-info ">Sign in</button>
-					<button class="button is-info  is-outlined">Sign up</button>
+					<button class="button is-info is-small">Sign in</button>
+					<button class="button is-info is-small is-outlined">Sign up</button>
 				</div>
 			</div>
 		</div>
