@@ -1,5 +1,5 @@
 <script>
-	import { link } from "svelte-routing";
+	import { link } from "svelte-spa-router";
 import { text } from "svelte/internal";
 	
 	let isActive=false;

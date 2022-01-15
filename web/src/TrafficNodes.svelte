@@ -1,7 +1,7 @@
 <script>
   import { nodeTreeRoot } from './store.js';
   import { selectedNode } from './store.js';
-  import { navigate } from "svelte-routing";
+  import {replace} from "svelte-spa-router";
   import Treenode from "./Treenode.svelte";
   import AddNodeGroup from "./AddNodeGroup.svelte";
   import AddNode from "./AddNode.svelte";
@@ -43,7 +43,8 @@
 
     $nodeTreeRoot.children = $nodeTreeRoot.children;
 
-    navigate(urlPath, {replace: true});
+    replace('/');
+    replace(urlPath);
   }
 
   let showAddNodeGroup = false;

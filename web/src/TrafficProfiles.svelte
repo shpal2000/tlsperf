@@ -1,7 +1,7 @@
 <script>
   import { profileTreeRoot } from './store.js';
   import { selectedNode } from './store.js';
-  import { navigate } from "svelte-routing";
+  import { replace } from "svelte-spa-router";
   import Treenode from "./Treenode.svelte";
   import AddProfileGroup from "./AddProfileGroup.svelte";
   import AddProfile from "./AddProfile.svelte";
@@ -43,7 +43,8 @@
 
     $profileTreeRoot.children = $profileTreeRoot.children;
 
-    navigate(urlPath, {replace: true});
+    replace('/');
+    replace(urlPath);
   }
   
   let showAddProfileGroup = false;

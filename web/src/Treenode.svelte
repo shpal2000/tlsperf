@@ -1,5 +1,6 @@
 <script>
-  import { navigate } from "svelte-routing";
+  import {replace} from "svelte-spa-router";
+
   import { createEventDispatcher } from "svelte";
   import { slide } from 'svelte/transition';
   import { fly } from 'svelte/transition';
@@ -37,7 +38,8 @@
     showMenu = false;
 
     if (node.UrlPath) {
-      navigate(node.UrlPath, {replace: true});
+      replace('/');
+      replace(node.UrlPath);
     }
   }
 
