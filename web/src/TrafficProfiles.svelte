@@ -43,7 +43,7 @@
 
     $profileTreeRoot.children = $profileTreeRoot.children;
 
-    replace('/');
+    replace('/blank');
     replace(urlPath);
   }
   

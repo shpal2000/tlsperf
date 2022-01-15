@@ -38,7 +38,7 @@
     showMenu = false;
 
     if (node.UrlPath) {
-      replace('/');
+      replace('/blank');
       replace(node.UrlPath);
     }
   }

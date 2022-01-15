@@ -4,6 +4,7 @@
     import CsGroups from '../CsGroups.svelte';
     import Chart from 'chart.js/auto';
     import { onMount } from "svelte";
+    import {replace} from "svelte-spa-router";
     
     export let params = {};
 
@@ -33,11 +34,35 @@
         };
 
 
+    function onConfigClick(e) {
+      activeTab='Config';
+      replace ('/#/profile/' 
+                + params.profileGroupName
+                + '/' 
+                + params.profileName
+                + '/'
+                + 'config');
+    }
+
+    function onStatsClick(e) {
+      activeTab='Stats';
+      replace ('/#/profile/' 
+                + params.profileGroupName
+                + '/' 
+                + params.profileName
+                + '/'
+                + 'stats');
+    }
+
     onMount ( () => {
 
         $selectedNode.ParentName = params.profileGroupName
         $selectedNode.Name = params.profileName
         $selectedNode.Type = 'Profile';
+
+        if (params.anchor == 'stats'){
+          activeTab = 'Stats';
+        }
 
 
         console.log($profileTreeRoot.children);
@@ -97,32 +122,26 @@
 
 </script>
 
-<nav class="breadcrumb has-succeeds-separator is-left breadcrumb-margin" aria-label="breadcrumbs">
+<nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
   <ul>
-    <li class="is-active"><a>Profile</a></li>
-    <li class="is-active"><a>{params.profileGroupName}</a></li>
-    <li class="is-active"><a>{params.profileName}</a></li>
+    <li class="is-active" ><a>Profile</a></li>
+    <li class="is-active" ><a>{params.profileGroupName}</a></li>
+    <li class="is-active" ><a>{params.profileName}</a></li>
   </ul>
 </nav>
-
-<p>
-    Profile - {params.profileName}
-    <br/>
-    ProfileGroup - {params.profileGroupName}
-</p>
 
 <div class="tabs is-left main-margin is-boxed">
   <ul>
     <li class="{activeTab=='Config' ? 'is-active' : ''}">
       <!-- svelte-ignore a11y-missing-attribute -->
       <a>
-        <span on:click={ () => activeTab='Config'}>Config</span>
+        <span on:click={onConfigClick}>Config</span>
       </a>
     </li>
     <li class="{activeTab=='Stats' ? 'is-active' : ''}">
         <!-- svelte-ignore a11y-missing-attribute -->
         <a>
-          <span on:click={ () => activeTab='Stats'}>Stats</span>
+          <span on:click={onStatsClick}>Stats</span>
         </a>
     </li>
   </ul>

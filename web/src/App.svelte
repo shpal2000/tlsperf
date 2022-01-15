@@ -3,11 +3,12 @@
 	import { profileTreeRoot } from './store.js';
 
 	import Router from "svelte-spa-router";
-	import {wrap} from "svelte-spa-router/wrap";
 
 	import Home from "./routes/Home.svelte";
 	import Node from "./routes/Node.svelte";
 	import Profile from "./routes/Profile.svelte";
+	import Blank from "./routes/Blank.svelte";
+	import NotFound from "./routes/NotFound.svelte";
 	
 	import Navbar from "./Navbar.svelte";
 	import Sidebar from "./Sidebar.svelte";
@@ -22,9 +23,13 @@
 	const routes = {
 		'/': Home,
 
-		'/profile/:profileGroupName/:profileName': Profile,
+		'/blank': Blank,
 
-		'/node/:nodeGroupName/:nodeName': Node
+		'/profile/:profileGroupName/:profileName/:anchor?': Profile,
+
+		'/node/:nodeGroupName/:nodeName': Node,
+
+		'*': NotFound
 	};
 
 	async function getStorePopulated() {

@@ -43,7 +43,7 @@
 
     $nodeTreeRoot.children = $nodeTreeRoot.children;
 
-    replace('/');
+    replace('/blank');
     replace(urlPath);
   }
 
