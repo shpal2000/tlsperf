@@ -2,11 +2,33 @@
     import { profileTreeRoot } from '../store';
     import { selectedNode } from '../store.js';
     import CsGroups from '../CsGroups.svelte';
+    import Chart from 'chart.js/auto';
 
     import { onMount } from "svelte";
     
     export let profileUrlPath;
     let cs_groups = [{}];
+
+    let chartValues = [];
+    let chartLabels = [];
+
+    let chartCtxCps;
+    let chartCanvasCps;
+    let chartCps;
+
+    let chartCtxThpt;
+    let chartCanvasThpt;
+    let chartThpt;
+    
+    let data = {
+              labels: chartLabels,
+              datasets: [{
+                  label: '',
+                  backgroundColor: 'rgb(255, 99, 132)',
+                  borderColor: 'rgb(255, 99, 132)',
+                  data: chartValues
+              }]
+        };
 
 
     onMount ( () => {
@@ -26,6 +48,50 @@
 
         $profileTreeRoot.expanded = true;
         $profileTreeRoot.children = $profileTreeRoot.children;
+
+        chartCtxCps = chartCanvasCps.getContext('2d');
+        chartCps = new Chart(chartCtxCps, {
+            type: 'line',
+            data: data,
+            options: {
+              animation :{
+                duration: 0
+              },
+              interaction: {
+                intersect: false
+              },
+              plugins: {
+                legend: false
+              },
+              scales: {
+                x: {
+                  type: 'linear'
+                }
+              }
+            }
+        });
+
+        // const interval = setInterval(() => {
+        //     fetch(`api/tlsfront_stats`)
+        //             .then((response) => response.json())
+        //             .then((results) => {
+        //                 deployments = results;
+        //                 data.labels = [...Array(10).keys()];
+        //                 data.datasets= Object.keys(deployments).map(k => ({
+        //                                 label: k,
+        //                                 fill: true,
+        //                                 borderColor: "#ffa700",
+        //                                 backgroundColor: "#fafad2",
+        //                                 data: deployments[k].sum.map(v => v.tlsfrontThroughput)
+        //                               }));
+        //                 chartCps.update();
+        //             });
+        // }, 1000);
+        // return () => {
+        //   clearInterval(interval);
+        // };
+
+  
     });
 
 </script>
@@ -125,7 +191,8 @@
 
           <div class="tile is-child my-border">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">~/log$ </label>
+            <!-- <label class="label is-small has-text-white">~/log$ </label> -->
+            <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
           </div>
         </div>
       </div>
