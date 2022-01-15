@@ -15,8 +15,9 @@
 <style>
 
     .sidebar {
-        height: 100vh;
-        background-color: whitesmoke;
+        height: calc(100vh - 3.25rem);
+        border-right: 1px solid lightgrey;
+        overflow: scroll;
     }
 
 </style>

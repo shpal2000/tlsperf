@@ -5,9 +5,11 @@
     import Chart from 'chart.js/auto';
     import { onMount } from "svelte";
     
-    export let params = {};
-
+    export let profileUrlPath;
     let activeTab = 'Config';
+    let profileGroupName = '';
+    let profileName = '';
+
 
     let cs_groups = [{}];
 
@@ -34,15 +36,19 @@
 
 
     onMount ( () => {
+        const profileUrlPathSplit = profileUrlPath.trim().split('/');
 
-        $selectedNode.ParentName = params.profileGroupName
-        $selectedNode.Name = params.profileName
+        profileGroupName = profileUrlPathSplit[0];
+        profileName = profileUrlPathSplit[1];
+
+        $selectedNode.ParentName = profileGroupName
+        $selectedNode.Name = profileName
         $selectedNode.Type = 'Profile';
 
 
         console.log($profileTreeRoot.children);
 
-        let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==params.profileGroupName);
+        let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==profileGroupName);
 
         console.log(profileGroup);
         profileGroup.expanded = true;
@@ -100,15 +106,15 @@
 <nav class="breadcrumb has-succeeds-separator is-left breadcrumb-margin" aria-label="breadcrumbs">
   <ul>
     <li class="is-active"><a>Profile</a></li>
-    <li class="is-active"><a>{params.profileGroupName}</a></li>
-    <li class="is-active"><a>{params.profileName}</a></li>
+    <li class="is-active"><a>{profileGroupName}</a></li>
+    <li class="is-active"><a>{profileName}</a></li>
   </ul>
 </nav>
 
 <p>
-    Profile - {params.profileName}
+    Profile - {profileUrlPath.trim().split('/')[1]}
     <br/>
-    ProfileGroup - {params.profileGroupName}
+    ProfileGroup - {profileUrlPath.trim().split('/')[0]}
 </p>
 
 <div class="tabs is-left main-margin is-boxed">

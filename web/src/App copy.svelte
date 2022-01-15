@@ -2,8 +2,7 @@
 	import { nodeTreeRoot } from './store.js';
 	import { profileTreeRoot } from './store.js';
 
-	import Router from "svelte-spa-router";
-	import {wrap} from "svelte-spa-router/wrap";
+	import { Router, Route } from "svelte-routing";
 
 	import Home from "./routes/Home.svelte";
 	import Node from "./routes/Node.svelte";
@@ -12,20 +11,13 @@
 	import Navbar from "./Navbar.svelte";
 	import Sidebar from "./Sidebar.svelte";
 
+	export let url = "";
+
 	let NodeGroupRootMenuItems = [{'Name': 'Add Folder ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
 	let NodeGroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
 
 	let ProfileGroupRootMenuItems = [{'Name': 'Add Folder ...', 'Event': 'addProfileGroup', 'EventCtx': {}}];
 	let ProfileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}];
-
-
-	const routes = {
-		'/': Home,
-
-		'/profile/:profileGroupName/:profileName': Profile,
-
-		'/node/:nodeGroupName/:nodeName': Node
-	};
 
 	async function getStorePopulated() {
 		const nodeGroups = await fetch ('/api/node_groups');
@@ -90,7 +82,11 @@
 		<div class="column">
 			<div class="container rightbar">
 
-				<Router {routes}/>
+				<Router url="{url}">
+					<Route path="node/*nodeUrlPath" component={Node}/>
+					<Route path="profile/*profileUrlPath" component={Profile}/>
+					<Route path="/"><Home /></Route>
+				</Router>
 
 			</div>
 		</div>

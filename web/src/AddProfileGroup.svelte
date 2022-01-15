@@ -1,7 +1,6 @@
 <script>
     export let isActive;
     let Name = '';
-    let Notes = '';
 
     import { createEventDispatcher } from "svelte";
 
@@ -12,8 +11,7 @@
       const res = await fetch ('/api/profile_groups', {
         method: 'POST',
         body: JSON.stringify({
-          Name,
-          Notes
+          Name
         })
       });
 
@@ -37,22 +35,14 @@
 <div class="modal {isActive ? 'is-active' : ''}">
     <div class="modal-card box">
       <header>
-        <p class="modal-card-title">Add Profile Group</p>
+        <p class="modal-card-title">Add Profile Folder</p>
       </header>
       <section class="modal-card-body">
         <div class="field">
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Name</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Text input" bind:value={Name}>
-          </div>
-        </div>
-
-        <div class="field">
-          <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Notes</label>
-          <div class="control">
-            <textarea class="textarea" placeholder="Textarea" bind:value={Notes}></textarea>
+            <input class="input is-info" type="text" placeholder="Text input" bind:value={Name}>
           </div>
         </div>
 
