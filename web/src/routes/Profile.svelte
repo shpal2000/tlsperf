@@ -109,8 +109,27 @@
   </ul>
 </nav>
 
+<div class="tabs is-left main-margin is-boxed">
+  <ul>
+    <li class="is-active">
+      <a>
+        <span>Config</span>
+      </a>
+    </li>
+    <li class="inactive-background">
+      <a>
+        <span>Stats</span>
+      </a>
+    </li>
+    <li class="inactive-background">
+      <a>
+        <span>Logs</span>
+      </a>
+    </li>
+  </ul>
+</div>
 
-<div class="container profile-content">
+<div class="container profile-content profile-content-margin">
   <div class="columns is-multiline is-mobile">
     <div class="column is-1"></div>
     <div class="column is-10">
@@ -122,9 +141,9 @@
                 <div class="column is-half">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Name</label>
+                    <label class="label ">Name</label>
                     <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
+                      <input class="input " type="text" placeholder="Text input">
                     </div>
                   </div>
                 </div>
@@ -132,8 +151,8 @@
                 <div class="column is-half">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Type</label>
-                    <div class="select is-fullwidth is-small">
+                    <label class="label ">Type</label>
+                    <div class="select is-fullwidth ">
                       <select class="">
                         <option>Select Type</option>
                         <option>TLS Client, TLS Server</option>
@@ -150,8 +169,8 @@
                 <div class="column is-half">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Client Port</label>
-                    <div class="select is-fullwidth is-small">
+                    <label class="label ">Client Port</label>
+                    <div class="select is-fullwidth ">
                       <select class="">
                         <option>Select Port</option>
                         <option>G1:N1:ens192</option>
@@ -164,8 +183,8 @@
                 <div class="column is-half">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server Port</label>
-                    <div class="select is-fullwidth is-small">
+                    <label class="label ">Server Port</label>
+                    <div class="select is-fullwidth ">
                       <select class="">
                         <option>Select Port</option>
                         <option>G1:N1:ens192</option>
@@ -177,10 +196,10 @@
               </div>
               <div class="field is-grouped">
                 <div class="control">
-                  <button class="button is-small is-info">Run</button>
+                  <button class="button  is-info">Run</button>
                 </div>
                 <div class="control">
-                  <button class="button is-small is-light">Stop</button>
+                  <button class="button  is-light">Stop</button>
                 </div>
               </div>
             </section> 
@@ -191,7 +210,7 @@
 
           <div class="tile is-child my-border">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <!-- <label class="label is-small has-text-white">~/log$ </label> -->
+            <!-- <label class="label  has-text-white">~/log$ </label> -->
             <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
           </div>
         </div>
@@ -202,7 +221,7 @@
     <div class="column is-1"></div>
     <div class="column is-10">
       <!-- svelte-ignore a11y-label-has-associated-control -->
-      <label class="label is-small">Traffic Paths:</label>
+      <label class="label ">Traffic Paths:</label>
       <CsGroups bind:cs_groups={cs_groups}/>
     </div>
     <div class="column is-1"></div>
@@ -224,5 +243,19 @@
       padding-right: 15px;
       padding-top: 10px;
       padding-bottom: 15px;
+    }
+
+    .inactive-background {
+      background-color: whitesmoke;
+    }
+
+    .main-margin {
+      margin-top: 4px;
+      margin-right: 1.6rem;
+      margin-left: 1.6rem;
+    }
+
+    .profile-content-margin {
+      margin-top: 2rem;
     }
 </style>

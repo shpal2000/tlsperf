@@ -96,7 +96,7 @@
 
 <style>
     .rightbar {
-        height: calc(100vh - 5.25rem);
+        height: calc(100vh - 3.25rem);
         overflow: scroll;
     }
 </style>

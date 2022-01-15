@@ -11,45 +11,45 @@
             <td>RSA</td>
             <td>2048</td>
             <td>sha256</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>www.testrail.com</td>
             <td>RSA</td>
             <td>2048</td>
             <td>sha256</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>www.testrail.com</td>
             <td>RSA</td>
             <td>2048</td>
             <td>sha256</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>www.testrail.com</td>
             <td>RSA</td>
             <td>2048</td>
             <td>sha256</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>www.testrail.com</td>
             <td>RSA</td>
             <td>2048</td>
             <td>sha256</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>www.testrail.com</td>
             <td>RSA</td>
             <td>2048</td>
             <td>sha256</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
     </tbody>
-    <button class="button is-small">Add ...</button>
+    <button class="button ">Add ...</button>
 </table>
 
 <br>
@@ -62,45 +62,45 @@
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
     </tbody>
-    <button class="button is-small">Add ...</button>
+    <button class="button ">Add ...</button>
 </table>
 
 
@@ -114,45 +114,45 @@
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
         <tr>
             <td>12.20.51.0/16</td>
             <td>10</td>
             <td>12.20.61.0/16</td>
             <td>443</td>
-            <td><button class="button is-small is-text">Edit</button></td>
+            <td><button class="button  is-text">Edit</button></td>
         </tr>
     </tbody>
-    <button class="button is-small">Add ...</button>
+    <button class="button ">Add ...</button>
 </table>
 
 <style>

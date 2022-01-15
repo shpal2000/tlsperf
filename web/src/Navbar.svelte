@@ -28,8 +28,8 @@ import { text } from "svelte/internal";
 		<div class="navbar-end">
 			<div class="navbar-item">
 				<div class="buttons">
-					<button class="button is-info is-small">Sign in</button>
-					<button class="button is-info is-small is-outlined">Sign up</button>
+					<button class="button is-info ">Sign in</button>
+					<button class="button is-info  is-outlined">Sign up</button>
 				</div>
 			</div>
 		</div>

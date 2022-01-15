@@ -76,9 +76,9 @@
               <div class="column is-half">
                 <div class="field">
                   <!-- svelte-ignore a11y-label-has-associated-control -->
-                  <label class="label is-small">Name</label>
+                  <label class="label ">Name</label>
                   <div class="control">
-                    <input class="input is-small" type="text" placeholder="Text input">
+                    <input class="input " type="text" placeholder="Text input">
                   </div>
                 </div>
               </div>
@@ -86,8 +86,8 @@
               <div class="column is-half">
                 <div class="field">
                   <!-- svelte-ignore a11y-label-has-associated-control -->
-                  <label class="label is-small">Type</label>
-                  <div class="select is-fullwidth is-small">
+                  <label class="label ">Type</label>
+                  <div class="select is-fullwidth ">
                     <select class="">
                       <option>Select Type</option>
                       <option>TLS Client, TLS Server</option>
@@ -104,8 +104,8 @@
               <div class="column is-half">
                 <div class="field">
                   <!-- svelte-ignore a11y-label-has-associated-control -->
-                  <label class="label is-small">Client Port</label>
-                  <div class="select is-fullwidth is-small">
+                  <label class="label ">Client Port</label>
+                  <div class="select is-fullwidth ">
                     <select class="">
                       <option>Select Port</option>
                       <option>G1:N1:ens192</option>
@@ -118,8 +118,8 @@
               <div class="column is-half">
                 <div class="field">
                   <!-- svelte-ignore a11y-label-has-associated-control -->
-                  <label class="label is-small">Server Port</label>
-                  <div class="select is-fullwidth is-small">
+                  <label class="label ">Server Port</label>
+                  <div class="select is-fullwidth ">
                     <select class="">
                       <option>Select Port</option>
                       <option>G1:N1:ens192</option>
@@ -131,10 +131,10 @@
             </div>
             <div class="field is-grouped">
               <div class="control">
-                <button class="button is-small is-info" on:click={onAddProfileSuccess}>Add</button>
+                <button class="button  is-info" on:click={onAddProfileSuccess}>Add</button>
               </div>
               <div class="control">
-                <button class="button is-small is-light" on:click={() => isActive=false}>Cancel</button>
+                <button class="button  is-light" on:click={() => isActive=false}>Cancel</button>
               </div>
             </div>
           </section>          
@@ -147,9 +147,9 @@
               <div class="column is-half">
                 <div class="field">
                   <!-- svelte-ignore a11y-label-has-associated-control -->
-                  <label class="label is-small">Name</label>
+                  <label class="label ">Name</label>
                   <div class="control">
-                    <input class="input is-small" type="text" placeholder="Text input">
+                    <input class="input " type="text" placeholder="Text input">
                   </div>
                 </div>
               </div>
@@ -157,8 +157,8 @@
               <div class="column is-half">
                 <div class="field">
                   <!-- svelte-ignore a11y-label-has-associated-control -->
-                  <label class="label is-small">Type</label>
-                  <div class="select is-fullwidth is-small">
+                  <label class="label ">Type</label>
+                  <div class="select is-fullwidth ">
                     <select class="">
                       <option>Select Type</option>
                       <option>TLS Client, TLS Server</option>
@@ -175,8 +175,8 @@
               <div class="column is-half">
                 <div class="field">
                   <!-- svelte-ignore a11y-label-has-associated-control -->
-                  <label class="label is-small">Client Port</label>
-                  <div class="select is-fullwidth is-small">
+                  <label class="label ">Client Port</label>
+                  <div class="select is-fullwidth ">
                     <select class="">
                       <option>Select Port</option>
                       <option>G1:N1:ens192</option>
@@ -189,8 +189,8 @@
               <div class="column is-half">
                 <div class="field">
                   <!-- svelte-ignore a11y-label-has-associated-control -->
-                  <label class="label is-small">Server Port</label>
-                  <div class="select is-fullwidth is-small">
+                  <label class="label ">Server Port</label>
+                  <div class="select is-fullwidth ">
                     <select class="">
                       <option>Select Port</option>
                       <option>G1:N1:ens192</option>
@@ -202,10 +202,10 @@
             </div>
             <div class="field is-grouped">
               <div class="control">
-                <button class="button is-small is-info" on:click={onAddProfileSuccess}>Add</button>
+                <button class="button  is-info" on:click={onAddProfileSuccess}>Add</button>
               </div>
               <div class="control">
-                <button class="button is-small is-light" on:click={() => isActive=false}>Cancel</button>
+                <button class="button  is-light" on:click={() => isActive=false}>Cancel</button>
               </div>
             </div>
           </section>  

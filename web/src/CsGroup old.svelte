@@ -9,9 +9,9 @@
 
         <div class="field">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">Name</label>
+            <label class="label ">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Text input" bind:value={Name}>
+              <input class="input " type="text" placeholder="Text input" bind:value={Name}>
             </div>
         </div>
 
@@ -20,72 +20,72 @@
     <div class="column is-one-quarter">
         <div class="field">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">Name</label>
+            <label class="label ">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Text input" bind:value={Name}>
+              <input class="input " type="text" placeholder="Text input" bind:value={Name}>
             </div>
         </div>    
     </div>
     <div class="column is-one-quarter">
         <div class="field">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">Name</label>
+            <label class="label ">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Text input" bind:value={Name}>
+              <input class="input " type="text" placeholder="Text input" bind:value={Name}>
             </div>
         </div>    
     </div>
     <div class="column is-one-quarter">
         <div class="field">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">Name</label>
+            <label class="label ">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Text input" bind:value={Name}>
+              <input class="input " type="text" placeholder="Text input" bind:value={Name}>
             </div>
         </div>    
     </div>
     <div class="column is-half">
         <div class="field">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">Name</label>
+            <label class="label ">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Text input" bind:value={Name}>
+              <input class="input " type="text" placeholder="Text input" bind:value={Name}>
             </div>
         </div>
     </div>
     <div class="column is-one-quarter">
         <div class="field">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">Name</label>
+            <label class="label ">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Text input" bind:value={Name}>
+              <input class="input " type="text" placeholder="Text input" bind:value={Name}>
             </div>
         </div>    
     </div>
     <div class="column is-one-quarter">
         <div class="field">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">Name</label>
+            <label class="label ">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Text input" bind:value={Name}>
+              <input class="input " type="text" placeholder="Text input" bind:value={Name}>
             </div>
         </div>    
     </div>
     <div class="column is-one-quarter">
         <div class="field">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">Name</label>
+            <label class="label ">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Text input" bind:value={Name}>
+              <input class="input " type="text" placeholder="Text input" bind:value={Name}>
             </div>
         </div>    
     </div>
     <div class="column">
         <div class="field">
             <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label is-small">Name</label>
+            <label class="label ">Name</label>
             <div class="control">
-              <input class="input is-small" type="text" placeholder="Text input" bind:value={Name}>
+              <input class="input " type="text" placeholder="Text input" bind:value={Name}>
             </div>
         </div>
     </div>
