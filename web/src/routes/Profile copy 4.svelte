@@ -7,12 +7,36 @@
     import {replace} from "svelte-spa-router";
     
     export let params = {};
+
     let activeTab = 'Config';
+
     let cs_groups = [{}];
+
+    let chartValues = [];
+    let chartLabels = [];
+
+    let chartCtxCps;
+    let chartCanvasCps;
+    let chartCps;
+
+    let chartCtxThpt;
+    let chartCanvasThpt;
+    let chartThpt;
+    
+    let data = {
+              labels: chartLabels,
+              datasets: [{
+                  label: '',
+                  backgroundColor: 'rgb(255, 99, 132)',
+                  borderColor: 'rgb(255, 99, 132)',
+                  data: chartValues
+              }]
+        };
+
 
     function onConfigClick(e) {
       activeTab='Config';
-      replace ('/profile/' 
+      replace ('/#/profile/' 
                 + params.profileGroupName
                 + '/' 
                 + params.profileName
@@ -22,7 +46,7 @@
 
     function onStatsClick(e) {
       activeTab='Stats';
-      replace ('/profile/' 
+      replace ('/#/profile/' 
                 + params.profileGroupName
                 + '/' 
                 + params.profileName
@@ -50,6 +74,28 @@
 
         $profileTreeRoot.expanded = true;
         $profileTreeRoot.children = $profileTreeRoot.children;
+
+        chartCtxCps = chartCanvasCps.getContext('2d');
+        chartCps = new Chart(chartCtxCps, {
+            type: 'line',
+            data: data,
+            options: {
+              animation :{
+                duration: 0
+              },
+              interaction: {
+                intersect: false
+              },
+              plugins: {
+                legend: false
+              },
+              scales: {
+                x: {
+                  type: 'linear'
+                }
+              }
+            }
+        });
 
         // const interval = setInterval(() => {
         //     fetch(`api/tlsfront_stats`)
@@ -86,16 +132,16 @@
 
 <div class="tabs is-left main-margin is-boxed">
   <ul>
-    <li class="{activeTab=='Config' ? 'is-active' : ''}" on:click={onConfigClick}>
+    <li class="{activeTab=='Config' ? 'is-active' : ''}">
       <!-- svelte-ignore a11y-missing-attribute -->
       <a>
-        <span>Config</span>
+        <span on:click={onConfigClick}>Config</span>
       </a>
     </li>
-    <li class="{activeTab=='Stats' ? 'is-active' : ''}" on:click={onStatsClick}>
+    <li class="{activeTab=='Stats' ? 'is-active' : ''}">
         <!-- svelte-ignore a11y-missing-attribute -->
         <a>
-          <span>Stats</span>
+          <span on:click={onStatsClick}>Stats</span>
         </a>
     </li>
   </ul>
@@ -114,7 +160,7 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Total Transactions</label>
+                      <label class="label ">Name</label>
                       <div class="control">
                         <input class="input " type="text" placeholder="Text input">
                       </div>
@@ -124,9 +170,17 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Data Bytes</label>
-                      <div class="control">
-                        <input class="input " type="text" placeholder="Text input">
+                      <label class="label ">Type</label>
+                      <div class="select is-fullwidth ">
+                        <select class="">
+                          <option>Select Type</option>
+                          <option>TLS Client, TLS Server</option>
+                          <option>TLS Client Only</option>
+                          <option>TLS Server Only</option>
+                          <option>TCP Client, TCP Server</option>
+                          <option>TCP Client Only</option>
+                          <option>TCP Server Only</option>
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -134,9 +188,13 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">CPS</label>
-                      <div class="control">
-                        <input class="input " type="text" placeholder="Text input">
+                      <label class="label ">Client Port</label>
+                      <div class="select is-fullwidth ">
+                        <select class="">
+                          <option>Select Port</option>
+                          <option>G1:N1:ens192</option>
+                          <option>G1:N1:ens224</option>
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -144,9 +202,13 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Max Pipeline</label>
-                      <div class="control">
-                        <input class="input " type="text" placeholder="Text input">
+                      <label class="label ">Server Port</label>
+                      <div class="select is-fullwidth ">
+                        <select class="">
+                          <option>Select Port</option>
+                          <option>G1:N1:ens192</option>
+                          <option>G1:N1:ens224</option>
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -165,9 +227,10 @@
           </div>
           <div class="tile is-6 is-parent">
 
-            <div class="tile is-child my-border has-background-dark">
+            <div class="tile is-child my-border">
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label class="label has-text-white">~/log$ </label>
+              <!-- <label class="label  has-text-white">~/log$ </label> -->
+              <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
             </div>
           </div>
         </div>
@@ -183,13 +246,7 @@
       <div class="column is-1"></div>
     </div>
   {:else}
-    <div class="columns is-multiline is-mobile">
-      <div class="column is-1"></div>
-      <div class="column is-10">
-        <p>stats</p>
-      </div>
-      <div class="column is-1"></div>
-    </div>
+    stats
   {/if}
 </div>
 
