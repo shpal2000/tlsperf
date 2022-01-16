@@ -26,6 +26,17 @@ import { text } from "svelte/internal";
 		</div>
 
 		<div class="navbar-end">
+
+			<div class="navbar-item">
+				<nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
+					<ul>
+					  <li class="is-active" ><a>Profile</a></li>
+					  <li class="is-active" ><a>abc</a></li>
+					  <li class="is-active" ><a>def</a></li>
+					</ul>
+				  </nav>
+			</div>
+			
 			<div class="navbar-item">
 				<div class="buttons">
 					<button class="button is-info is-small">Sign in</button>

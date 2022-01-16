@@ -217,13 +217,13 @@
 
 </script>
 
-<nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
+<!-- <nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
   <ul>
     <li class="is-active" ><a>Profile</a></li>
     <li class="is-active" ><a>{params.profileGroupName}</a></li>
     <li class="is-active" ><a>{params.profileName}</a></li>
   </ul>
-</nav>
+</nav> -->
 
 <!-- <div class="tabs is-left main-margin is-boxed">
   <ul>
