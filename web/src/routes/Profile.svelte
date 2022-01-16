@@ -224,7 +224,10 @@
           >
           <div slot="expanded-row" let:row>
             <div class="columns is-multiline is-mobile">
-              <div class="column is-half">
+              <div class="column is-2">
+              </div>
+
+              <div class="column is-8">
                 <div class="columns is-multiline is-mobile">
                   <div class="column is-half">
                     <br>
@@ -255,15 +258,15 @@
                       </div>
                     </div>
                     <br>
-                    <div class="field is-grouped">
-                      <div class="control">
-                        <button class="button is-small is-info">Update</button>
-                      </div>
-                      <div class="control">
-                        <button class="button is-small is-light">Cancel</button>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">TLS Version</label>
+                      <div class="select is-fullwidth is-small">
+                        <select class="">
+                          <option>All</option>
+                        </select>
                       </div>
                     </div>
-                    <br>
                   </div>
                   <div class="column is-half">
                     <br>
@@ -291,20 +294,49 @@
                       </div>
                     </div>
                     <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Ciphers</label>
+                      <div class="select is-fullwidth is-small">
+                        <select class="">
+                          <option>All</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column is-full">
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server Cert</label>
+                      <div class="control cert-key-height">
+                        <textarea class="textarea cert-key-height" placeholder="input"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column is-full">
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server Key</label>
+                      <div class="control cert-key-height">
+                        <textarea class="textarea cert-key-height" placeholder="input"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column is-half">
+                    <div class="field is-grouped">
+                      <div class="control">
+                        <button class="button is-small is-info">Update</button>
+                      </div>
+                      <div class="control">
+                        <button class="button is-small is-light">Cancel</button>
+                      </div>
+                    </div>
+                    <br>
                   </div>
                 </div>
               </div>
 
-              <div class="column is-half">
-                <br>
-                <div class="field">
-                  <!-- svelte-ignore a11y-label-has-associated-control -->
-                  <label class="label is-small">Server Cert, Key</label>
-                  <div class="control cert-key-height">
-                    <textarea class="textarea cert-key-height" placeholder="input"></textarea>
-                  </div>
-                </div>
-                <br>
+              <div class="column is-2">
               </div>
             </div>
           </div>
@@ -349,9 +381,4 @@
       margin-top: 2rem;
     }
 
-    .cert-key-height {
-      height: 100%;
-      min-height: 100%;
-      max-height: 100%;
-    }
 </style>
