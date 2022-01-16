@@ -195,7 +195,7 @@
                     <button class="button  is-info">Start</button>
                   </div>
                   <div class="control">
-                    <button class="button  is-light">Save</button>
+                    <button class="button  is-light">Update</button>
                   </div>
                 </div>
               </section> 
@@ -225,11 +225,86 @@
           <div slot="expanded-row" let:row>
             <div class="columns is-multiline is-mobile">
               <div class="column is-half">
-                <p>Client</p>
+                <div class="columns is-multiline is-mobile">
+                  <div class="column is-half">
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Client Subnet</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Client IPs</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Protocol</label>
+                      <div class="select is-fullwidth is-small">
+                        <select class="">
+                          <option>TLS</option>
+                          <option>TCP</option>
+                        </select>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field is-grouped">
+                      <div class="control">
+                        <button class="button is-small is-info">Update</button>
+                      </div>
+                      <div class="control">
+                        <button class="button is-small is-light">Cancel</button>
+                      </div>
+                    </div>
+                    <br>
+                  </div>
+                  <div class="column is-half">
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server Subnet</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server IP</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server Port</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                  </div>
+                </div>
               </div>
 
               <div class="column is-half">
-                <p>Server</p>
+                <br>
+                <div class="field">
+                  <!-- svelte-ignore a11y-label-has-associated-control -->
+                  <label class="label is-small">Server Cert, Key</label>
+                  <div class="control cert-key-height">
+                    <textarea class="textarea cert-key-height" placeholder="input"></textarea>
+                  </div>
+                </div>
+                <br>
               </div>
             </div>
           </div>
@@ -272,5 +347,11 @@
 
     .profile-content-margin {
       margin-top: 2rem;
+    }
+
+    .cert-key-height {
+      height: 100%;
+      min-height: 100%;
+      max-height: 100%;
     }
 </style>
