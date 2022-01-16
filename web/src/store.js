@@ -3,7 +3,7 @@ import {writable} from 'svelte/store';
 export const selectedNode = writable({
     Name: '',
     ParentName: '', 
-    Type: ''
+    Type: '',
 });
 
 export const nodeTreeRoot = writable({
@@ -20,4 +20,8 @@ export const profileTreeRoot = writable({
     children: []
 });
 
-
+export const navRoute = writable ({
+    Paths: [],
+    Views: [],
+    ViewSelect: ''
+});

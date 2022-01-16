@@ -1,6 +1,7 @@
 <script>
     import { nodeTreeRoot } from '../store';
     import { selectedNode } from '../store.js';
+    import { navRoute } from '../store.js';
 
     import { onMount } from "svelte";
     

@@ -1,6 +1,6 @@
 <script>
 	import { link } from "svelte-spa-router";
-import { text } from "svelte/internal";
+	import { navRoute } from './store.js';
 	
 	let isActive=false;
 </script>
@@ -27,30 +27,34 @@ import { text } from "svelte/internal";
 
 		<div class="navbar-end">
 
-			<div class="navbar-item breadcrumb-right-padding">
-				<nav class="breadcrumb is-medium is-right" aria-label="breadcrumbs">
-					<ul>
-					  <li class="is-active has-text-white" ><a class="has-text-white">Profile</a></li>
-					  <li class="is-active has-text-white" ><a class="has-text-white">abc</a></li>
-					  <li class="is-active has-text-white" ><a class="has-text-white">def</a></li>
-					</ul>
-				  </nav>
-			</div>
-			
-			<div class="navbar-item viewmenu-left-padding">
-				<div class="select is-small">
-					<select class="">
-						<option>View: Config</option>
-						<option>View: Report</option>
-					</select>
+			{#if $navRoute.ViewSelect == ''}
+			<p></p>
+			{:else}
+				<div class="navbar-item breadcrumb-right-padding">
+					<nav class="breadcrumb is-medium is-right" aria-label="breadcrumbs">
+						<ul>
+							{#each $navRoute.Paths as path}
+								<!-- svelte-ignore a11y-missing-attribute -->
+								<li class="is-active has-text-white" ><a class="has-text-white">{path}</a></li>
+							{/each}
+						</ul>
+					</nav>
 				</div>
-			</div>
+				
+				<div class="navbar-item viewmenu-left-padding">
+					<div class="select is-small">
+						<select class="">
+							{#each  $navRoute.Views as v}
+								<option>{v}</option>	
+							{/each}
+						</select>
+					</div>
+				</div>
 
-			<div class="navbar-item">
-				<div class="vl" />
-			</div>
-
-
+				<div class="navbar-item">
+					<div class="vl" />
+				</div>
+			{/if}
 
 			<div class="navbar-item">
 				<div class="buttons">

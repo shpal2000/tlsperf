@@ -1,6 +1,7 @@
 <script>
     import { profileTreeRoot } from '../store';
     import { selectedNode } from '../store.js';
+    import { navRoute } from '../store.js';
     import Chart from 'chart.js/auto';
     import { onMount } from "svelte";
     import {replace} from "svelte-spa-router";
@@ -131,14 +132,20 @@
 
     onMount ( () => {
 
-        $selectedNode.ParentName = params.profileGroupName
-        $selectedNode.Name = params.profileName
+        $selectedNode.ParentName = params.profileGroupName;
+        $selectedNode.Name = params.profileName;
         $selectedNode.Type = 'Profile';
+
+        $navRoute.Paths = ['Traffic Profiles', params.profileGroupName, params.profileName];
+        $navRoute.Views = ['Config View', 'Stats View'];
 
         if (params.anchor == 'stats'){
           activeTab = 'Stats';
+          $navRoute.ViewSelect = 'Stats View';
+        } else {
+          activeTab = 'Config';
+          $navRoute.ViewSelect = 'Config View';
         }
-
 
         console.log($profileTreeRoot.children);
 
