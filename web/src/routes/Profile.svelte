@@ -21,10 +21,6 @@
     let chartCanvasThpt;
     let chartThpt;
     
-    let chartCtxLatency;
-    let chartCanvasLatency;
-    let chartLatency;
-    
     
     let data = {
               labels: chartLabels,
@@ -75,6 +71,43 @@
         Port: 443}
     ];
 
+    const statsHeaders = [
+      {key: 'Name', value: 'Name'},
+      {key: 'Client', value: 'Client'},
+      {key: 'Server', value: 'Server'},
+    ];
+
+    const statsData = [
+      {id: 1,
+        Name: 'TcpConnInit',
+        Client: 100,
+        Server: 0},
+
+        {id: 2,
+        Name: 'TcpEstablished',
+        Client: 100,
+        Server: 100},
+
+        {id: 3,
+        Name: 'SslConnInit',
+        Client: 100,
+        Server: 0},
+
+        {id: 4,
+        Name: 'SslEstablished',
+        Client: 100,
+        Server: 100},
+
+        {id: 5,
+        Name: 'ActiveConn',
+        Client: 1,
+        Server: 1},
+
+        {id: 6,
+        Name: 'ResetRcvd',
+        Client: 1,
+        Server: 1}
+    ];
 
     function onConfigClick(e) {
       activeTab='Config';
@@ -168,30 +201,6 @@
             }
         });
 
-        chartCtxLatency = chartCanvasLatency.getContext('2d');
-        chartLatency = new Chart(chartCtxLatency, {
-            type: 'line',
-            data: data,
-            options: {
-              animation:{
-                duration: 0
-              },
-
-              interaction: {
-                intersect: false
-              },
-
-              plugins: {
-                legend: false
-              },
-
-              scales: {
-                x: {
-                  type: 'linear'
-                }
-              }
-            }
-        });
         // const interval = setInterval(() => {
         //     fetch(`api/tlsfront_stats`)
         //             .then((response) => response.json())
@@ -253,7 +262,7 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Total Transactions</label>
+                      <label class="label ">Transactions</label>
                       <div class="control">
                         <input class="input " type="text" placeholder="Text input">
                       </div>
@@ -263,7 +272,7 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Data Bytes</label>
+                      <label class="label ">DataLength</label>
                       <div class="control">
                         <input class="input " type="text" placeholder="Text input">
                       </div>
@@ -283,7 +292,7 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Max Pipeline</label>
+                      <label class="label ">MaxPipeline</label>
                       <div class="control">
                         <input class="input " type="text" placeholder="Text input">
                       </div>
@@ -305,7 +314,11 @@
           <div class="tile is-6 is-parent">
 
             <div class="tile is-child my-border">
-              <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
+              <DataTable
+              size="short"
+              headers={statsHeaders}
+              rows={statsData}
+              />
             </div>
           </div>
         </div>
@@ -317,12 +330,12 @@
         <div class="tile is-ancestor is-mobile">
           <div class="tile is-6 is-parent">
             <div class="tile is-child my-border">
-              <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
+              <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
             </div>
           </div>
           <div class="tile is-6 is-parent">
             <div class="tile is-child my-border">
-              <canvas bind:this={chartCanvasLatency} id="latencyChart"></canvas>
+              <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
             </div>
           </div>
         </div>
