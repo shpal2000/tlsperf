@@ -10,6 +10,33 @@
     export let params = {};
     let activeTab = 'Config';
 
+    let chartValues = [];
+    let chartLabels = [];
+
+    let chartCtxCps;
+    let chartCanvasCps;
+    let chartCps;
+
+    let chartCtxThpt;
+    let chartCanvasThpt;
+    let chartThpt;
+    
+    let chartCtxLatency;
+    let chartCanvasLatency;
+    let chartLatency;
+    
+    
+    let data = {
+              labels: chartLabels,
+              datasets: [{
+                  label: '',
+                  backgroundColor: 'rgb(255, 99, 132)',
+                  borderColor: 'rgb(255, 99, 132)',
+                  data: chartValues
+              }]
+        };
+
+
     const csGroupHeaders = [
       {key: 'Group', value: 'Group'},
       {key: 'Client', value: 'Client'},
@@ -90,6 +117,81 @@
         $profileTreeRoot.expanded = true;
         $profileTreeRoot.children = $profileTreeRoot.children;
 
+
+        chartCtxCps = chartCanvasCps.getContext('2d');
+        chartCps = new Chart(chartCtxCps, {
+            type: 'line',
+            data: data,
+            options: {
+              animation:{
+                duration: 0
+              },
+
+              interaction: {
+                intersect: false
+              },
+
+              plugins: {
+                legend: false
+              },
+
+              scales: {
+                x: {
+                  type: 'linear'
+                }
+              }
+            }
+        });
+
+        chartCtxThpt = chartCanvasThpt.getContext('2d');
+        chartThpt = new Chart(chartCtxThpt, {
+            type: 'line',
+            data: data,
+            options: {
+              animation:{
+                duration: 0
+              },
+
+              interaction: {
+                intersect: false
+              },
+
+              plugins: {
+                legend: false
+              },
+
+              scales: {
+                x: {
+                  type: 'linear'
+                }
+              }
+            }
+        });
+
+        chartCtxLatency = chartCanvasLatency.getContext('2d');
+        chartLatency = new Chart(chartCtxLatency, {
+            type: 'line',
+            data: data,
+            options: {
+              animation:{
+                duration: 0
+              },
+
+              interaction: {
+                intersect: false
+              },
+
+              plugins: {
+                legend: false
+              },
+
+              scales: {
+                x: {
+                  type: 'linear'
+                }
+              }
+            }
+        });
         // const interval = setInterval(() => {
         //     fetch(`api/tlsfront_stats`)
         //             .then((response) => response.json())
@@ -123,22 +225,20 @@
   </ul>
 </nav>
 
-<div class="tabs is-left main-margin is-boxed">
+<!-- <div class="tabs is-left main-margin is-boxed">
   <ul>
     <li class="{activeTab=='Config' ? 'is-active' : ''}" on:click={onConfigClick}>
-      <!-- svelte-ignore a11y-missing-attribute -->
       <a>
         <span>Config</span>
       </a>
     </li>
     <li class="{activeTab=='Stats' ? 'is-active' : ''}" on:click={onStatsClick}>
-        <!-- svelte-ignore a11y-missing-attribute -->
         <a>
           <span>Stats</span>
         </a>
     </li>
   </ul>
-</div>
+</div> -->
 
 <div class="container profile-content profile-content-margin">
   {#if activeTab=='Config'}
@@ -192,10 +292,10 @@
                 </div>
                 <div class="field is-grouped">
                   <div class="control">
-                    <button class="button  is-info">Start</button>
+                    <button class="button  is-info">Run</button>
                   </div>
                   <div class="control">
-                    <button class="button  is-light">Update</button>
+                    <button class="button  is-light">Save</button>
                   </div>
                 </div>
               </section> 
@@ -204,9 +304,25 @@
           </div>
           <div class="tile is-6 is-parent">
 
-            <div class="tile is-child my-border has-background-dark">
-              <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label class="label has-text-white ">~/log$ </label>
+            <div class="tile is-child my-border">
+              <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="column is-1"></div>
+
+      <div class="column is-1"></div>
+      <div class="column is-10">
+        <div class="tile is-ancestor is-mobile">
+          <div class="tile is-6 is-parent">
+            <div class="tile is-child my-border">
+              <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
+            </div>
+          </div>
+          <div class="tile is-6 is-parent">
+            <div class="tile is-child my-border">
+              <canvas bind:this={chartCanvasLatency} id="latencyChart"></canvas>
             </div>
           </div>
         </div>
@@ -325,7 +441,7 @@
                   <div class="column is-half">
                     <div class="field is-grouped">
                       <div class="control">
-                        <button class="button is-small is-info">Update</button>
+                        <button class="button is-small is-info">Save</button>
                       </div>
                       <div class="control">
                         <button class="button is-small is-light">Cancel</button>
@@ -359,8 +475,8 @@
 
 <style>
     .breadcrumb-margin {
-      margin-top: 4px;
-      margin-left: 1.6rem;
+      margin-top: 8px;
+      margin-left: 2.5rem;
     }
 
     .my-border {
