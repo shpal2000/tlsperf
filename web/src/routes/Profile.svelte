@@ -1,14 +1,53 @@
 <script>
     import { profileTreeRoot } from '../store';
     import { selectedNode } from '../store.js';
-    import CsGroups from '../CsGroups.svelte';
     import Chart from 'chart.js/auto';
     import { onMount } from "svelte";
     import {replace} from "svelte-spa-router";
+    import { DataTable } from "carbon-components-svelte";
+    import "carbon-components-svelte/css/white.css";
     
     export let params = {};
     let activeTab = 'Config';
-    let cs_groups = [{}];
+
+    const csGroupHeaders = [
+      {key: 'Group', value: 'Group'},
+      {key: 'Client', value: 'Client'},
+      {key: 'Server', value: 'Server'},
+      {key: 'Protocol', value: 'Protocol'},
+      {key: 'Port', value: 'Port'},
+    ];
+
+    const csGroupsData = [
+      {id: 1,
+        Group: 'Group1',
+        Client: '12.51.0.0/16',
+        Server: '12.61.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 2,
+        Group: 'Group2',
+        Client: '12.52.0.0/16',
+        Server: '12.62.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 3,
+        Group: 'Group3',
+        Client: '12.53.0.0/16',
+        Server: '12.63.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 4,
+        Group: 'Group4',
+        Client: '12.54.0.0/16',
+        Server: '12.64.0.0/16',
+        Protocol: 'SSL',
+        Port: 443}
+    ];
+
 
     function onConfigClick(e) {
       activeTab='Config';
@@ -153,10 +192,10 @@
                 </div>
                 <div class="field is-grouped">
                   <div class="control">
-                    <button class="button  is-info">Run</button>
+                    <button class="button  is-info">Start</button>
                   </div>
                   <div class="control">
-                    <button class="button  is-light">Stop</button>
+                    <button class="button  is-light">Save</button>
                   </div>
                 </div>
               </section> 
@@ -167,7 +206,7 @@
 
             <div class="tile is-child my-border has-background-dark">
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label class="label has-text-white">~/log$ </label>
+              <label class="label has-text-white ">~/log$ </label>
             </div>
           </div>
         </div>
@@ -178,7 +217,23 @@
       <div class="column is-10">
         <!-- svelte-ignore a11y-label-has-associated-control -->
         <label class="label ">Traffic Paths:</label>
-        <CsGroups bind:cs_groups={cs_groups}/>
+        <DataTable
+          expandable
+          headers={csGroupHeaders}
+          rows={csGroupsData}
+          >
+          <div slot="expanded-row" let:row>
+            <div class="columns is-multiline is-mobile">
+              <div class="column is-half">
+                <p>Client</p>
+              </div>
+
+              <div class="column is-half">
+                <p>Server</p>
+              </div>
+            </div>
+          </div>
+        </DataTable>
       </div>
       <div class="column is-1"></div>
     </div>
