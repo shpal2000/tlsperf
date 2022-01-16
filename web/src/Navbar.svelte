@@ -27,16 +27,31 @@ import { text } from "svelte/internal";
 
 		<div class="navbar-end">
 
-			<div class="navbar-item">
-				<nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
+			<div class="navbar-item breadcrumb-right-padding">
+				<nav class="breadcrumb is-medium is-right" aria-label="breadcrumbs">
 					<ul>
-					  <li class="is-active" ><a>Profile</a></li>
-					  <li class="is-active" ><a>abc</a></li>
-					  <li class="is-active" ><a>def</a></li>
+					  <li class="is-active has-text-white" ><a class="has-text-white">Profile</a></li>
+					  <li class="is-active has-text-white" ><a class="has-text-white">abc</a></li>
+					  <li class="is-active has-text-white" ><a class="has-text-white">def</a></li>
 					</ul>
 				  </nav>
 			</div>
 			
+			<div class="navbar-item viewmenu-left-padding">
+				<div class="select is-small">
+					<select class="">
+						<option>View: Config</option>
+						<option>View: Report</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="navbar-item">
+				<div class="vl" />
+			</div>
+
+
+
 			<div class="navbar-item">
 				<div class="buttons">
 					<button class="button is-info is-small">Sign in</button>
@@ -51,5 +66,18 @@ import { text } from "svelte/internal";
 	.mynavbar {
 		position:sticky;
 		border-bottom: 1px solid lightgray;
+	}
+
+	.vl {
+		border-left: 1px solid whitesmoke;
+		height: 1.5rem;
+	}
+
+	.breadcrumb-right-padding {
+		padding-right: 0px;
+	}
+
+	.viewmenu-left-padding {
+		padding-left: 0px;
 	}
 </style>
