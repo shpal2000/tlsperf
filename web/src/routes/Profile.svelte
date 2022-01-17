@@ -147,11 +147,11 @@
           $navRoute.ViewSelect = 'Config View';
         }
 
-        console.log($profileTreeRoot.children);
+        // console.log($profileTreeRoot.children);
 
         let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==params.profileGroupName);
 
-        console.log(profileGroup);
+        // console.log(profileGroup);
         profileGroup.expanded = true;
 
         $profileTreeRoot.expanded = true;

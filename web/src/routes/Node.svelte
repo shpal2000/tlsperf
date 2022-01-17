@@ -14,12 +14,15 @@
         $selectedNode.Name = params.nodeName;
         $selectedNode.Type = 'Node';
 
+        $navRoute.Paths = ['Traffic Nodes', params.nodeGroupName, params.nodeName];
+        $navRoute.Views = [];
+        $navRoute.ViewSelect = 'SingleView';
 
-        console.log($nodeTreeRoot.children);
+        // console.log($nodeTreeRoot.children);
 
         let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==params.nodeGroupName);
 
-        console.log(nodeGroup);
+        // console.log(nodeGroup);
         nodeGroup.expanded = true;
 
         $nodeTreeRoot.expanded = true;

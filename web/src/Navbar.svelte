@@ -41,15 +41,20 @@
 					</nav>
 				</div>
 				
-				<div class="navbar-item viewmenu-left-padding">
-					<div class="select is-small">
-						<select class="">
-							{#each  $navRoute.Views as v}
-								<option>{v}</option>	
-							{/each}
-						</select>
-					</div>
-				</div>
+				{#if $navRoute.ViewSelect == 'SingleView'}
+					<p></p>
+				{:else}
+					<div class="navbar-item viewmenu-left-padding">
+						<div class="select is-small">
+							<select class="">
+								{#each  $navRoute.Views as v}
+									<option>{v}</option>	
+								{/each}
+							</select>
+						</div>
+					</div>					
+				{/if}
+
 
 				<div class="navbar-item">
 					<div class="vl" />
