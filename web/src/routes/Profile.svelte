@@ -6,10 +6,12 @@
     import { onMount } from "svelte";
     import {replace} from "svelte-spa-router";
     import { DataTable } from "carbon-components-svelte";
+    import NotFound from "./NotFound.svelte";
     import "carbon-components-svelte/css/white.css";
     
     export let params = {};
     let activeTab = 'Config';
+    let profileFound = true;
 
     let chartValues = [];
     let chartLabels = [];
@@ -132,103 +134,109 @@
 
     onMount ( () => {
 
-        $selectedNode.ParentName = params.profileGroupName;
-        $selectedNode.Name = params.profileName;
-        $selectedNode.Type = 'Profile';
-
-        $navRoute.Paths = ['Traffic Profiles', params.profileGroupName, params.profileName];
-        $navRoute.Views = ['Config View', 'Stats View'];
-
-        if (params.anchor == 'stats'){
-          activeTab = 'Stats';
-          $navRoute.ViewSelect = 'Stats View';
-        } else {
-          activeTab = 'Config';
-          $navRoute.ViewSelect = 'Config View';
-        }
-
+        let profileSelected = null;
         // console.log($profileTreeRoot.children);
-
         let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==params.profileGroupName);
-
         // console.log(profileGroup);
-        profileGroup.expanded = true;
+        if (profileGroup) {
+          profileSelected = profileGroup.children.find (p => p.Name==params.profileName);
+          // console.log(profileSelected);
+        }
+        if (!profileSelected){
+          profileFound = false;
+        } else {
+          $selectedNode.ParentName = params.profileGroupName;
+          $selectedNode.Name = params.profileName;
+          $selectedNode.Type = 'Profile';
 
-        $profileTreeRoot.expanded = true;
-        $profileTreeRoot.children = $profileTreeRoot.children;
+          $navRoute.Paths = ['Traffic Profiles', params.profileGroupName, params.profileName];
+          $navRoute.Views = ['Config View', 'Stats View'];
+
+          if (params.anchor == 'stats'){
+            activeTab = 'Stats';
+            $navRoute.ViewSelect = 'Stats View';
+          } else {
+            activeTab = 'Config';
+            $navRoute.ViewSelect = 'Config View';
+          }
 
 
-        chartCtxCps = chartCanvasCps.getContext('2d');
-        chartCps = new Chart(chartCtxCps, {
-            type: 'line',
-            data: data,
-            options: {
-              animation:{
-                duration: 0
-              },
+          profileGroup.expanded = true;
 
-              interaction: {
-                intersect: false
-              },
+          $profileTreeRoot.expanded = true;
+          $profileTreeRoot.children = $profileTreeRoot.children;
 
-              plugins: {
-                legend: false
-              },
 
-              scales: {
-                x: {
-                  type: 'linear'
+          chartCtxCps = chartCanvasCps.getContext('2d');
+          chartCps = new Chart(chartCtxCps, {
+              type: 'line',
+              data: data,
+              options: {
+                animation:{
+                  duration: 0
+                },
+
+                interaction: {
+                  intersect: false
+                },
+
+                plugins: {
+                  legend: false
+                },
+
+                scales: {
+                  x: {
+                    type: 'linear'
+                  }
                 }
               }
-            }
-        });
+          });
 
-        chartCtxThpt = chartCanvasThpt.getContext('2d');
-        chartThpt = new Chart(chartCtxThpt, {
-            type: 'line',
-            data: data,
-            options: {
-              animation:{
-                duration: 0
-              },
+          chartCtxThpt = chartCanvasThpt.getContext('2d');
+          chartThpt = new Chart(chartCtxThpt, {
+              type: 'line',
+              data: data,
+              options: {
+                animation:{
+                  duration: 0
+                },
 
-              interaction: {
-                intersect: false
-              },
+                interaction: {
+                  intersect: false
+                },
 
-              plugins: {
-                legend: false
-              },
+                plugins: {
+                  legend: false
+                },
 
-              scales: {
-                x: {
-                  type: 'linear'
+                scales: {
+                  x: {
+                    type: 'linear'
+                  }
                 }
               }
-            }
-        });
+          });
 
-        // const interval = setInterval(() => {
-        //     fetch(`api/tlsfront_stats`)
-        //             .then((response) => response.json())
-        //             .then((results) => {
-        //                 deployments = results;
-        //                 data.labels = [...Array(10).keys()];
-        //                 data.datasets= Object.keys(deployments).map(k => ({
-        //                                 label: k,
-        //                                 fill: true,
-        //                                 borderColor: "#ffa700",
-        //                                 backgroundColor: "#fafad2",
-        //                                 data: deployments[k].sum.map(v => v.tlsfrontThroughput)
-        //                               }));
-        //                 chartCps.update();
-        //             });
-        // }, 1000);
-        // return () => {
-        //   clearInterval(interval);
-        // };
-
-  
+          // const interval = setInterval(() => {
+          //     fetch(`api/tlsfront_stats`)
+          //             .then((response) => response.json())
+          //             .then((results) => {
+          //                 deployments = results;
+          //                 data.labels = [...Array(10).keys()];
+          //                 data.datasets= Object.keys(deployments).map(k => ({
+          //                                 label: k,
+          //                                 fill: true,
+          //                                 borderColor: "#ffa700",
+          //                                 backgroundColor: "#fafad2",
+          //                                 data: deployments[k].sum.map(v => v.tlsfrontThroughput)
+          //                               }));
+          //                 chartCps.update();
+          //             });
+          // }, 1000);
+          // return () => {
+          //   clearInterval(interval);
+          // };
+        }
     });
 
 </script>
@@ -256,6 +264,7 @@
   </ul>
 </div> -->
 
+{#if profileFound}
 <div class="container profile-content profile-content-margin">
   {#if activeTab=='Config'}
     <div class="columns is-multiline is-mobile">
@@ -490,6 +499,9 @@
     </div>
   {/if}
 </div>
+{:else}
+  <NotFound />
+{/if}
 
 
 
