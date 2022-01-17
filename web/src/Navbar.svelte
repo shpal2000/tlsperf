@@ -1,8 +1,16 @@
 <script>
 	import { link } from "svelte-spa-router";
 	import { navRoute } from './store.js';
+	import {replace} from "svelte-spa-router";
 	
 	let isActive=false;
+	let navRouteViewSelected;
+
+	function onNavRouteViewChange (e) {
+		replace('/blank');
+		replace($navRoute.Route + '/' + navRouteViewSelected)
+	}
+
 </script>
 
 <svelte:window on:resize="{() => isActive=false}"/>
@@ -46,9 +54,9 @@
 				{:else}
 					<div class="navbar-item viewmenu-left-padding">
 						<div class="select is-small">
-							<select class="">
+							<select bind:value={navRouteViewSelected} on:change={onNavRouteViewChange}>
 								{#each  $navRoute.Views as v}
-									<option>{v}</option>	
+									<option value={v} selected={v===$navRoute.ViewSelect} >{v}</option>	
 								{/each}
 							</select>
 						</div>

@@ -149,17 +149,21 @@
           $selectedNode.Name = params.profileName;
           $selectedNode.Type = 'Profile';
 
+          $navRoute.Route = '/profile/' 
+                            + params.profileGroupName
+                            + '/'
+                            + params.profileName;
           $navRoute.Paths = ['Traffic Profiles', params.profileGroupName, params.profileName];
-          $navRoute.Views = ['Config View', 'Stats View'];
+          $navRoute.Views = ['Config', 'Stats'];
 
-          if (params.anchor == 'stats'){
-            activeTab = 'Stats';
-            $navRoute.ViewSelect = 'Stats View';
-          } else {
-            activeTab = 'Config';
-            $navRoute.ViewSelect = 'Config View';
+          activeTab = $navRoute.Views[0];
+          if (params.anchor) {
+            if (params.anchor.toLowerCase() == 'stats'){
+              activeTab = $navRoute.Views[1];
+            }
           }
 
+          $navRoute.ViewSelect = activeTab;
 
           profileGroup.expanded = true;
 

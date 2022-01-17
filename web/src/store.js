@@ -21,7 +21,9 @@ export const profileTreeRoot = writable({
 });
 
 export const navRoute = writable ({
+    Route: '',
     Paths: [],
     Views: [],
-    ViewSelect: ''
+    ViewSelect: '',
+    ViewSelectPath: ''
 });
