@@ -4,14 +4,14 @@
     import { navRoute } from '../store.js';
     import { routeViewState } from '../store.js';
     import Chart from 'chart.js/auto';
-    import { onMount } from "svelte";
+    import { afterUpdate, onMount } from "svelte";
     import {replace} from "svelte-spa-router";
     import { DataTable } from "carbon-components-svelte";
     import NotFound from "./NotFound.svelte";
     import "carbon-components-svelte/css/white.css";
     
     export let params = {};
-    let activeTab = 'Config';
+    let activeTab = '';
     let profileFound = true;
 
     let chartValues = [];
@@ -70,6 +70,20 @@
         Group: 'Group4',
         Client: '12.54.0.0/16',
         Server: '12.64.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 5,
+        Group: 'Group5',
+        Client: '12.55.0.0/16',
+        Server: '12.65.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 6,
+        Group: 'Group6',
+        Client: '12.56.0.0/16',
+        Server: '12.66.0.0/16',
         Protocol: 'SSL',
         Port: 443}
     ];
@@ -263,6 +277,61 @@
           // };
         }
     });
+
+    // afterUpdate ( () => {
+
+    //   if (activeTab == 'Stats') {
+    //     chartCtxCps = chartCanvasCps.getContext('2d');
+    //     chartCps = new Chart(chartCtxCps, {
+    //         type: 'line',
+    //         data: data,
+    //         options: {
+    //           animation:{
+    //             duration: 0
+    //           },
+
+    //           interaction: {
+    //             intersect: false
+    //           },
+
+    //           plugins: {
+    //             legend: false
+    //           },
+
+    //           scales: {
+    //             x: {
+    //               type: 'linear'
+    //             }
+    //           }
+    //         }
+    //     });
+
+    //     chartCtxThpt = chartCanvasThpt.getContext('2d');
+    //     chartThpt = new Chart(chartCtxThpt, {
+    //         type: 'line',
+    //         data: data,
+    //         options: {
+    //           animation:{
+    //             duration: 0
+    //           },
+
+    //           interaction: {
+    //             intersect: false
+    //           },
+
+    //           plugins: {
+    //             legend: false
+    //           },
+
+    //           scales: {
+    //             x: {
+    //               type: 'linear'
+    //             }
+    //           }
+    //         }
+    //     });
+    //   }
+    // });
 
 </script>
 
@@ -540,6 +609,10 @@
 
     .inactive-background {
       background-color: whitesmoke;
+    }
+
+    .profile-content-margin {
+      margin-top: 3rem;
     }
 
 </style>
