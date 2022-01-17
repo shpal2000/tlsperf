@@ -24,8 +24,7 @@
     let chartCtxThpt;
     let chartCanvasThpt;
     let chartThpt;
-    
-    
+
     let data = {
               labels: chartLabels,
               datasets: [{
@@ -114,7 +113,7 @@
     ];
 
     function onConfigClick(e) {
-      activeTab='Config';
+      replace('/blank');
       replace ('/profile/' 
                 + params.profileGroupName
                 + '/' 
@@ -124,7 +123,7 @@
     }
 
     function onStatsClick(e) {
-      activeTab='Stats';
+      replace('/blank');
       replace ('/profile/' 
                 + params.profileGroupName
                 + '/' 
@@ -266,28 +265,28 @@
 
 </script>
 
-<!-- <nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
+<nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
   <ul>
-    <li class="is-active" ><a>Profile</a></li>
-    <li class="is-active" ><a>{params.profileGroupName}</a></li>
-    <li class="is-active" ><a>{params.profileName}</a></li>
+    {#each $navRoute.Paths as path}
+      <li class="is-active" ><a>{path}</a></li>
+    {/each}
   </ul>
-</nav> -->
+</nav>
 
-<!-- <div class="tabs is-left main-margin is-boxed">
+<div class="tabs is-left is-boxed">
   <ul>
-    <li class="{activeTab=='Config' ? 'is-active' : ''}" on:click={onConfigClick}>
+    <li class="{activeTab=='Config' ? 'is-active' : 'inactive-background'}" on:click={onConfigClick}>
       <a>
         <span>Config</span>
       </a>
     </li>
-    <li class="{activeTab=='Stats' ? 'is-active' : ''}" on:click={onStatsClick}>
+    <li class="{activeTab=='Stats' ? 'is-active' : 'inactive-background'}" on:click={onStatsClick}>
         <a>
           <span>Stats</span>
         </a>
     </li>
   </ul>
-</div> -->
+</div>
 
 {#if profileFound}
 <div class="container profile-content profile-content-margin">
@@ -532,8 +531,8 @@
 
 <style>
     .breadcrumb-margin {
-      margin-top: 8px;
-      margin-left: 2.5rem;
+      margin-top: 4px;
+      margin-left: 1.1rem;
     }
 
     .my-border {
@@ -544,14 +543,8 @@
       padding-bottom: 15px;
     }
 
-    .main-margin {
-      margin-top: 4px;
-      margin-right: 1.6rem;
-      margin-left: 1.6rem;
-    }
-
-    .profile-content-margin {
-      margin-top: 2rem;
+    .inactive-background {
+      background-color: whitesmoke;
     }
 
 </style>

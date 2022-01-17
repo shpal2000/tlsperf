@@ -1,14 +1,14 @@
 <script>
 	import { link } from "svelte-spa-router";
-	import { navRoute } from './store.js';
+	// import { navRoute } from './store.js';
 	import {replace} from "svelte-spa-router";
 	
 	let isActive=false;
 
-	function onNavRouteViewChange (e) {
-		replace('/blank');
-		replace($navRoute.Route + '/' + $navRoute.ViewSelect);
-	}
+	// function onNavRouteViewChange (e) {
+	// 	replace('/blank');
+	// 	replace($navRoute.Route + '/' + $navRoute.ViewSelect);
+	// }
 
 </script>
 
@@ -34,14 +34,13 @@
 
 		<div class="navbar-end">
 
-			{#if $navRoute.ViewSelect == ''}
+			<!-- {#if $navRoute.ViewSelect == ''}
 			<p></p>
 			{:else}
 				<div class="navbar-item breadcrumb-right-padding">
 					<nav class="breadcrumb is-medium is-right" aria-label="breadcrumbs">
 						<ul>
 							{#each $navRoute.Paths as path}
-								<!-- svelte-ignore a11y-missing-attribute -->
 								<li class="is-active has-text-white" ><a class="has-text-white">{path}</a></li>
 							{/each}
 						</ul>
@@ -66,7 +65,7 @@
 				<div class="navbar-item">
 					<div class="vl" />
 				</div>
-			{/if}
+			{/if} -->
 
 			<div class="navbar-item">
 				<div class="buttons">
