@@ -190,56 +190,57 @@
           $profileTreeRoot.expanded = true;
           $profileTreeRoot.children = $profileTreeRoot.children;
 
+          if (activeTab == 'Stats') {
+            chartCtxCps = chartCanvasCps.getContext('2d');
+            chartCps = new Chart(chartCtxCps, {
+                type: 'line',
+                data: data,
+                options: {
+                  animation:{
+                    duration: 0
+                  },
 
-          chartCtxCps = chartCanvasCps.getContext('2d');
-          chartCps = new Chart(chartCtxCps, {
-              type: 'line',
-              data: data,
-              options: {
-                animation:{
-                  duration: 0
-                },
+                  interaction: {
+                    intersect: false
+                  },
 
-                interaction: {
-                  intersect: false
-                },
+                  plugins: {
+                    legend: false
+                  },
 
-                plugins: {
-                  legend: false
-                },
-
-                scales: {
-                  x: {
-                    type: 'linear'
+                  scales: {
+                    x: {
+                      type: 'linear'
+                    }
                   }
                 }
-              }
-          });
+            });
 
-          chartCtxThpt = chartCanvasThpt.getContext('2d');
-          chartThpt = new Chart(chartCtxThpt, {
-              type: 'line',
-              data: data,
-              options: {
-                animation:{
-                  duration: 0
-                },
+            chartCtxThpt = chartCanvasThpt.getContext('2d');
+            chartThpt = new Chart(chartCtxThpt, {
+                type: 'line',
+                data: data,
+                options: {
+                  animation:{
+                    duration: 0
+                  },
 
-                interaction: {
-                  intersect: false
-                },
+                  interaction: {
+                    intersect: false
+                  },
 
-                plugins: {
-                  legend: false
-                },
+                  plugins: {
+                    legend: false
+                  },
 
-                scales: {
-                  x: {
-                    type: 'linear'
+                  scales: {
+                    x: {
+                      type: 'linear'
+                    }
                   }
                 }
-              }
-          });
+            });
+          }
 
           // const interval = setInterval(() => {
           //     fetch(`api/tlsfront_stats`)
@@ -359,23 +360,6 @@
               headers={statsHeaders}
               rows={statsData}
               />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="column is-1"></div>
-
-      <div class="column is-1"></div>
-      <div class="column is-10">
-        <div class="tile is-ancestor is-mobile">
-          <div class="tile is-6 is-parent">
-            <div class="tile is-child my-border">
-              <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
-            </div>
-          </div>
-          <div class="tile is-6 is-parent">
-            <div class="tile is-child my-border">
-              <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
             </div>
           </div>
         </div>
@@ -517,7 +501,18 @@
     <div class="columns is-multiline is-mobile">
       <div class="column is-1"></div>
       <div class="column is-10">
-        <p>stats</p>
+        <div class="tile is-ancestor is-mobile">
+          <div class="tile is-6 is-parent">
+            <div class="tile is-child my-border">
+              <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
+            </div>
+          </div>
+          <div class="tile is-6 is-parent">
+            <div class="tile is-child my-border">
+              <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="column is-1"></div>
     </div>
