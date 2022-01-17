@@ -24,6 +24,8 @@ export const navRoute = writable ({
     Route: '',
     Paths: [],
     Views: [],
-    ViewSelect: '',
-    ViewSelectPath: ''
+    ViewSelect: ''
+});
+
+export const routeViewState = writable ({
 });

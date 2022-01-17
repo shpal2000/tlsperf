@@ -4,11 +4,10 @@
 	import {replace} from "svelte-spa-router";
 	
 	let isActive=false;
-	let navRouteViewSelected;
 
 	function onNavRouteViewChange (e) {
 		replace('/blank');
-		replace($navRoute.Route + '/' + navRouteViewSelected)
+		replace($navRoute.Route + '/' + $navRoute.ViewSelect);
 	}
 
 </script>
@@ -54,9 +53,9 @@
 				{:else}
 					<div class="navbar-item viewmenu-left-padding">
 						<div class="select is-small">
-							<select bind:value={navRouteViewSelected} on:change={onNavRouteViewChange}>
+							<select bind:value={$navRoute.ViewSelect} on:change={onNavRouteViewChange}>
 								{#each  $navRoute.Views as v}
-									<option value={v} selected={v===$navRoute.ViewSelect} >{v}</option>	
+									<option value={v}>{v}</option>	
 								{/each}
 							</select>
 						</div>

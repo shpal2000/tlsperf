@@ -2,6 +2,7 @@
     import { profileTreeRoot } from '../store';
     import { selectedNode } from '../store.js';
     import { navRoute } from '../store.js';
+    import { routeViewState } from '../store.js';
     import Chart from 'chart.js/auto';
     import { onMount } from "svelte";
     import {replace} from "svelte-spa-router";
@@ -156,14 +157,25 @@
           $navRoute.Paths = ['Traffic Profiles', params.profileGroupName, params.profileName];
           $navRoute.Views = ['Config', 'Stats'];
 
-          activeTab = $navRoute.Views[0];
+          //view state
+          if (!routeViewState[$navRoute.Route]) {
+              routeViewState[$navRoute.Route] = {
+                'ViewSelect' : activeTab
+              };
+          }
           if (params.anchor) {
             if (params.anchor.toLowerCase() == 'stats'){
               activeTab = $navRoute.Views[1];
+              $navRoute.ViewSelect = activeTab;
+              routeViewState[$navRoute.Route]['ViewSelect'] = activeTab;
+            }
+          } else {
+            if (routeViewState[$navRoute.Route]['ViewSelect']) {
+              activeTab = routeViewState[$navRoute.Route]['ViewSelect'];
+              $navRoute.ViewSelect = activeTab;
             }
           }
 
-          $navRoute.ViewSelect = activeTab;
 
           profileGroup.expanded = true;
 
