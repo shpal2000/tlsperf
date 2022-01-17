@@ -47,7 +47,7 @@
 			
 			for (const nodeGroup of nodeGroupList) {
 				const nodeGroupNodeList = nodeList.filter(n => n.NodeGroup==nodeGroup.Name);
-          		const nodeGroupNodeList2 = nodeGroupNodeList.map (n => ({...n, UrlPath: '/node/'+nodeGroup.Name+'/' + n.Name}))
+          		const nodeGroupNodeList2 = nodeGroupNodeList.map (n => ({...n, UrlPath: '/node/'+nodeGroup.Name+'/' + n.Name, UrlPathView: '/node/'+nodeGroup.Name+'/' + n.Name}))
 
 				nodeGroup.expanded = false;
 				nodeGroup.children = nodeGroupNodeList2;
@@ -65,7 +65,7 @@
 			
 			for (const profileGroup of profileGroupList) {
 				const profileGroupNodeList = profileList.filter(n => n.ProfileGroup==profileGroup.Name);
-          		const profileGroupNodeList2 = profileGroupNodeList.map (n => ({...n, UrlPath: '/profile/'+profileGroup.Name+'/' + n.Name}))
+          		const profileGroupNodeList2 = profileGroupNodeList.map (n => ({...n, UrlPath: '/profile/'+profileGroup.Name+'/' + n.Name, UrlPathView: '/profile/'+profileGroup.Name+'/' + n.Name}))
 
 				profileGroup.expanded = false;
 				profileGroup.children = profileGroupNodeList2;

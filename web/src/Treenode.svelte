@@ -37,9 +37,9 @@
     dispatch ('expandToggle', {});
     showMenu = false;
 
-    if (node.UrlPath) {
+    if (node.UrlPathView) {
       replace('/blank');
-      replace(node.UrlPath);
+      replace(node.UrlPathView);
     }
   }
 

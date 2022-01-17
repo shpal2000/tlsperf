@@ -32,7 +32,8 @@
 
     profileGroup.children.push({
                               Name: event.detail.Name,
-                              UrlPath: urlPath
+                              UrlPath: urlPath,
+                              UrlPathView: urlPath
                             });
     
     $selectedNode.Name = event.detail.Name;

@@ -154,15 +154,25 @@
                             + params.profileGroupName
                             + '/'
                             + params.profileName;
+
           $navRoute.Paths = ['Traffic Profiles', params.profileGroupName, params.profileName];
           $navRoute.Views = ['Config', 'Stats'];
 
           //view state
+          activeTab = $navRoute.Views[0];
+          if (params.anchor) {
+            if (params.anchor.toLowerCase() == 'stats') {
+              activeTab = $navRoute.Views[1];
+            }
+          }
+          $navRoute.ViewSelect = activeTab;
+
           if (!routeViewState[$navRoute.Route]) {
               routeViewState[$navRoute.Route] = {
                 'ViewSelect' : activeTab
               };
           }
+
           if (params.anchor) {
             if (params.anchor.toLowerCase() == 'stats'){
               activeTab = $navRoute.Views[1];
@@ -170,11 +180,10 @@
               routeViewState[$navRoute.Route]['ViewSelect'] = activeTab;
             }
           } else {
-            if (routeViewState[$navRoute.Route]['ViewSelect']) {
-              activeTab = routeViewState[$navRoute.Route]['ViewSelect'];
-              $navRoute.ViewSelect = activeTab;
-            }
+            activeTab = routeViewState[$navRoute.Route]['ViewSelect'];
+            $navRoute.ViewSelect = activeTab;
           }
+          profileSelected['UrlPathView'] = profileSelected['UrlPath'] + '/' + $navRoute.ViewSelect;
 
 
           profileGroup.expanded = true;
