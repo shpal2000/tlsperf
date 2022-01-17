@@ -133,6 +133,26 @@ async def api_add_profile_group(request):
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
 
+async def api_start_run(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        profileGroup = r_json['ProfileGroup']
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_col = db[PROFILE_LISTS]
+        profile = profile_col.find_one({'ProfileGroup': profileGroup,
+                                    'Name': name}, {'_id' : False})
+        if profile:
+            v1Api.
+        else:
+            return web.json_response({'status' : -1, 'message': 'tbd'})
+        return web.json_response({'status' : 0})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
+
 async def api_get_stats(request):
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
@@ -179,6 +199,18 @@ app.add_routes([web.route('get'
 app.add_routes([web.route('post'
                             , '/api/profile_groups'
                             , api_add_profile_group)])
+
+app.add_routes([web.route('post'
+                            , '/api/start_run'
+                            , api_start_run)])
+
+app.add_routes([web.route('post'
+                            , '/api/stop_run'
+                            , stop_run)])
+
+# app.add_routes([web.route('get'
+#                             , '/api/run'
+#                             , get_run)])
 
 app.add_routes([web.route('get'
                             , '/api/stats/{appGId:.*}'
