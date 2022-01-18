@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {PodName}
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '[
+            { "name": "{ServerIface}",
+              "ips": [{ServerIPs}]
+            }]'
+spec:
+  containers:
+  - name: {PodName}
+    image: tlspack/tlsperf:latest
+    imagePullPolicy: Always
+    command: ["tlsserver.exe"]
+    args: []
+    env:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+    volumeMounts:
+    - name: config-volume
+      mountPath: /configs/
+  volumes:
+  - name: config-volume
+    configMap:
+      name: {PodName} 
+  nodeSelector:
+    tgid: {ServerNodeLabel}

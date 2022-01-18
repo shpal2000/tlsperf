@@ -6,6 +6,7 @@ import json
 import subprocess
 import time
 from pymongo import MongoClient
+import yaml
 
 import kubernetes.client
 
@@ -19,8 +20,6 @@ k8s_config.host='https://kubernetes.default.svc'
 k8s_config.ssl_ca_cert='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 v1Api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
 
-
-
 DB_CSTRING = 'localhost:27017'
 DB_NAME = 'tlsperf_db'
 REALTIME_STATS = 'tlsperf_realtime_stats'
@@ -30,6 +29,37 @@ PROFILE_GROUPS= 'tlsperf_profile_groups'
 PROFILE_LISTS= 'tlsperf_profile_list'
 
 stats_ticks = 60
+
+tlsclient_config_map_template = {
+    'apiVersion': 'v1', 
+    'kind': 'ConfigMap', 
+    'metadata': {'name': '--tbd--'}, 
+    'data': {'config.json': '--tbd--'}
+}
+
+tlsclient_config_json_template = {
+    'app_id': 'client-001', 
+    'app_gid': 'tlsclient', 
+    'server_ip': '12.20.61.1', 
+    'server_port': 443, 
+    'server_ssl': 1, 
+    'stats_ip': 
+    '172.31.27.11', 
+    'stats_port': 30008, 
+    'send_recv_len': 1, 
+    'cps': 750, 
+    'total_conn_count': 0, 
+    'max_active_conn_count': 25
+}
+
+def start_tlsserver_tlsclient(prof_j):
+
+    clients = []
+    servers = []
+
+    for csg in prof_j['CsGroups']:
+        pass
+
 
 def localcmd(cmd_str, check_ouput=False):
     if check_ouput:
