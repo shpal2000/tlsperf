@@ -3,9 +3,6 @@
 
     export let isActive;
     let Name = '';
-    let SshIP = '';
-    let SshUser = '';
-    let SshPass = '';
 
     import { createEventDispatcher } from "svelte";
 
@@ -17,10 +14,7 @@
         method: 'POST',
         body: JSON.stringify({
           Name,
-          SshIP,
-          SshUser,
-          SshPass,
-          ProfileGroup : $selectedNode.Name
+          Group : $selectedNode.Name
         })
       });
 

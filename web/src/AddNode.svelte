@@ -20,7 +20,7 @@
           SshIP,
           SshUser,
           SshPass,
-          NodeGroup : $selectedNode.Name
+          Group : $selectedNode.Name
         })
       });
 

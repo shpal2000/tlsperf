@@ -43,14 +43,22 @@ tlsclient_config_json_template = {
     'server_ip': '12.20.61.1', 
     'server_port': 443, 
     'server_ssl': 1, 
-    'stats_ip': 
-    '172.31.27.11', 
+    'stats_ip': '172.31.27.11', 
     'stats_port': 30008, 
     'send_recv_len': 1, 
     'cps': 750, 
     'total_conn_count': 0, 
     'max_active_conn_count': 25
 }
+
+tlsclient_pod_template = {
+    'apiVersion': 'v1', 
+    'kind': 'Pod', 
+    'metadata': {'name': 'client-001', 
+                 'annotations': { 'k8s.v1.cni.cncf.io/networks': '[ { "name": "eth0", "ips": [ "12.20.51.1/16", "12.20.51.2/16", "12.20.51.3/16", "100.20.51.1/16", "100.20.51.2/16", "100.20.51.3/16"] }]'
+                }
+    }, 
+    'spec': {'containers': [{'name': 'client-001', 'image': 'tlspack/tlsperf:latest', 'imagePullPolicy': 'Always', 'command': ['tlsclient.exe'], 'args': [], 'env': [{'name': 'MY_POD_IP', 'valueFrom': {'fieldRef': {'fieldPath': 'status.podIP'}}}], 'volumeMounts': [{'name': 'config-volume', 'mountPath': '/configs/'}]}], 'volumes': [{'name': 'config-volume', 'configMap': {'name': 'client-001'}}], 'nodeSelector': {'tgid': 'kube-node1'}}}
 
 def start_tlsserver_tlsclient(prof_j):
 
@@ -176,7 +184,7 @@ async def api_start_run(request):
         profile = profile_col.find_one({'ProfileGroup': profileGroup,
                                     'Name': name}, {'_id' : False})
         if profile:
-            v1Api.
+            pass #v1Api.
         else:
             return web.json_response({'status' : -1, 'message': 'tbd'})
         return web.json_response({'status' : 0})
@@ -234,9 +242,9 @@ app.add_routes([web.route('post'
                             , '/api/start_run'
                             , api_start_run)])
 
-app.add_routes([web.route('post'
-                            , '/api/stop_run'
-                            , stop_run)])
+# app.add_routes([web.route('post'
+#                             , '/api/stop_run'
+#                             , stop_run)])
 
 # app.add_routes([web.route('get'
 #                             , '/api/run'
