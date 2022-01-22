@@ -3,6 +3,7 @@
 
     export let isActive;
     let Name = '';
+    let Type = '';
 
     import { createEventDispatcher } from "svelte";
 
@@ -14,6 +15,7 @@
         method: 'POST',
         body: JSON.stringify({
           Name,
+          Type : 'TlsClientServer',
           Group : $selectedNode.Name
         })
       });

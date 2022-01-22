@@ -30,36 +30,6 @@ PROFILE_LISTS= 'tlsperf_profile_list'
 
 stats_ticks = 60
 
-tlsclient_config_map_template = {
-    'apiVersion': 'v1', 
-    'kind': 'ConfigMap', 
-    'metadata': {'name': '--tbd--'}, 
-    'data': {'config.json': '--tbd--'}
-}
-
-tlsclient_config_json_template = {
-    'app_id': 'client-001', 
-    'app_gid': 'tlsclient', 
-    'server_ip': '12.20.61.1', 
-    'server_port': 443, 
-    'server_ssl': 1, 
-    'stats_ip': '172.31.27.11', 
-    'stats_port': 30008, 
-    'send_recv_len': 1, 
-    'cps': 750, 
-    'total_conn_count': 0, 
-    'max_active_conn_count': 25
-}
-
-tlsclient_pod_template = {
-    'apiVersion': 'v1', 
-    'kind': 'Pod', 
-    'metadata': {'name': 'client-001', 
-                 'annotations': { 'k8s.v1.cni.cncf.io/networks': '[ { "name": "eth0", "ips": [ "12.20.51.1/16", "12.20.51.2/16", "12.20.51.3/16", "100.20.51.1/16", "100.20.51.2/16", "100.20.51.3/16"] }]'
-                }
-    }, 
-    'spec': {'containers': [{'name': 'client-001', 'image': 'tlspack/tlsperf:latest', 'imagePullPolicy': 'Always', 'command': ['tlsclient.exe'], 'args': [], 'env': [{'name': 'MY_POD_IP', 'valueFrom': {'fieldRef': {'fieldPath': 'status.podIP'}}}], 'volumeMounts': [{'name': 'config-volume', 'mountPath': '/configs/'}]}], 'volumes': [{'name': 'config-volume', 'configMap': {'name': 'client-001'}}], 'nodeSelector': {'tgid': 'kube-node1'}}}
-
 def start_tlsserver_tlsclient(prof_j):
 
     clients = []
@@ -67,7 +37,6 @@ def start_tlsserver_tlsclient(prof_j):
 
     for csg in prof_j['CsGroups']:
         pass
-
 
 def localcmd(cmd_str, check_ouput=False):
     if check_ouput:
@@ -122,10 +91,15 @@ async def api_add_node_group(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         node_group_col = db[NODE_GROUPS]
+
+        node = node_group_col.find_one({'Name': r_json['Name']}
+                                        , {'_id' : False})
+        if node:
+            return web.json_response({'status' : -1, 'message': 'already exist'})
         node_group_col.insert_one(r_json) 
         return web.json_response({'status' : 0})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_get_profiles(request):
     mongoClient = MongoClient(DB_CSTRING)
@@ -171,20 +145,21 @@ async def api_add_profile_group(request):
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
 
-async def api_start_run(request):
+async def api_profile_run(request):
     try:
         r_text = await request.text()
         r_json = json.loads(r_text)
-        profileGroup = r_json['ProfileGroup']
+        group = r_json['Group']
         name = r_json['Name']
 
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         profile_col = db[PROFILE_LISTS]
-        profile = profile_col.find_one({'ProfileGroup': profileGroup,
-                                    'Name': name}, {'_id' : False})
+        profile = profile_col.find_one({'Group': group,
+                                            'Name': name}
+                                        , {'_id' : False})
         if profile:
-            pass #v1Api.
+            start_tlsserver_tlsclient(profile)
         else:
             return web.json_response({'status' : -1, 'message': 'tbd'})
         return web.json_response({'status' : 0})
@@ -239,8 +214,8 @@ app.add_routes([web.route('post'
                             , api_add_profile_group)])
 
 app.add_routes([web.route('post'
-                            , '/api/start_run'
-                            , api_start_run)])
+                            , '/api/profile_run'
+                            , api_profile_run)])
 
 # app.add_routes([web.route('post'
 #                             , '/api/stop_run'

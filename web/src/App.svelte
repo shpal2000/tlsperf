@@ -1,6 +1,7 @@
 <script>
 	import { nodeTreeRoot } from './store.js';
 	import { profileTreeRoot } from './store.js';
+	import { Loading } from 'carbon-components-svelte';
 
 	import Router from "svelte-spa-router";
 
@@ -86,7 +87,7 @@
 <Navbar/>
 
 {#await nodeGroupsPromise}
-	<p>Waiting ...</p>
+	<Loading />
 {:then}
 	<div class="columns is-gapless">
 		<div class="column is-one-fifth">
