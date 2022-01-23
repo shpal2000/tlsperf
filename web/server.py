@@ -6,8 +6,42 @@ import json
 import subprocess
 import time
 from pymongo import MongoClient
+import yaml
+import asyncssh
 
 import kubernetes.client
+
+class SshLinux():
+    def __init__(self, ip, username, password):
+        self.ip = ip
+        self.username = username
+        self.password = password
+        self.log = []
+   
+    async def read_until(self, reader, msg_list):
+        y = ''
+        while True:
+            y += await reader.read(1)
+            if y == '':
+                return ''
+            for msg in msg_list:
+                if y.endswith(msg):
+                    self.log.append(y)
+                    return msg
+ 
+    def get_log(self):
+        return ''.join(self.log)
+
+    async def send_commamnd(self, command):
+        async with asyncssh.connect(self.ip
+                                    , username=self.username
+                                    , password=self.password
+                                    , known_hosts=None) as conn:
+            _stdin, _stdout, _stderr = await conn.open_session(command)
+            read_msg = await _stdout.read(-1)
+            read_msg += await _stderr.read(-1)
+            self.log.append(read_msg)
+            return read_msg
 
 with open ('/var/run/secrets/kubernetes.io/serviceaccount/token') as f:
     k8s_token = f.read()
@@ -19,8 +53,6 @@ k8s_config.host='https://kubernetes.default.svc'
 k8s_config.ssl_ca_cert='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 v1Api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
 
-
-
 DB_CSTRING = 'localhost:27017'
 DB_NAME = 'tlsperf_db'
 REALTIME_STATS = 'tlsperf_realtime_stats'
@@ -30,6 +62,14 @@ PROFILE_GROUPS= 'tlsperf_profile_groups'
 PROFILE_LISTS= 'tlsperf_profile_list'
 
 stats_ticks = 60
+
+def start_tlsserver_tlsclient(prof_j):
+
+    clients = []
+    servers = []
+
+    for csg in prof_j['CsGroups']:
+        pass
 
 def localcmd(cmd_str, check_ouput=False):
     if check_ouput:
@@ -62,10 +102,20 @@ async def api_add_node(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         node_col = db[NODE_LISTS]
-        node_col.insert_one(r_json) 
-        return web.json_response({'status' : 0})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+
+        sshLinux = SshLinux(r_json['SshIP']
+                            , r_json['SshUser']
+                            , r_json['SshUser'])
+
+        try:
+            allIfaces = await asyncio.wait_for (sshLinux.send_commamnd ('ip a'), timeout=10.0)
+            print (allIfaces)
+            node_col.insert_one(r_json)
+            return web.json_response({'status' : 0})
+        except asyncio.TimeoutError:
+            return web.Response(text='ssh connection failed')
+    except Exception as e:
+        return web.Response(text=str(e))
 
 async def api_get_node_groups(request):
     mongoClient = MongoClient(DB_CSTRING)
@@ -84,10 +134,15 @@ async def api_add_node_group(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         node_group_col = db[NODE_GROUPS]
+
+        node = node_group_col.find_one({'Name': r_json['Name']}
+                                        , {'_id' : False})
+        if node:
+            return web.json_response({'status' : -1, 'message': 'already exist'})
         node_group_col.insert_one(r_json) 
         return web.json_response({'status' : 0})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_get_profiles(request):
     mongoClient = MongoClient(DB_CSTRING)
@@ -129,6 +184,27 @@ async def api_add_profile_group(request):
         db = mongoClient[DB_NAME]
         profile_group_col = db[PROFILE_GROUPS]
         profile_group_col.insert_one(r_json) 
+        return web.json_response({'status' : 0})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
+
+async def api_profile_run(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_col = db[PROFILE_LISTS]
+        profile = profile_col.find_one({'Group': group,
+                                            'Name': name}
+                                        , {'_id' : False})
+        if profile:
+            start_tlsserver_tlsclient(profile)
+        else:
+            return web.json_response({'status' : -1, 'message': 'tbd'})
         return web.json_response({'status' : 0})
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
@@ -179,6 +255,18 @@ app.add_routes([web.route('get'
 app.add_routes([web.route('post'
                             , '/api/profile_groups'
                             , api_add_profile_group)])
+
+app.add_routes([web.route('post'
+                            , '/api/profile_run'
+                            , api_profile_run)])
+
+# app.add_routes([web.route('post'
+#                             , '/api/stop_run'
+#                             , stop_run)])
+
+# app.add_routes([web.route('get'
+#                             , '/api/run'
+#                             , get_run)])
 
 app.add_routes([web.route('get'
                             , '/api/stats/{appGId:.*}'

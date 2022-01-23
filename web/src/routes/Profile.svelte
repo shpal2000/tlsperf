@@ -1,15 +1,18 @@
 <script>
     import { profileTreeRoot } from '../store';
     import { selectedNode } from '../store.js';
-    import CsGroups from '../CsGroups.svelte';
+    import { navRoute } from '../store.js';
+    import { routeViewState } from '../store.js';
     import Chart from 'chart.js/auto';
-    import { onMount } from "svelte";
+    import { afterUpdate, onMount } from "svelte";
+    import {replace} from "svelte-spa-router";
+    import { DataTable } from "carbon-components-svelte";
+    import NotFound from "./NotFound.svelte";
+    import "carbon-components-svelte/css/white.css";
     
     export let params = {};
-
-    let activeTab = 'Config';
-
-    let cs_groups = [{}];
+    let activeTab = '';
+    let profileFound = true;
 
     let chartValues = [];
     let chartLabels = [];
@@ -21,7 +24,7 @@
     let chartCtxThpt;
     let chartCanvasThpt;
     let chartThpt;
-    
+
     let data = {
               labels: chartLabels,
               datasets: [{
@@ -33,101 +36,329 @@
         };
 
 
+    const csGroupHeaders = [
+      {key: 'Group', value: 'Group'},
+      {key: 'Client', value: 'Client'},
+      {key: 'Server', value: 'Server'},
+      {key: 'Protocol', value: 'Protocol'},
+      {key: 'Port', value: 'Port'},
+    ];
+
+    const csGroupsData = [
+      {id: 1,
+        Group: 'Group1',
+        Client: '12.51.0.0/16',
+        Server: '12.61.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 2,
+        Group: 'Group2',
+        Client: '12.52.0.0/16',
+        Server: '12.62.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 3,
+        Group: 'Group3',
+        Client: '12.53.0.0/16',
+        Server: '12.63.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 4,
+        Group: 'Group4',
+        Client: '12.54.0.0/16',
+        Server: '12.64.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 5,
+        Group: 'Group5',
+        Client: '12.55.0.0/16',
+        Server: '12.65.0.0/16',
+        Protocol: 'SSL',
+        Port: 443},
+
+        {id: 6,
+        Group: 'Group6',
+        Client: '12.56.0.0/16',
+        Server: '12.66.0.0/16',
+        Protocol: 'SSL',
+        Port: 443}
+    ];
+
+    const statsHeaders = [
+      {key: 'Name', value: 'Name'},
+      {key: 'Client', value: 'Client'},
+      {key: 'Server', value: 'Server'},
+    ];
+
+    const statsData = [
+      {id: 1,
+        Name: 'TcpConnInit',
+        Client: 100,
+        Server: 0},
+
+        {id: 2,
+        Name: 'TcpEstablished',
+        Client: 100,
+        Server: 100},
+
+        {id: 3,
+        Name: 'SslConnInit',
+        Client: 100,
+        Server: 0},
+
+        {id: 4,
+        Name: 'SslEstablished',
+        Client: 100,
+        Server: 100},
+
+        {id: 5,
+        Name: 'ActiveConn',
+        Client: 1,
+        Server: 1},
+
+        {id: 6,
+        Name: 'ResetRcvd',
+        Client: 1,
+        Server: 1}
+    ];
+
+    function onConfigClick(e) {
+      replace('/blank');
+      replace ('/profile/' 
+                + params.profileGroupName
+                + '/' 
+                + params.profileName
+                + '/'
+                + 'config');
+    }
+
+    function onStatsClick(e) {
+      replace('/blank');
+      replace ('/profile/' 
+                + params.profileGroupName
+                + '/' 
+                + params.profileName
+                + '/'
+                + 'stats');
+    }
+
     onMount ( () => {
 
-        $selectedNode.ParentName = params.profileGroupName
-        $selectedNode.Name = params.profileName
-        $selectedNode.Type = 'Profile';
-
-
-        console.log($profileTreeRoot.children);
-
+        let profileSelected = null;
+        // console.log($profileTreeRoot.children);
         let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==params.profileGroupName);
+        // console.log(profileGroup);
+        if (profileGroup) {
+          profileSelected = profileGroup.children.find (p => p.Name==params.profileName);
+          // console.log(profileSelected);
+        }
+        if (!profileSelected){
+          profileFound = false;
+        } else {
+          $selectedNode.ParentName = params.profileGroupName;
+          $selectedNode.Name = params.profileName;
+          $selectedNode.Type = 'Profile';
 
-        console.log(profileGroup);
-        profileGroup.expanded = true;
+          $navRoute.Route = '/profile/' 
+                            + params.profileGroupName
+                            + '/'
+                            + params.profileName;
 
-        $profileTreeRoot.expanded = true;
-        $profileTreeRoot.children = $profileTreeRoot.children;
+          $navRoute.Paths = ['Traffic Profiles', params.profileGroupName, params.profileName];
+          $navRoute.Views = ['Config', 'Stats'];
 
-        chartCtxCps = chartCanvasCps.getContext('2d');
-        chartCps = new Chart(chartCtxCps, {
-            type: 'line',
-            data: data,
-            options: {
-              animation :{
-                duration: 0
-              },
-              interaction: {
-                intersect: false
-              },
-              plugins: {
-                legend: false
-              },
-              scales: {
-                x: {
-                  type: 'linear'
-                }
-              }
+          //view state
+          activeTab = $navRoute.Views[0];
+          if (params.anchor) {
+            if (params.anchor.toLowerCase() == 'stats') {
+              activeTab = $navRoute.Views[1];
             }
-        });
+          }
+          $navRoute.ViewSelect = activeTab;
 
-        // const interval = setInterval(() => {
-        //     fetch(`api/tlsfront_stats`)
-        //             .then((response) => response.json())
-        //             .then((results) => {
-        //                 deployments = results;
-        //                 data.labels = [...Array(10).keys()];
-        //                 data.datasets= Object.keys(deployments).map(k => ({
-        //                                 label: k,
-        //                                 fill: true,
-        //                                 borderColor: "#ffa700",
-        //                                 backgroundColor: "#fafad2",
-        //                                 data: deployments[k].sum.map(v => v.tlsfrontThroughput)
-        //                               }));
-        //                 chartCps.update();
-        //             });
-        // }, 1000);
-        // return () => {
-        //   clearInterval(interval);
-        // };
+          if (!routeViewState[$navRoute.Route]) {
+              routeViewState[$navRoute.Route] = {
+                'ViewSelect' : activeTab
+              };
+          }
 
-  
+          if (params.anchor) {
+            if (params.anchor.toLowerCase() == 'stats'){
+              activeTab = $navRoute.Views[1];
+              $navRoute.ViewSelect = activeTab;
+              routeViewState[$navRoute.Route]['ViewSelect'] = activeTab;
+            }
+          } else {
+            activeTab = routeViewState[$navRoute.Route]['ViewSelect'];
+            $navRoute.ViewSelect = activeTab;
+          }
+          profileSelected['UrlPathView'] = profileSelected['UrlPath'] + '/' + $navRoute.ViewSelect;
+
+
+          profileGroup.expanded = true;
+
+          $profileTreeRoot.expanded = true;
+          $profileTreeRoot.children = $profileTreeRoot.children;
+
+          if (activeTab == 'Stats') {
+            chartCtxCps = chartCanvasCps.getContext('2d');
+            chartCps = new Chart(chartCtxCps, {
+                type: 'line',
+                data: data,
+                options: {
+                  animation:{
+                    duration: 0
+                  },
+
+                  interaction: {
+                    intersect: false
+                  },
+
+                  plugins: {
+                    legend: false
+                  },
+
+                  scales: {
+                    x: {
+                      type: 'linear'
+                    }
+                  }
+                }
+            });
+
+            chartCtxThpt = chartCanvasThpt.getContext('2d');
+            chartThpt = new Chart(chartCtxThpt, {
+                type: 'line',
+                data: data,
+                options: {
+                  animation:{
+                    duration: 0
+                  },
+
+                  interaction: {
+                    intersect: false
+                  },
+
+                  plugins: {
+                    legend: false
+                  },
+
+                  scales: {
+                    x: {
+                      type: 'linear'
+                    }
+                  }
+                }
+            });
+          }
+
+          // const interval = setInterval(() => {
+          //     fetch(`api/tlsfront_stats`)
+          //             .then((response) => response.json())
+          //             .then((results) => {
+          //                 deployments = results;
+          //                 data.labels = [...Array(10).keys()];
+          //                 data.datasets= Object.keys(deployments).map(k => ({
+          //                                 label: k,
+          //                                 fill: true,
+          //                                 borderColor: "#ffa700",
+          //                                 backgroundColor: "#fafad2",
+          //                                 data: deployments[k].sum.map(v => v.tlsfrontThroughput)
+          //                               }));
+          //                 chartCps.update();
+          //             });
+          // }, 1000);
+          // return () => {
+          //   clearInterval(interval);
+          // };
+        }
     });
+
+    // afterUpdate ( () => {
+
+    //   if (activeTab == 'Stats') {
+    //     chartCtxCps = chartCanvasCps.getContext('2d');
+    //     chartCps = new Chart(chartCtxCps, {
+    //         type: 'line',
+    //         data: data,
+    //         options: {
+    //           animation:{
+    //             duration: 0
+    //           },
+
+    //           interaction: {
+    //             intersect: false
+    //           },
+
+    //           plugins: {
+    //             legend: false
+    //           },
+
+    //           scales: {
+    //             x: {
+    //               type: 'linear'
+    //             }
+    //           }
+    //         }
+    //     });
+
+    //     chartCtxThpt = chartCanvasThpt.getContext('2d');
+    //     chartThpt = new Chart(chartCtxThpt, {
+    //         type: 'line',
+    //         data: data,
+    //         options: {
+    //           animation:{
+    //             duration: 0
+    //           },
+
+    //           interaction: {
+    //             intersect: false
+    //           },
+
+    //           plugins: {
+    //             legend: false
+    //           },
+
+    //           scales: {
+    //             x: {
+    //               type: 'linear'
+    //             }
+    //           }
+    //         }
+    //     });
+    //   }
+    // });
 
 </script>
 
-<nav class="breadcrumb has-succeeds-separator is-left breadcrumb-margin" aria-label="breadcrumbs">
+<nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
   <ul>
-    <li class="is-active"><a>Profile</a></li>
-    <li class="is-active"><a>{params.profileGroupName}</a></li>
-    <li class="is-active"><a>{params.profileName}</a></li>
+    {#each $navRoute.Paths as path}
+      <li class="is-active" ><a>{path}</a></li>
+    {/each}
   </ul>
 </nav>
 
-<p>
-    Profile - {params.profileName}
-    <br/>
-    ProfileGroup - {params.profileGroupName}
-</p>
-
-<div class="tabs is-left main-margin is-boxed">
+<div class="tabs is-left is-boxed">
   <ul>
-    <li class="{activeTab=='Config' ? 'is-active' : ''}">
-      <!-- svelte-ignore a11y-missing-attribute -->
+    <li class="{activeTab=='Config' ? 'is-active' : 'inactive-background'}" on:click={onConfigClick}>
       <a>
-        <span on:click={ () => activeTab='Config'}>Config</span>
+        <span>Config</span>
       </a>
     </li>
-    <li class="{activeTab=='Stats' ? 'is-active' : ''}">
-        <!-- svelte-ignore a11y-missing-attribute -->
+    <li class="{activeTab=='Stats' ? 'is-active' : 'inactive-background'}" on:click={onStatsClick}>
         <a>
-          <span on:click={ () => activeTab='Stats'}>Stats</span>
+          <span>Stats</span>
         </a>
     </li>
   </ul>
 </div>
 
+{#if profileFound}
 <div class="container profile-content profile-content-margin">
   {#if activeTab=='Config'}
     <div class="columns is-multiline is-mobile">
@@ -141,7 +372,7 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Name</label>
+                      <label class="label ">Transactions</label>
                       <div class="control">
                         <input class="input " type="text" placeholder="Text input">
                       </div>
@@ -151,17 +382,9 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Type</label>
-                      <div class="select is-fullwidth ">
-                        <select class="">
-                          <option>Select Type</option>
-                          <option>TLS Client, TLS Server</option>
-                          <option>TLS Client Only</option>
-                          <option>TLS Server Only</option>
-                          <option>TCP Client, TCP Server</option>
-                          <option>TCP Client Only</option>
-                          <option>TCP Server Only</option>
-                        </select>
+                      <label class="label ">DataLength</label>
+                      <div class="control">
+                        <input class="input " type="text" placeholder="Text input">
                       </div>
                     </div>
                   </div>
@@ -169,13 +392,9 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Client Port</label>
-                      <div class="select is-fullwidth ">
-                        <select class="">
-                          <option>Select Port</option>
-                          <option>G1:N1:ens192</option>
-                          <option>G1:N1:ens224</option>
-                        </select>
+                      <label class="label ">CPS</label>
+                      <div class="control">
+                        <input class="input " type="text" placeholder="Text input">
                       </div>
                     </div>
                   </div>
@@ -183,13 +402,9 @@
                   <div class="column is-half">
                     <div class="field">
                       <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Server Port</label>
-                      <div class="select is-fullwidth ">
-                        <select class="">
-                          <option>Select Port</option>
-                          <option>G1:N1:ens192</option>
-                          <option>G1:N1:ens224</option>
-                        </select>
+                      <label class="label ">MaxPipeline</label>
+                      <div class="control">
+                        <input class="input " type="text" placeholder="Text input">
                       </div>
                     </div>
                   </div>
@@ -199,7 +414,7 @@
                     <button class="button  is-info">Run</button>
                   </div>
                   <div class="control">
-                    <button class="button  is-light">Stop</button>
+                    <button class="button  is-light">Save</button>
                   </div>
                 </div>
               </section> 
@@ -209,9 +424,11 @@
           <div class="tile is-6 is-parent">
 
             <div class="tile is-child my-border">
-              <!-- svelte-ignore a11y-label-has-associated-control -->
-              <!-- <label class="label  has-text-white">~/log$ </label> -->
-              <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
+              <DataTable
+              size="short"
+              headers={statsHeaders}
+              rows={statsData}
+              />
             </div>
           </div>
         </div>
@@ -222,21 +439,164 @@
       <div class="column is-10">
         <!-- svelte-ignore a11y-label-has-associated-control -->
         <label class="label ">Traffic Paths:</label>
-        <CsGroups bind:cs_groups={cs_groups}/>
+        <DataTable
+          expandable
+          headers={csGroupHeaders}
+          rows={csGroupsData}
+          >
+          <div slot="expanded-row" let:row>
+            <div class="columns is-multiline is-mobile">
+              <div class="column is-2">
+              </div>
+
+              <div class="column is-8">
+                <div class="columns is-multiline is-mobile">
+                  <div class="column is-half">
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Client Subnet</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Client IPs</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Protocol</label>
+                      <div class="select is-fullwidth is-small">
+                        <select class="">
+                          <option>TLS</option>
+                          <option>TCP</option>
+                        </select>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">TLS Version</label>
+                      <div class="select is-fullwidth is-small">
+                        <select class="">
+                          <option>All</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column is-half">
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server Subnet</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server IP</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server Port</label>
+                      <div class="control">
+                        <input class="input is-small" type="text" placeholder="Text input">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Ciphers</label>
+                      <div class="select is-fullwidth is-small">
+                        <select class="">
+                          <option>All</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column is-full">
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server Cert</label>
+                      <div class="control cert-key-height">
+                        <textarea class="textarea cert-key-height" placeholder="input"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column is-full">
+                    <div class="field">
+                      <!-- svelte-ignore a11y-label-has-associated-control -->
+                      <label class="label is-small">Server Key</label>
+                      <div class="control cert-key-height">
+                        <textarea class="textarea cert-key-height" placeholder="input"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column is-half">
+                    <div class="field is-grouped">
+                      <div class="control">
+                        <button class="button is-small is-info">Save</button>
+                      </div>
+                      <div class="control">
+                        <button class="button is-small is-light">Cancel</button>
+                      </div>
+                    </div>
+                    <br>
+                  </div>
+                </div>
+              </div>
+
+              <div class="column is-2">
+              </div>
+            </div>
+          </div>
+        </DataTable>
       </div>
       <div class="column is-1"></div>
     </div>
   {:else}
-    stats
+    <div class="columns is-multiline is-mobile">
+      <div class="column is-1"></div>
+      <div class="column is-10">
+        <div class="tile is-ancestor is-mobile">
+          <div class="tile is-6 is-parent">
+            <div class="tile is-child my-border">
+              <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
+            </div>
+          </div>
+          <div class="tile is-6 is-parent">
+            <div class="tile is-child my-border">
+              <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="column is-1"></div>
+    </div>
   {/if}
 </div>
+{:else}
+  <NotFound />
+{/if}
 
 
 
 <style>
     .breadcrumb-margin {
       margin-top: 4px;
-      margin-left: 1.6rem;
+      margin-left: 1.1rem;
     }
 
     .my-border {
@@ -247,13 +607,12 @@
       padding-bottom: 15px;
     }
 
-    .main-margin {
-      margin-top: 4px;
-      margin-right: 1.6rem;
-      margin-left: 1.6rem;
+    .inactive-background {
+      background-color: whitesmoke;
     }
 
     .profile-content-margin {
-      margin-top: 2rem;
+      margin-top: 3rem;
     }
+
 </style>

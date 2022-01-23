@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client-001
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '[
+            { "name": "eth0",
+              "ips": [ "12.20.51.1/16", "12.20.51.2/16", "12.20.51.3/16",
+                       "100.20.51.1/16", "100.20.51.2/16", "100.20.51.3/16"]
+            }]'
+spec:
+  containers:
+  - name: client-001
+    image: tlspack/tlsperf:latest
+    imagePullPolicy: Always
+    command: [tlsclient.exe]
+    args: []
+    env:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+    volumeMounts:
+    - name: config-volume
+      mountPath: /configs/
+  volumes:
+  - name: config-volume
+    configMap:
+      name: client-001 
+
+  nodeSelector:
+    tgid: kube-node1

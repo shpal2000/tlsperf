@@ -32,7 +32,8 @@
 
     nodeGroup.children.push({
                               Name: event.detail.Name,
-                              UrlPath: urlPath
+                              UrlPath: urlPath,
+                              UrlPathView: urlPath
                             });
     
     $selectedNode.Name = event.detail.Name;
@@ -43,7 +44,7 @@
 
     $nodeTreeRoot.children = $nodeTreeRoot.children;
 
-    replace('/');
+    replace('/blank');
     replace(urlPath);
   }
 

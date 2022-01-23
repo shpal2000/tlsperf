@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tlsclient--{ProfileGroup}--{ProfileName}--{CsGroup}
+data:
+  config.json: >
+    {{
+      "app_id" : "tlsclient--{ProfileGroup}--{ProfileName}--{CsGroup}",
+      "app_gid" : "tlsclient--{ProfileGroup}--{ProfileName}",
+
+      "server_ip"   : "{ServerIP}",
+      "server_port" : {ServerPort},
+      "server_ssl"  : {IsTls},
+
+      "stats_ip"   : "{WebIP}",
+      "stats_port" : {WebPortStats},
+
+      "send_recv_len" : {ClientServerDataLen},
+
+      "cps": {CPS},
+      "total_conn_count" : {TotalTransactions},
+      "max_active_conn_count" : {MaxPipeline}
+    }}
