@@ -27,6 +27,9 @@
     let errorRows;
     let isProgress;
 
+    let controller = null;
+    let signal = null;
+
     function resetState() {
       Name = '';
       nameError = false;
@@ -124,6 +127,10 @@
 
     async function onAddNodeCancel () {
       resetState ();
+
+      if (controller) {
+        controller.abort ();
+      }
     }
 
     async function onAddNodeOk () {
@@ -133,12 +140,17 @@
       validateSshUser ();
       validateSshPass ();
 
+      controller = new AbortController();
+      signal = controller.signal;
+
+
       if (!nameError && !sshIPError && !sshUserError && !sshPassError) {
         try {
           errorMsg = '';
           isError = false;
           isProgress = true;
           const res = await fetch ('/api/nodes', {
+            signal,
             method: 'POST',
             body: JSON.stringify({
               Name,
