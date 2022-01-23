@@ -102,6 +102,15 @@
           </div>
         </div>
 
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button is-info" on:click={onAddNodeGroupOk}>Add</button>
+          </div>
+          <div class="control">
+            <button class="button is-info is-light" on:click={onAddNodeGroupCancel}>Cancel</button>
+          </div>
+        </div>
+
         {#if isProgress}
         <div class="field">
           <div class="control">
@@ -112,30 +121,22 @@
 
         {#if isError}
           <div class="field">
+            <!-- svelte-ignore a11y-label-has-associated-control -->
+            <label class="label">Error</label>
             <div class="control">
               <textarea class="textarea errmsg" placeholder="" rows="{errorRows}" value={errorMsg} readonly/>
             </div>
           </div>          
         {/if}
 
-        <div class="field is-grouped">
-          <div class="control">
-            <button class="button is-info" on:click={onAddNodeGroupOk}>Add</button>
-          </div>
-          <div class="control">
-            <button class="button is-info is-light" on:click={onAddNodeGroupCancel}>Cancel</button>
-          </div>
-        </div>
       </section>
     </div>
 </div>
 
 <style>
   .errmsg {
-    border: none;
     background-color: transparent;
     color: red;
-    outline: none;
     overflow: auto;
   }
 </style>

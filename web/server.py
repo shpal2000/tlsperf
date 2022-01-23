@@ -95,7 +95,8 @@ async def api_add_node_group(request):
         node = node_group_col.find_one({'Name': r_json['Name']}
                                         , {'_id' : False})
         if node:
-            return web.json_response({'status' : -1, 'message': 'already exist'})
+            time.sleep(10)
+            return web.json_response({'status' : -1, 'message': 'already exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\nalready exist\n'})
         node_group_col.insert_one(r_json) 
         return web.json_response({'status' : 0})
     except Exception as err:
