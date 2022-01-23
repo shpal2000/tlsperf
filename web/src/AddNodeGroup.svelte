@@ -85,7 +85,7 @@
 
             if (json.status == 0){
               dispatch ('addNodeGroupSuccess', {Name: Name});
-              reset();
+              resetState();
             } else {
               console.log(json);
               setErrorMsg (json.message);
