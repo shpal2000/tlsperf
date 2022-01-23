@@ -1,12 +1,29 @@
 <script>
+    import { nodeTreeRoot } from './store.js';
+
     import { ProgressBar } from "carbon-components-svelte";
 
     export let isActive;
-    let Name = '';
-    let isError = false;
-    let errorMsg = '';
-    let errorRows = 1;
-    let isProgress = false;
+    let Name;
+    let nameError;
+    let nameHelp;
+
+    let isError;
+    let errorMsg;
+    let errorRows;
+    let isProgress;
+
+    function resetState() {
+      Name = '';
+      nameError = false;
+
+      isError = false;
+      isProgress = false;
+
+      isActive=false;
+    }
+
+    resetState();
 
     let nameRegex = new RegExp('^[a-z0-9]+$', 'i');
     let lineRegex = new RegExp('\r?\n');
@@ -14,6 +31,22 @@
     import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher ();
+
+    function validateName () {
+
+      if (Name.trim() == ''){
+        nameHelp = 'required';
+        nameError = true;
+      } else if (!nameRegex.test(Name)){
+        nameHelp = 'invalid - alphanumeric only';
+        nameError = true;
+      } else if ($nodeTreeRoot.children.find (ng => ng.Name==Name)){
+        nameHelp = 'already exist';
+        nameError = true;
+      } else {
+        nameError = false;
+      }
+    }
 
     function setErrorMsg(msg) {
       errorMsg = msg;
@@ -26,37 +59,18 @@
       isError = true;
     }
 
-    function reset() {
-      Name = '';
-      isProgress = false;
-      errorMsg = '';
-      isError = false;
-      isActive=false;
-      errorRows = 1;
-    }
-
-    function setError () {
-
-    }
-
     async function onAddNodeGroupCancel () {
-      reset();
+      resetState ();
     }
 
     async function onAddNodeGroupOk () {
-      errorMsg = '';
-      isError = false;
 
-      Name = Name.trim();
-      if (!nameRegex.test(Name))
-      {
-        isError = true;
-        errorMsg = "'Name':  alphanumeric only";
-        errorRows = 1;
-      }
+      validateName ();
 
-      if (!isError) {
+      if (!nameError) {
         try {
+          errorMsg = '';
+          isError = false;
           isProgress = true;
           const res = await fetch ('/api/node_groups', {
             method: 'POST',
@@ -98,7 +112,15 @@
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label class="label">Name</label>
           <div class="control">
-            <input class="input is-info" type="text" placeholder="Text input" bind:value={Name}>
+            <input class="input {nameError ? 'is-danger' : 'is-info' }" 
+              type="text" 
+              placeholder="Text input" 
+              bind:value={Name}
+              on:input={validateName}
+              >
+            {#if nameError}
+              <p class="help">{nameHelp}</p>
+            {/if}
           </div>
         </div>
 
@@ -139,4 +161,5 @@
     color: red;
     overflow: auto;
   }
+
 </style>
