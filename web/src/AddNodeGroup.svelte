@@ -51,7 +51,7 @@
       if (!nameRegex.test(Name))
       {
         isError = true;
-        errorMsg = 'Name error:  alphanumeric only';
+        errorMsg = "'Name':  alphanumeric only";
         errorRows = 1;
       }
 
@@ -113,7 +113,7 @@
         {#if isError}
           <div class="field">
             <div class="control">
-              <textarea class="textarea errmsg" placeholder="" rows="{errorRows}" value={errorMsg} />
+              <textarea class="textarea errmsg" placeholder="" rows="{errorRows}" value={errorMsg} readonly/>
             </div>
           </div>          
         {/if}
@@ -136,5 +136,6 @@
     background-color: transparent;
     color: red;
     outline: none;
+    overflow: auto;
   }
 </style>
