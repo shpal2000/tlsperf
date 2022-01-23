@@ -6,19 +6,19 @@
 
     export let isActive;
 
-    let name;
+    let Name;
     let nameError;
     let nameHelp;
 
-    let sshIP;
+    let SshIP;
     let sshIPError;
     let sshIPHelp;
 
-    let sshUser;
+    let SshUser;
     let sshUserError;
     let sshUserHelp;
 
-    let sshPass;
+    let SshPass;
     let sshPassError;
     let sshPassHelp;
 
@@ -28,16 +28,16 @@
     let isProgress;
 
     function resetState() {
-      name = '';
+      Name = '';
       nameError = false;
 
-      sshIP = '';
+      SshIP = '';
       sshIPError = false;
 
-      sshUser = '';
+      SshUser = '';
       sshUserError = false;
 
-      sshPass = '';
+      SshPass = '';
       sshPassError = false;
       
       isError = false;
@@ -57,13 +57,13 @@
       let nameRegex = new RegExp('^[a-z0-9]+$', 'i');
       let nodeGroup = $nodeTreeRoot.children.find (ng => $selectedNode.Name==ng.Name);
 
-      if (name.trim() == ''){
+      if (Name.trim() == ''){
         nameHelp = 'required';
         nameError = true;
-      } else if (!nameRegex.test(name)){
+      } else if (!nameRegex.test(Name)){
         nameHelp = 'invalid - alphanumeric only';
         nameError = true;
-      } else if (nodeGroup.children.find (n => n.Name==name)){
+      } else if (nodeGroup.children.find (n => n.Name==Name)){
         nameHelp = 'already exist';
         nameError = true; 
       } else {
@@ -74,10 +74,10 @@
     function validateSshIP () {
       let sshIPRegex = new RegExp('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', );
 
-      if (sshIP.trim() == ''){
+      if (SshIP.trim() == ''){
         sshIPHelp = 'required';
         sshIPError = true;
-      } else if (!sshIPRegex.test(sshIP)){
+      } else if (!sshIPRegex.test(SshIP)){
         sshIPHelp = 'invalid - IP';
         sshIPError = true;
       } else {
@@ -88,10 +88,10 @@
     function validateSshUser () {
       let sshUserRegex = new RegExp('^[a-z0-9\-_\.]+$', 'i');
 
-      if (sshUser.trim() == ''){
+      if (SshUser.trim() == ''){
         sshUserHelp = 'required';
         sshUserError = true;
-      } else if (!sshUserRegex.test(sshUser)){
+      } else if (!sshUserRegex.test(SshUser)){
         sshUserHelp = 'invalid - user name';
         sshUserError = true;
       } else {
@@ -101,7 +101,7 @@
 
     function validateSshPass () {
 
-      if (sshPass.trim() == ''){
+      if (SshPass.trim() == ''){
         sshPassHelp = 'required';
         sshPassError = true;
       }else {
@@ -141,24 +141,36 @@
           const res = await fetch ('/api/nodes', {
             method: 'POST',
             body: JSON.stringify({
-              Name : name,
-              sshIP,
-              sshUser,
-              sshPass,
+              Name,
+              SshIP,
+              SshUser,
+              SshPass,
               Group : $selectedNode.Name
             })
           });
           isProgress = false;
 
           if (res.ok) {
-            const json = await res.json();
 
-            if (json.status == 0){
-              dispatch ('addNodeSuccess', {Name: name});
-              resetState();
+            const text = await res.text();
+            let isJson = true;
+            try {
+              JSON.parse (text);
+            } catch (e) {
+              isJson = false;
+            }
+            
+            if (isJson) {
+              if (json.status == 0){
+                dispatch ('addNodeSuccess', {Name: Name});
+                resetState();
+              } else {
+                console.log(json);
+                setErrorMsg (json.message);
+              }
             } else {
-              console.log(json);
-              setErrorMsg (json.message);
+              isProgress = false;
+              setErrorMsg (text); 
             }
           } else {
             console.log(res);
@@ -186,7 +198,7 @@
             <input class="input {nameError ? 'is-danger' : 'is-info' }" 
               type="text" 
               placeholder="" 
-              bind:value={name} 
+              bind:value={Name} 
               on:input={validateName}
               >
             {#if nameError}
@@ -202,7 +214,7 @@
             <input class="input {sshIPError ? 'is-danger' : 'is-info' }" 
               type="text" 
               placeholder="" 
-              bind:value={sshIP}
+              bind:value={SshIP}
               on:input={validateSshIP}
               >
             {#if sshIPError}
@@ -218,7 +230,7 @@
             <input class="input {sshUserError ? 'is-danger' : 'is-info' }" 
               type="text" 
               placeholder="" 
-              bind:value={sshUser}
+              bind:value={SshUser}
               on:input={validateSshUser}
               >
             {#if sshUserError}
@@ -234,7 +246,7 @@
             <input class="input {sshPassError ? 'is-danger' : 'is-info' }" 
               type="password" 
               placeholder=""
-              bind:value={sshPass}
+              bind:value={SshPass}
               on:input={validateSshPass}
               >
             {#if sshPassError}

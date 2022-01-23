@@ -7,8 +7,41 @@ import subprocess
 import time
 from pymongo import MongoClient
 import yaml
+import asyncssh
 
 import kubernetes.client
+
+class SshLinux():
+    def __init__(self, ip, username, password):
+        self.ip = ip
+        self.username = username
+        self.password = password
+        self.log = []
+   
+    async def read_until(self, reader, msg_list):
+        y = ''
+        while True:
+            y += await reader.read(1)
+            if y == '':
+                return ''
+            for msg in msg_list:
+                if y.endswith(msg):
+                    self.log.append(y)
+                    return msg
+ 
+    def get_log(self):
+        return ''.join(self.log)
+
+    async def send_commamnd(self, command):
+        async with asyncssh.connect(self.ip
+                                    , username=self.username
+                                    , password=self.password
+                                    , known_hosts=None) as conn:
+            _stdin, _stdout, _stderr = await conn.open_session(command)
+            read_msg = await _stdout.read(-1)
+            read_msg += await _stderr.read(-1)
+            self.log.append(read_msg)
+            return read_msg
 
 with open ('/var/run/secrets/kubernetes.io/serviceaccount/token') as f:
     k8s_token = f.read()
@@ -69,10 +102,20 @@ async def api_add_node(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         node_col = db[NODE_LISTS]
-        node_col.insert_one(r_json) 
-        return web.json_response({'status' : 0})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+
+        sshLinux = SshLinux(r_json['SshIP']
+                            , r_json['SshUser']
+                            , r_json['SshUser'])
+
+        try:
+            allIfaces = await asyncio.wait_for (sshLinux.send_commamnd ('ip a'), timeout=10.0)
+            print (allIfaces)
+            node_col.insert_one(r_json)
+            return web.json_response({'status' : 0})
+        except asyncio.TimeoutError:
+            return web.Response(text='ssh connection failed')
+    except Exception as e:
+        return web.Response(text=str(e))
 
 async def api_get_node_groups(request):
     mongoClient = MongoClient(DB_CSTRING)
