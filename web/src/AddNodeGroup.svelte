@@ -1,6 +1,5 @@
 <script>
     import { nodeTreeRoot } from './store.js';
-
     import { ProgressBar } from "carbon-components-svelte";
 
     export let isActive;
@@ -25,14 +24,12 @@
 
     resetState();
 
-    let nameRegex = new RegExp('^[a-z0-9]+$', 'i');
-    let lineRegex = new RegExp('\r?\n');
-
     import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher ();
 
     function validateName () {
+      let nameRegex = new RegExp('^[a-z0-9]+$', 'i');
 
       if (Name.trim() == ''){
         nameHelp = 'required';
@@ -49,6 +46,8 @@
     }
 
     function setErrorMsg(msg) {
+      let lineRegex = new RegExp('\r?\n');
+
       errorMsg = msg;
       errorRows = (errorMsg.split(lineRegex)).length;
       if (errorRows == 0){
@@ -114,9 +113,9 @@
           <div class="control">
             <input class="input {nameError ? 'is-danger' : 'is-info' }" 
               type="text" 
-              placeholder="Text input" 
+              placeholder="" 
               bind:value={Name}
-              on:input={validateName}
+              on:input={() => validateName()}
               >
             {#if nameError}
               <p class="help">{nameHelp}</p>
