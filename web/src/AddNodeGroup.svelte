@@ -5,11 +5,26 @@
     let Name = '';
     let isError = false;
     let errorMsg = '';
+    let errorRows = 1;
     let isProgress = false;
+
+    let nameRegex = new RegExp('^[a-z0-9]+$', 'i');
+    let lineRegex = new RegExp('\r?\n');
 
     import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher ();
+
+    function setErrorMsg(msg) {
+      errorMsg = msg;
+      errorRows = (errorMsg.split(lineRegex)).length;
+      if (errorRows == 0){
+        errorRows = 1
+      } else if (errorRows > 4){
+        errorRows = 4;
+      }
+      isError = true;
+    }
 
     function reset() {
       Name = '';
@@ -17,6 +32,11 @@
       errorMsg = '';
       isError = false;
       isActive=false;
+      errorRows = 1;
+    }
+
+    function setError () {
+
     }
 
     async function onAddNodeGroupCancel () {
@@ -27,30 +47,43 @@
       errorMsg = '';
       isError = false;
 
-      isProgress = true;
-      const res = await fetch ('/api/node_groups', {
-        method: 'POST',
-        body: JSON.stringify({
-          Name
-        })
-      });
-      isProgress = false;
+      Name = Name.trim();
+      if (!nameRegex.test(Name))
+      {
+        isError = true;
+        errorMsg = 'Name error:  alphanumeric only';
+        errorRows = 1;
+      }
 
-      if (res.ok) {
-        const json = await res.json();
+      if (!isError) {
+        try {
+          isProgress = true;
+          const res = await fetch ('/api/node_groups', {
+            method: 'POST',
+            body: JSON.stringify({
+              Name
+            })
+          });
+          isProgress = false;
 
-        if (json.status == 0){
-          dispatch ('addNodeGroupSuccess', {Name: Name});
-          
-          reset();
-        } else {
-          console.log(json);
-          errorMsg = json.message;
-          isError = true;
+          if (res.ok) {
+            const json = await res.json();
+
+            if (json.status == 0){
+              dispatch ('addNodeGroupSuccess', {Name: Name});
+              reset();
+            } else {
+              console.log(json);
+              setErrorMsg (json.message);
+            }
+          } else {
+            console.log(res);
+            setErrorMsg (JSON.stringify(res));
+          }
+        } catch(e) {
+          isProgress = false;
+          setErrorMsg (e.toString());
         }
-      } else {
-        console.log(res);
-        alert (JSON.stringify(res))
       }
     }
 </script>
@@ -80,7 +113,7 @@
         {#if isError}
           <div class="field">
             <div class="control">
-              <input class="input errmsg" placeholder="" value="{errorMsg}" readonly/>
+              <textarea class="textarea errmsg" placeholder="" rows="{errorRows}" value={errorMsg} />
             </div>
           </div>          
         {/if}
@@ -102,7 +135,6 @@
     border: none;
     background-color: transparent;
     color: red;
-    resize: none;
     outline: none;
   }
 </style>

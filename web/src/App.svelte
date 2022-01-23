@@ -87,7 +87,7 @@
 <Navbar/>
 
 {#await nodeGroupsPromise}
-	<Loading />
+	<Loading small/>
 {:then}
 	<div class="columns is-gapless">
 		<div class="column is-one-fifth">
