@@ -35,3 +35,12 @@ sudo docker push tlspack/tlsperf:latest
 ---
 
 sass --sourcemap=none sass/mystyles.scss:public/assets/mystyles.css
+
+
+---
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+
+
+netstat -ltnp | grep -w ':30027'
+---
