@@ -71,7 +71,7 @@
           errorMsg = '';
           isError = false;
           isProgress = true;
-          const res = await fetch ('/api/node_groups', {
+          const res = await fetch ('/api/node_groups.json', {
             method: 'POST',
             body: JSON.stringify({
               Name
