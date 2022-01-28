@@ -1,4 +1,4 @@
-import connectPromise from "../../lib/mongodb-client";
+import connectPromise from "$lib/mongodb-client";
 
 const DB_NAME = 'tlsperf_db';
 const NODE_GROUPS= 'tlsperf_node_groups';

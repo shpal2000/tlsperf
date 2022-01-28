@@ -6,7 +6,7 @@
   import OpenedIcon from './OpenedIcon.svelte';
   import CircleIcon from './CircleIcon.svelte';
   import { clickOutside } from './clickOutside.js';
-  import { selectedNode } from './store.js';
+  import { selectedNode } from '$lib/store.js';
 
 
   export let node;

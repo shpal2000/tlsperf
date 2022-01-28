@@ -1,11 +1,11 @@
 <script>
     let isActive=false;
 
-	import { nodeTreeRoot } from '../lib/store';
-	import { profileTreeRoot } from '../lib/store';
+	import { nodeTreeRoot } from '$lib/store';
+	import { profileTreeRoot } from '$lib/store';
 
-    import TrafficProfiles from "../lib/TrafficProfiles.svelte";
-    import TrafficNodes from "../lib/TrafficNodes.svelte";
+    import TrafficProfiles from "$lib/TrafficProfiles.svelte";
+    import TrafficNodes from "$lib/TrafficNodes.svelte";
 
 	let NodeGroupRootMenuItems = [{'Name': 'Add Folder ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
 	let NodeGroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];

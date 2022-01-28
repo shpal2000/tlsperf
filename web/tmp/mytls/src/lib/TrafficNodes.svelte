@@ -1,6 +1,6 @@
 <script>
-  import { nodeTreeRoot } from './store.js';
-  import { selectedNode } from './store.js';
+  import { nodeTreeRoot } from '$lib/store.js';
+  import { selectedNode } from '$lib/store.js';
   // import {replace} from "svelte-spa-router";
   import Treenode from "./Treenode.svelte";
   import AddNodeGroup from "./AddNodeGroup.svelte";

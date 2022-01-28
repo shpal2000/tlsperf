@@ -1,5 +1,5 @@
 <script>
-  import { profileTreeRoot } from './store.js';
+  import { profileTreeRoot } from '$lib/store.js';
 
   import { ProgressBar } from "carbon-components-svelte";
 

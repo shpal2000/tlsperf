@@ -1,5 +1,5 @@
 <script>
-    import { nodeTreeRoot } from './store.js';
+    import { nodeTreeRoot } from '$lib/store.js';
     import { ProgressBar } from "carbon-components-svelte";
 
     export let isActive;

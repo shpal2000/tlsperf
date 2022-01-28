@@ -1,5 +1,5 @@
 <script>
-    import { selectedNode } from './store.js';
+    import { selectedNode } from '$lib/store.js';
 
     export let isActive;
     let Name = '';

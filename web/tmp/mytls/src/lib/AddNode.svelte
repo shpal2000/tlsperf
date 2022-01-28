@@ -1,6 +1,6 @@
 <script>
-    import { selectedNode } from './store.js';
-    import { nodeTreeRoot } from './store.js';
+    import { selectedNode } from '$lib/store.js';
+    import { nodeTreeRoot } from '$lib/store.js';
     import { ProgressBar } from "carbon-components-svelte";
 
 

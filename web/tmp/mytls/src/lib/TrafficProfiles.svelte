@@ -1,6 +1,6 @@
 <script>
-  import { profileTreeRoot } from './store.js';
-  import { selectedNode } from './store.js';
+  import { profileTreeRoot } from '$lib/store.js';
+  import { selectedNode } from '$lib/store.js';
   // import { replace } from "svelte-spa-router";
   import Treenode from "./Treenode.svelte";
   import AddProfileGroup from "./AddProfileGroup.svelte";
