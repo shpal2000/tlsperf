@@ -1,0 +1,16 @@
+import './shims-c8fba98f.js';
+import 'fs';
+import 'path';
+export { h as handler } from './handler-81c538e0.js';
+import 'url';
+import './server/app.js';
+import './manifest.js';
+import 'node:http';
+import 'node:https';
+import 'node:zlib';
+import 'node:stream';
+import 'node:util';
+import 'node:url';
+import 'net';
+import 'querystring';
+import 'stream';
