@@ -70,7 +70,7 @@ spec:
     - name: tlsperf-frontend
       image: tlspack/tlsperf:latest
       imagePullPolicy: Always
-      workingDir: /tlsperf_web/
+      workingDir: /tlsperf_web/ui/
       command: ["ping"]
       args: ["1.1.1.1"]
       env:
