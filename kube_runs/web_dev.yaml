@@ -65,25 +65,6 @@ spec:
 
 
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tlsperf-web-dev-configmap
-data:
-  config.json: >
-    {
-      "webui_ip"  : "0.0.0.0",
-      "webui_port"  : 8888,
-
-      "stats_port" : 7000,
-
-      "stats_ticks" : 2
-    }
-
-
----
-
-
-apiVersion: v1
 kind: Pod
 metadata:
   name: tlsperf-web-dev
@@ -97,24 +78,46 @@ spec:
     - name: tlsperf-pv-storage2
       persistentVolumeClaim:
         claimName: tlsperf-dev-pv-claim2
-    - name: config-volume
-      configMap:
-        name: tlsperf-web-dev-configmap
   serviceAccountName: tlsperf-admin
   containers:
-    - name: tlsperf-web-dev
+    - name: tlsperf-db-dev
       image: tlspack/tlsperf:latest
       imagePullPolicy: Always
-      workingDir: /tlsperf_web/
-      command: ["ping"]
-      args: ["1.1.1.1"]
+      command: ["mongod"]
+      args: ["--noauth", "--dbpath", "/data"]
       volumeMounts:
         - name: tlsperf-pv-storage
           mountPath: "/data"
+    - name: tlsperf-backend-dev
+      image: tlspack/tlsperf:latest
+      imagePullPolicy: Always
+      workingDir: /code/
+      command: ["ping"]
+      args: ["1.1.1.1"]
+      volumeMounts:
         - name: tlsperf-pv-storage2
           mountPath: "/code"
-        - name: config-volume
-          mountPath: /configs/
+      env:
+        - name: BPORT
+          value: "8887"
+        - name: SPORT
+          value: "7000"
+        - name: STATS_TICKS
+          value: "2"
+    - name: tlsperf-frontend-dev
+      image: tlspack/tlsperf:latest
+      imagePullPolicy: Always
+      workingDir: /code/tmp/mytls/
+      command: ["ping"]
+      args: ["1.1.1.1"]
+      volumeMounts:
+        - name: tlsperf-pv-storage2
+          mountPath: "/code"
+      env:
+        - name: BPORT
+          value: "8887"
+        - name: PORT
+          value: "8888"
   nodeSelector:
     tgid: kube-master
 

@@ -78,8 +78,6 @@ def localcmd(cmd_str, check_ouput=False):
         os.system(cmd_str)
         return None
 
-async def index_handle(request):
-    return web.FileResponse('public/index.html')
 
 async def api_get_nodes(request):
     # node_group = request.query['nodegroup']
@@ -272,7 +270,6 @@ app.add_routes([web.route('get'
                             , '/api/stats/{appGId:.*}'
                             , api_get_stats)])
 
-app.add_routes([web.route('get', '/{tail:.*}', index_handle)])
 
 class StatsListener:
     def connection_made(self, transport):
@@ -324,27 +321,20 @@ class StatsListener:
 def main ():
     global stats_ticks
 
-    localcmd("mongod --noauth --dbpath /data &")
-    time.sleep(5)
-
-    cfg_file = '/configs/config.json'
-    with open(cfg_file) as f:
-        cfg = json.loads(f.read())
-
-    stats_ticks = cfg['stats_ticks']
+    stats_ticks = int(os.environ.get('STATS_TICKS', '2'))
 
     loop = asyncio.get_event_loop()
     runner = aiohttp.web.AppRunner(app)
     loop.run_until_complete(runner.setup())
     site = aiohttp.web.TCPSite(runner
-                , host=cfg['webui_ip']
-                , port=cfg['webui_port']
+                , host=os.environ.get('HOST', '0.0.0.0')
+                , port=int(os.environ.get('BPORT', '8887'))
                 , reuse_port=True)
     loop.run_until_complete(site.start())
 
     listen = loop.create_datagram_endpoint(StatsListener
-                    , local_addr=(cfg['webui_ip']
-                                    , cfg['stats_port'])
+                    , local_addr=(os.environ.get('HOST', '0.0.0.0')
+                                    , int(os.environ.get('SPORT', '7000')))
                     , reuse_port=True)
 
     loop.run_until_complete(listen)
