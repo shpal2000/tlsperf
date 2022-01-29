@@ -1,40 +1,22 @@
-import connectPromise from "$lib/mongodb-client";
-
-const DB_NAME = 'tlsperf_db';
-const NODE_GROUPS= 'tlsperf_node_groups';
+import { apiClient } from './api_client';
 
 export async function get () {
 
-    const connection = await connectPromise;
-    const db = connection.db(DB_NAME);
-    const nodeGroupsCol = db.collection(NODE_GROUPS);
-    const nodeGroups = await nodeGroupsCol.find({}).toArray();
-    console.log (nodeGroups);
+    const res = await apiClient.get('/node_groups')
+
+    console.log (res.data)
 
     return {
-        body: nodeGroups
+        body: res.data
     }    
 }
 
 export async function post ( {params, request} ) {
     const body = await request.json()
     
-    const connection = await connectPromise;
-    const db = connection.db(DB_NAME);
-    const nodeGroupsCol = db.collection(NODE_GROUPS);
-
-    const nodeGroup = await nodeGroupsCol.findOne({ 'Name': body['Name'] });
-    console.log (nodeGroup);
-
-    if (nodeGroup) {
-        return {
-            body: {status : -1, message: 'already exist'}
-        }   
-    }
-
-    await nodeGroupsCol.insertOne (body);
+    const res = await apiClient.post('/node_groups', body)
 
     return {
-        body: {status : 0}
+        body: res.data
     }    
 }
