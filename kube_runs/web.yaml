@@ -1,17 +1,31 @@
 apiVersion: v1
-kind: ConfigMap
+kind: PersistentVolume
 metadata:
-  name: tlsperf-web-configmap
-data:
-  config.json: >
-    {
-      "webui_ip"  : "0.0.0.0",
-      "webui_port"  : 8888,
+  name: tlsperf-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/tlsperf-data"
 
-      "stats_port" : 7000,
+---
 
-      "stats_ticks" : 2
-    }
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tlsperf-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 
 
 ---
@@ -28,22 +42,44 @@ spec:
     - name: tlsperf-pv-storage
       persistentVolumeClaim:
         claimName: tlsperf-pv-claim
-    - name: config-volume
-      configMap:
-        name: tlsperf-web-configmap
-  # serviceAccountName: tlsperf-admin
+  serviceAccountName: tlsperf-admin
   containers:
-    - name: tlsperf-web
+    - name: tlsperf-db
       image: tlspack/tlsperf:latest
       imagePullPolicy: Always
-      workingDir: /tlsperf_web/
-      command: ["python3"]
-      args: ["server.py"]
+      command: ["mongod"]
+      args: ["--noauth", "--dbpath", "/data"]
       volumeMounts:
         - name: tlsperf-pv-storage
           mountPath: "/data"
-        - name: config-volume
-          mountPath: /configs/
+    - name: tlsperf-backend
+      image: tlspack/tlsperf:latest
+      imagePullPolicy: Always
+      workingDir: /tlsperf_web/
+      command: ["ping"]
+      args: ["1.1.1.1"]
+      env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: BPORT
+          value: "8887"
+        - name: SPORT
+          value: "7000"
+        - name: STATS_TICKS
+          value: "2"
+    - name: tlsperf-frontend
+      image: tlspack/tlsperf:latest
+      imagePullPolicy: Always
+      workingDir: /tlsperf_web/
+      command: ["ping"]
+      args: ["1.1.1.1"]
+      env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: BPORT
+          value: "8887"
+        - name: PORT
+          value: "8888"
   nodeSelector:
     tgid: kube-master
 

@@ -219,8 +219,6 @@ async def api_get_stats(request):
 
 app = web.Application()
 
-app.add_routes([web.static('/build', 'public/build')])
-app.add_routes([web.static('/assets', 'public/assets')])
 
 app.add_routes([web.route('get'
                             , '/api/nodes'
