@@ -98,6 +98,8 @@ spec:
         - name: tlsperf-pv-storage2
           mountPath: "/code"
       env:
+        - name: HOST
+          value: "0.0.0.0"
         - name: BPORT
           value: "8887"
         - name: SPORT
@@ -114,6 +116,8 @@ spec:
         - name: tlsperf-pv-storage2
           mountPath: "/code"
       env:
+        - name: HOST
+          value: "0.0.0.0"
         - name: BPORT
           value: "8887"
         - name: PORT

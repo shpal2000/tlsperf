@@ -1,10 +1,8 @@
-import { apiClient } from './api_client';
+import apiClient from './api_client';
 
 export async function get () {
 
     const res = await apiClient.get('/node_groups')
-
-    console.log (res.data)
 
     return {
         body: res.data
