@@ -149,7 +149,7 @@
           errorMsg = '';
           isError = false;
           isProgress = true;
-          const res = await fetch ('/api/nodes', {
+          const res = await fetch ('/api/nodes.json', {
             signal,
             method: 'POST',
             body: JSON.stringify({
@@ -166,8 +166,9 @@
 
             const text = await res.text();
             let isJson = true;
+            let json = {};
             try {
-              JSON.parse (text);
+              json = JSON.parse (text);
             } catch (e) {
               isJson = false;
             }

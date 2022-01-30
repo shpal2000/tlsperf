@@ -8,10 +8,14 @@
     import TrafficNodes from "$lib/TrafficNodes.svelte";
 
 	let NodeGroupRootMenuItems = [{'Name': 'Add Folder ...', 'Event': 'addNodeGroup', 'EventCtx': {}}];
-	let NodeGroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
+
+	let NodeGroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}, 
+                                {'Name': 'Remove Folder ...', 'Event': 'removeNodeGroup', 'EventCtx': {}} ];
 
 	let ProfileGroupRootMenuItems = [{'Name': 'Add Folder ...', 'Event': 'addProfileGroup', 'EventCtx': {}}];
-	let ProfileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}];
+
+	let ProfileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}, 
+                                    {'Name': 'Remove Folder ...', 'Event': 'removeProfileGroup', 'EventCtx': {}}];
 
 	async function getStorePopulated() {
 		const nodeGroups = await fetch ('/api/node_groups.json');

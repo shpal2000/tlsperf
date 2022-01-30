@@ -36,8 +36,8 @@
     showMenu = false;
 
     if (node.UrlPathView) {
-      replace('/blank');
-      replace(node.UrlPathView);
+      // replace('/blank');
+      // replace(node.UrlPathView);
     }
   }
 

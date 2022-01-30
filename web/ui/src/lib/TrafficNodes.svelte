@@ -7,13 +7,14 @@
   import AddNode from "./AddNode.svelte";
 
   function onAddNodeGroupSuccess (event) {
-    let groupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}];
+    let nodeGroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}, 
+                              {'Name': 'Remove Folder ...', 'Event': 'removeNodeGroup', 'EventCtx': {}} ];
 
     $nodeTreeRoot.children.push({
                                   Name: event.detail.Name, 
                                   children: [],
                                   expanded: false,
-                                  MenuItems: groupMenuItems
+                                  MenuItems: nodeGroupMenuItems
                                 });
 
     $selectedNode.Name = event.detail.Name;
@@ -26,6 +27,7 @@
   }
 
   function onAddNodeSuccess (event) {
+    let nodeMenuItems = [{'Name': 'Remove Node ...', 'Event': 'removeNode', 'EventCtx': {}}];
 
     let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.Name);
     let urlPath = '/node/'+nodeGroup.Name+'/' + event.detail.Name
@@ -33,7 +35,8 @@
     nodeGroup.children.push({
                               Name: event.detail.Name,
                               UrlPath: urlPath,
-                              UrlPathView: urlPath
+                              UrlPathView: urlPath,
+                              MenuItems: nodeMenuItems
                             });
     
     $selectedNode.Name = event.detail.Name;

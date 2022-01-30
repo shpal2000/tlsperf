@@ -71,8 +71,8 @@ spec:
       image: tlspack/tlsperf:latest
       imagePullPolicy: Always
       workingDir: /tlsperf_web/ui/
-      command: ["ping"]
-      args: ["1.1.1.1"]
+      command: ["/root/.nvm/versions/node/v17.4.0/bin/node"]
+      args: ["build"]
       env:
         - name: HOST
           value: "0.0.0.0"

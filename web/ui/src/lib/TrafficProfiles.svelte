@@ -7,13 +7,14 @@
   import AddProfile from "./AddProfile.svelte";
 
   function onAddProfileGroupSuccess (event) {
-    let groupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}];
+    let profileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}, 
+                              {'Name': 'Remove Folder ...', 'Event': 'removeProfileGroup', 'EventCtx': {}}];
 
     $profileTreeRoot.children.push({
                                   Name: event.detail.Name, 
                                   children: [],
                                   expanded: false,
-                                  MenuItems: groupMenuItems
+                                  MenuItems: profileGroupMenuItems
                                 });
 
     $selectedNode.Name = event.detail.Name;
@@ -26,6 +27,7 @@
   }
 
   function onAddProfileSuccess (event) {
+    let profileMenuItems = [{'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
 
     let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==$selectedNode.Name);
     let urlPath = '/profile/'+profileGroup.Name+'/' + event.detail.Name
@@ -33,7 +35,8 @@
     profileGroup.children.push({
                               Name: event.detail.Name,
                               UrlPath: urlPath,
-                              UrlPathView: urlPath
+                              UrlPathView: urlPath,
+                              MenuItems: profileMenuItems
                             });
     
     $selectedNode.Name = event.detail.Name;

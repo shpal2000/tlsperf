@@ -109,7 +109,5 @@
 </div>
 
 <style>
-  .modal-border {
-    border: 1px solid lightskyblue;
-  }
+
 </style>

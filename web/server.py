@@ -101,13 +101,13 @@ async def api_add_node(request):
         db = mongoClient[DB_NAME]
         node_col = db[NODE_LISTS]
 
-        sshLinux = SshLinux(r_json['SshIP']
-                            , r_json['SshUser']
-                            , r_json['SshUser'])
+        # sshLinux = SshLinux(r_json['SshIP']
+        #                     , r_json['SshUser']
+        #                     , r_json['SshUser'])
 
         try:
-            allIfaces = await asyncio.wait_for (sshLinux.send_commamnd ('ip a'), timeout=10.0)
-            print (allIfaces)
+            # allIfaces = await asyncio.wait_for (sshLinux.send_commamnd ('ip a'), timeout=10.0)
+            # print (allIfaces)
             node_col.insert_one(r_json)
             return web.json_response({'status' : 0})
         except asyncio.TimeoutError:

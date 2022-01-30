@@ -80,14 +80,27 @@
           isProgress = false;
 
           if (res.ok) {
-            const json = await res.json();
 
-            if (json.status == 0){
-              dispatch ('addNodeGroupSuccess', {Name: Name});
-              resetState();
+            const text = await res.text();
+            let isJson = true;
+            let json = {};
+            try {
+              json = JSON.parse (text);
+            } catch (e) {
+              isJson = false;
+            }
+
+            if (isJson) {
+              if (json.status == 0){
+                dispatch ('addNodeGroupSuccess', {Name: Name});
+                resetState();
+              } else {
+                console.log(json);
+                setErrorMsg (json.message);
+              }
             } else {
-              console.log(json);
-              setErrorMsg (json.message);
+              isProgress = false;
+              setErrorMsg (text); 
             }
           } else {
             console.log(res);
