@@ -56,11 +56,13 @@
 
     let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.ParentName);
 
-    nodeGroup.children = nodeGroup.children.filter(n => n.Name != $selectedNode.Name && n.ParentName == nodeGroup.Name);
-    
-    // $selectedNode.Name = event.detail.Name;
-    // $selectedNode.ParentName = nodeGroup.Name;
-    // $selectedNode.Type = 'Node';
+    nodeGroup.children = nodeGroup.children.filter(n => n.Name != $selectedNode.Name);
+ 
+    $selectedNode.Name = nodeGroup.Name;
+    $selectedNode.ParentName = 'Traffic Nodes';
+    $selectedNode.Type = 'NodeGroup';
+
+    nodeGroup.expanded = true;
 
     $nodeTreeRoot.children = $nodeTreeRoot.children;
 
