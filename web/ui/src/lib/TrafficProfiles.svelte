@@ -2,9 +2,10 @@
   import { profileTreeRoot } from '$lib/store.js';
   import { selectedNode } from '$lib/store.js';
   // import { replace } from "svelte-spa-router";
-  import Treenode from "./Treenode.svelte";
-  import AddProfileGroup from "./AddProfileGroup.svelte";
-  import AddProfile from "./AddProfile.svelte";
+  import Treenode from "$lib/Treenode.svelte";
+  import AddProfileGroup from "$lib/AddProfileGroup.svelte";
+  import AddProfile from "$lib/AddProfile.svelte";
+  import RemoveProfile from "$lib/RemoveProfile.svelte";
 
   function onAddProfileGroupSuccess (event) {
     let profileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}, 
@@ -26,7 +27,7 @@
     $profileTreeRoot.children = $profileTreeRoot.children;
   }
 
-  function onAddProfileSuccess (event) {
+  function onAddProfile (event) {
     let profileMenuItems = [{'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
 
     let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==$selectedNode.Name);
@@ -51,8 +52,21 @@
     // replace(urlPath);
   }
   
+  function onRemoveProfile (event) {
+    let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==$selectedNode.ParentName);
+
+    profileGroup.children = profileGroup.children.filter(p => p.Name != $selectedNode.Name);
+
+    $selectedNode.Name = profileGroup.Name;
+    $selectedNode.ParentName = 'Traffic Profiles';
+    $selectedNode.Type = 'ProfileGroup';
+
+    $profileTreeRoot.children = $profileTreeRoot.children;
+  }
+
   let showAddProfileGroup = false;
   let showAddProfile = false;
+  let showRemoveProfile = false;
 </script>
 
 
@@ -80,7 +94,12 @@
 
           {#if child.expanded && child.children}
             {#each child.children as grandChild}
-              <Treenode node={grandChild} pnode={child} level={3} type='Profile'/>
+              <Treenode 
+                node={grandChild}
+                pnode={child}
+                level={3} 
+                type='Profile'
+                on:removeProfile={() => showRemoveProfile = true}/>
             {/each}
           {/if}
 
@@ -92,8 +111,12 @@
     on:addProfileGroupSuccess={onAddProfileGroupSuccess}/>
 
 <AddProfile bind:isActive={showAddProfile} 
-    on:addProfileSuccess={onAddProfileSuccess}/>
-  
+    on:addProfileSuccess={onAddProfile}/>
+
+<RemoveProfile bind:isActive={showRemoveProfile} 
+    on:removeProfileSuccess={onRemoveProfile}/>
+
+    
 <style>
     ul {
         list-style-type: none;

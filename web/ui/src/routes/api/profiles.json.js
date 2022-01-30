@@ -18,3 +18,13 @@ export async function post ( {params, request} ) {
         body: res.data
     }    
 }
+
+export async function del ( {params, request} ) {
+    const body = await request.json()
+    
+    const res = await apiClient.delete('/profiles', {data: body})
+
+    return {
+        body: res.data
+    }    
+}

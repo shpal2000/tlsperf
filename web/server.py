@@ -177,7 +177,7 @@ async def api_delete_node_group(request):
             nodes = list(nodes)
         
         if list(filter(lambda a : a['Group'] == name,  nodes)):
-            return web.json_response({'status' : 1, 'message': 'Folder not empty'})
+            return web.json_response({'status' : -1, 'message': 'Folder not empty'})
 
         node_group_col.delete_one({'Name': name})
         return web.json_response({'status' : 0})
@@ -206,6 +206,24 @@ async def api_add_profile(request):
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
 
+async def api_delete_profile(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_col = db[PROFILE_LISTS]
+
+        # check if running ??
+        profile_col.delete_one({'Name': name, 'Group': group})
+
+        return web.json_response({'status' : 0})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
+
 async def api_get_profile_groups(request):
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
@@ -224,6 +242,30 @@ async def api_add_profile_group(request):
         db = mongoClient[DB_NAME]
         profile_group_col = db[PROFILE_GROUPS]
         profile_group_col.insert_one(r_json) 
+        return web.json_response({'status' : 0})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
+
+async def api_delete_profile_group(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_group_col = db[PROFILE_GROUPS]
+        profile_col = db[PROFILE_LISTS]
+        profiles = profile_col.find({}, {'_id' : False})
+        if not profiles:
+            profiles = []
+        else:
+            profiles = list(profiles)
+
+        if list(filter(lambda a : a['Group'] == name,  profiles)):
+            return web.json_response({'status' : -1, 'message': 'Folder not empty'})
+
+        profile_group_col.delete_one({'Name': name})
         return web.json_response({'status' : 0})
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
@@ -294,6 +336,11 @@ app.add_routes([web.route('post'
                             , '/api/profiles'
                             , api_add_profile)])
 
+app.add_routes([web.route('delete'
+                            , '/api/profiles'
+                            , api_delete_profile)])
+
+
 app.add_routes([web.route('get'
                             , '/api/profile_groups'
                             , api_get_profile_groups)])
@@ -301,6 +348,10 @@ app.add_routes([web.route('get'
 app.add_routes([web.route('post'
                             , '/api/profile_groups'
                             , api_add_profile_group)])
+
+app.add_routes([web.route('delete'
+                            , '/api/profile_groups'
+                            , api_delete_profile_group)])
 
 app.add_routes([web.route('post'
                             , '/api/profile_run'
