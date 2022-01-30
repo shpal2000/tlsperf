@@ -3,6 +3,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=tlsperf
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
+SHELL ["/bin/bash", "--login", "-c"]
 RUN apt-get update \
     && apt-get -yq install apt-utils \
     && apt-get -yq install mongodb \
@@ -22,6 +23,10 @@ RUN apt-get update \
     && apt-get -yq install libssl-dev \
     && apt-get -yq install openssh-client sshpass net-tools \
     && apt-get -yq install iptables \
+    && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash \
+    && source ~/.nvm/nvm.sh \
+    && nvm install 17.4.0 \
+    && nvm use 17.4.0 \
     #
     && cd / \
     && curl https://www.openssl.org/source/openssl-1.1.1d.tar.gz -o ./openssl-1.1.1d.tar.gz \
@@ -43,7 +48,7 @@ RUN apt-get update \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && sudo ldconfig -v \
     #
-    && pip3 install requests pytest aiohttp pymongo kubernetes \
+    && pip3 install requests pytest aiohttp pymongo kubernetes asyncssh \
     # Clean up
     && apt-get autoremove -yq \
     && apt-get clean -yq \

@@ -78,8 +78,6 @@ def localcmd(cmd_str, check_ouput=False):
         os.system(cmd_str)
         return None
 
-async def index_handle(request):
-    return web.FileResponse('public/index.html')
 
 async def api_get_nodes(request):
     # node_group = request.query['nodegroup']
@@ -103,17 +101,36 @@ async def api_add_node(request):
         db = mongoClient[DB_NAME]
         node_col = db[NODE_LISTS]
 
-        sshLinux = SshLinux(r_json['SshIP']
-                            , r_json['SshUser']
-                            , r_json['SshUser'])
+        # sshLinux = SshLinux(r_json['SshIP']
+        #                     , r_json['SshUser']
+        #                     , r_json['SshUser'])
 
         try:
-            allIfaces = await asyncio.wait_for (sshLinux.send_commamnd ('ip a'), timeout=10.0)
-            print (allIfaces)
+            # allIfaces = await asyncio.wait_for (sshLinux.send_commamnd ('ip a'), timeout=10.0)
+            # print (allIfaces)
             node_col.insert_one(r_json)
             return web.json_response({'status' : 0})
         except asyncio.TimeoutError:
             return web.Response(text='ssh connection failed')
+    except Exception as e:
+        return web.Response(text=str(e))
+
+async def api_delete_node(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        node_col = db[NODE_LISTS]
+
+        try:
+            node_col.delete_one({'Group': group, 'Name': name})
+            return web.json_response({'status' : 0})
+        except asyncio.TimeoutError:
+            return web.Response(text='todo: ssh connection failed')
     except Exception as e:
         return web.Response(text=str(e))
 
@@ -221,8 +238,6 @@ async def api_get_stats(request):
 
 app = web.Application()
 
-app.add_routes([web.static('/build', 'public/build')])
-app.add_routes([web.static('/assets', 'public/assets')])
 
 app.add_routes([web.route('get'
                             , '/api/nodes'
@@ -231,6 +246,10 @@ app.add_routes([web.route('get'
 app.add_routes([web.route('post'
                             , '/api/nodes'
                             , api_add_node)])
+
+app.add_routes([web.route('delete'
+                            , '/api/nodes'
+                            , api_delete_node)])
 
 app.add_routes([web.route('get'
                             , '/api/node_groups'
@@ -272,7 +291,6 @@ app.add_routes([web.route('get'
                             , '/api/stats/{appGId:.*}'
                             , api_get_stats)])
 
-app.add_routes([web.route('get', '/{tail:.*}', index_handle)])
 
 class StatsListener:
     def connection_made(self, transport):
@@ -324,27 +342,20 @@ class StatsListener:
 def main ():
     global stats_ticks
 
-    localcmd("mongod --noauth --dbpath /data &")
-    time.sleep(5)
-
-    cfg_file = '/configs/config.json'
-    with open(cfg_file) as f:
-        cfg = json.loads(f.read())
-
-    stats_ticks = cfg['stats_ticks']
+    stats_ticks = int(os.environ.get('STATS_TICKS', '2'))
 
     loop = asyncio.get_event_loop()
     runner = aiohttp.web.AppRunner(app)
     loop.run_until_complete(runner.setup())
     site = aiohttp.web.TCPSite(runner
-                , host=cfg['webui_ip']
-                , port=cfg['webui_port']
+                , host=os.environ.get('HOST', '0.0.0.0')
+                , port=int(os.environ.get('BPORT', '8887'))
                 , reuse_port=True)
     loop.run_until_complete(site.start())
 
     listen = loop.create_datagram_endpoint(StatsListener
-                    , local_addr=(cfg['webui_ip']
-                                    , cfg['stats_port'])
+                    , local_addr=(os.environ.get('HOST', '0.0.0.0')
+                                    , int(os.environ.get('SPORT', '7000')))
                     , reuse_port=True)
 
     loop.run_until_complete(listen)

@@ -35,3 +35,25 @@ sudo docker push tlspack/tlsperf:latest
 ---
 
 sass --sourcemap=none sass/mystyles.scss:public/assets/mystyles.css
+
+
+---
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+nvm install node 17.4.0 --default 17.4.0
+
+netstat -ltnp | grep -w ':30027'
+
+---
+
+df -hT
+
+lsblk
+
+
+sudo growpart /dev/xvda 1
+sudo resize2fs /dev/xvda1
+
+lsblk
+
+df -h
