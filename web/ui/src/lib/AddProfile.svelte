@@ -11,7 +11,7 @@
 
     async function onAddProfileSuccess () {
 
-      const res = await fetch ('/api/profiles', {
+      const res = await fetch ('/api/profiles.json', {
         method: 'POST',
         body: JSON.stringify({
           Name,
