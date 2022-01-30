@@ -55,7 +55,7 @@
 
   function onRemoveNodeGroup (event) {
 
-    $nodeTreeRoot.children = $nodeTreeRoot.children.filter(n => n.Name != $selectedNode.Name);
+    $nodeTreeRoot.children = $nodeTreeRoot.children.filter(ng => ng.Name != $selectedNode.Name);
 
     $selectedNode.Name = 'Traffic Nodes';
 

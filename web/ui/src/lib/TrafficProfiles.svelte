@@ -6,8 +6,9 @@
   import AddProfileGroup from "$lib/AddProfileGroup.svelte";
   import AddProfile from "$lib/AddProfile.svelte";
   import RemoveProfile from "$lib/RemoveProfile.svelte";
+  import RemoveProfileGroup from "$lib/RemoveProfileGroup.svelte";
 
-  function onAddProfileGroupSuccess (event) {
+  function onAddProfileGroup (event) {
     let profileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}, 
                               {'Name': 'Remove Folder ...', 'Event': 'removeProfileGroup', 'EventCtx': {}}];
 
@@ -52,6 +53,15 @@
     // replace(urlPath);
   }
   
+  function onRemoveProfileGroup (event) {
+
+    $profileTreeRoot.children = $profileTreeRoot.children.filter(pg => pg.Name != $selectedNode.Name);
+
+    $selectedNode.Name = 'Traffic Profiles';
+
+    $profileTreeRoot.children = $profileTreeRoot.children;
+  }
+
   function onRemoveProfile (event) {
     let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==$selectedNode.ParentName);
 
@@ -66,6 +76,7 @@
 
   let showAddProfileGroup = false;
   let showAddProfile = false;
+  let showRemoveProfileGroup = false;
   let showRemoveProfile = false;
 </script>
 
@@ -90,6 +101,7 @@
           type='ProfileGroup'
           on:expandToggle={() => child.expanded = !child.expanded}
           on:addProfile={() => showAddProfile = true}
+          on:removeProfileGroup={() => showRemoveProfileGroup = true}
           />
 
           {#if child.expanded && child.children}
@@ -108,10 +120,13 @@
 </ul> 
 
 <AddProfileGroup bind:isActive={showAddProfileGroup} 
-    on:addProfileGroupSuccess={onAddProfileGroupSuccess}/>
+    on:addProfileGroupSuccess={onAddProfileGroup}/>
 
 <AddProfile bind:isActive={showAddProfile} 
     on:addProfileSuccess={onAddProfile}/>
+
+<RemoveProfileGroup bind:isActive={showRemoveProfileGroup} 
+    on:removeProfileGroupSuccess={onRemoveProfileGroup}/>
 
 <RemoveProfile bind:isActive={showRemoveProfile} 
     on:removeProfileSuccess={onRemoveProfile}/>
