@@ -17,6 +17,10 @@
 	let ProfileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}, 
                                     {'Name': 'Remove Folder ...', 'Event': 'removeProfileGroup', 'EventCtx': {}}];
 
+    let nodeMenuItems = [{'Name': 'Remove Node ...', 'Event': 'removeNode', 'EventCtx': {}}];
+
+    let profileMenuItems = [{'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
+
 	async function getStorePopulated() {
 		const nodeGroups = await fetch ('/api/node_groups.json');
 		const nodes = await fetch ('/api/nodes.json');
@@ -32,7 +36,7 @@
 			
 			for (const nodeGroup of nodeGroupList) {
 				const nodeGroupNodeList = nodeList.filter(n => n.Group==nodeGroup.Name);
-          		const nodeGroupNodeList2 = nodeGroupNodeList.map (n => ({...n, UrlPath: '/node/'+nodeGroup.Name+'/' + n.Name, UrlPathView: '/node/'+nodeGroup.Name+'/' + n.Name}))
+          		const nodeGroupNodeList2 = nodeGroupNodeList.map (n => ({...n, MenuItems: nodeMenuItems, UrlPath: '/node/'+nodeGroup.Name+'/' + n.Name, UrlPathView: '/node/'+nodeGroup.Name+'/' + n.Name}))
 
 				nodeGroup.expanded = false;
 				nodeGroup.children = nodeGroupNodeList2;
@@ -50,7 +54,7 @@
 			
 			for (const profileGroup of profileGroupList) {
 				const profileGroupProfileList = profileList.filter(n => n.Group==profileGroup.Name);
-          		const profileGroupProfileList2 = profileGroupProfileList.map (n => ({...n, UrlPath: '/profile/'+profileGroup.Name+'/' + n.Name, UrlPathView: '/profile/'+profileGroup.Name+'/' + n.Name}))
+          		const profileGroupProfileList2 = profileGroupProfileList.map (n => ({...n, MenuItems: profileMenuItems, UrlPath: '/profile/'+profileGroup.Name+'/' + n.Name, UrlPathView: '/profile/'+profileGroup.Name+'/' + n.Name}))
 
 				profileGroup.expanded = false;
 				profileGroup.children = profileGroupProfileList2;

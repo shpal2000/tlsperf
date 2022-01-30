@@ -72,7 +72,7 @@
         errorMsg = '';
         isError = false;
         isProgress = true;
-        const res = await fetch ('/api/profile_groups', {
+        const res = await fetch ('/api/profile_groups.json', {
           method: 'POST',
           body: JSON.stringify({
             Name
@@ -81,14 +81,27 @@
         isProgress = false;
 
         if (res.ok) {
-          const json = await res.json();
 
-          if (json.status == 0){
-            dispatch ('addProfileGroupSuccess', {Name: Name});
-            resetState();
+          const text = await res.text();
+            let isJson = true;
+            let json = {};
+            try {
+              json = JSON.parse (text);
+            } catch (e) {
+              isJson = false;
+            }
+          
+          if (isJson) {
+            if (json.status == 0){
+              dispatch ('addProfileGroupSuccess', {Name: Name});
+              resetState();
+            } else {
+              console.log(json);
+              setErrorMsg (json.message);
+            }
           } else {
-            console.log(json);
-            setErrorMsg (json.message);
+            isProgress = false;
+            setErrorMsg (text); 
           }
         } else {
           console.log(res);
