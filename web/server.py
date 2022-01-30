@@ -126,11 +126,10 @@ async def api_delete_node(request):
         db = mongoClient[DB_NAME]
         node_col = db[NODE_LISTS]
 
-        try:
-            node_col.delete_one({'Group': group, 'Name': name})
-            return web.json_response({'status' : 0})
-        except asyncio.TimeoutError:
-            return web.Response(text='todo: ssh connection failed')
+        # check if runnig?
+        node_col.delete_one({'Group': group, 'Name': name})
+
+        return web.json_response({'status' : 0})
     except Exception as e:
         return web.Response(text=str(e))
 
@@ -160,6 +159,30 @@ async def api_add_node_group(request):
         return web.json_response({'status' : 0})
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
+
+async def api_delete_node_group(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        node_group_col = db[NODE_GROUPS]
+        node_col = db[NODE_LISTS]
+        nodes = node_col.find({}, {'_id' : False})
+        if not nodes:
+            nodes = []
+        else:
+            nodes = list(nodes)
+        
+        if list(filter(lambda a : a['Group'] == name,  nodes)):
+            return web.json_response({'status' : 1, 'message': 'Folder not empty'})
+
+        node_group_col.delete_one({'Name': name})
+        return web.json_response({'status' : 0})
+    except Exception as e:
+        return web.Response(text=str(e))
 
 async def api_get_profiles(request):
     mongoClient = MongoClient(DB_CSTRING)
@@ -258,6 +281,10 @@ app.add_routes([web.route('get'
 app.add_routes([web.route('post'
                             , '/api/node_groups'
                             , api_add_node_group)])
+
+app.add_routes([web.route('delete'
+                            , '/api/node_groups'
+                            , api_delete_node_group)])
 
 app.add_routes([web.route('get'
                             , '/api/profiles'

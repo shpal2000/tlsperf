@@ -78,7 +78,10 @@
   <div use:clickOutside on:click_outside={onClickOutside} class="dropdown is-active" style="position:fixed; left: {menuX}px; top: {menuY}px" in:fly="{{y:100, duration:500}}">
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
       <div class="dropdown-content">
-        {#each node.MenuItems as menuItem}
+        {#each node.MenuItems as menuItem, index}
+          {#if index}
+            <hr class="dropdown-divider">
+          {/if}
           <div class="dropdown-item tree-menu-items"
               on:click={() => onDispatch(menuItem.Event, menuItem.EventCtx)}>
             {menuItem.Name}
