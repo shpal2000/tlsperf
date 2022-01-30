@@ -14,6 +14,9 @@
     let signal = null;
 
     function resetState() {
+        isError = false;
+        isProgress = false;
+
         isActive=false;
     }
 
@@ -101,6 +104,31 @@
             <p class="modal-card-title">Remove Node</p>
         </header>
         <section class="modal-card-body">
+
+            <div class="field">
+                <!-- svelte-ignore a11y-label-has-associated-control -->
+                <label class="label">Folder</label>
+                <div class="control">
+                    <input class="input"
+                        type="text"
+                        value={$selectedNode.ParentName} 
+                        readonly
+                        />
+                </div>
+            </div>
+
+            <div class="field">
+                <!-- svelte-ignore a11y-label-has-associated-control -->
+                <label class="label">Node</label>
+                <div class="control">
+                    <input class="input"
+                        type="text"
+                        value={$selectedNode.Name} 
+                        readonly
+                        />
+                </div>
+            </div>
+
             <div class="field is-grouped">
                 <div class="control">
                   <button class="button is-info" on:click={onRemoveNodeOk}>Remove</button>
@@ -109,6 +137,7 @@
                   <button class="button is-info is-light" on:click={onRemoveNodeCancel}>Cancel</button>
                 </div>
             </div>
+
             {#if isProgress}
                 <div class="field">
                 <div class="control">

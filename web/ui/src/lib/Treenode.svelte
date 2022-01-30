@@ -79,7 +79,7 @@
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
       <div class="dropdown-content">
         {#each node.MenuItems as menuItem}
-          <div class="dropdown-item"
+          <div class="dropdown-item tree-menu-items"
               on:click={() => onDispatch(menuItem.Event, menuItem.EventCtx)}>
             {menuItem.Name}
           </div>
@@ -110,5 +110,9 @@
       -ms-user-select: none;
       -o-user-select: none;
       user-select: none;
+  }
+
+  .tree-menu-items {
+    cursor: context-menu; 
   }
 </style>
