@@ -2,9 +2,10 @@
   import { nodeTreeRoot } from '$lib/store.js';
   import { selectedNode } from '$lib/store.js';
   // import {replace} from "svelte-spa-router";
-  import Treenode from "./Treenode.svelte";
-  import AddNodeGroup from "./AddNodeGroup.svelte";
-  import AddNode from "./AddNode.svelte";
+  import Treenode from "$lib/Treenode.svelte";
+  import AddNodeGroup from "$lib/AddNodeGroup.svelte";
+  import AddNode from "$lib/AddNode.svelte";
+  import RemoveNode from "$lib/RemoveNode.svelte";
 
   function onAddNodeGroupSuccess (event) {
     let nodeGroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}, 
@@ -26,7 +27,7 @@
     $nodeTreeRoot.children = $nodeTreeRoot.children;
   }
 
-  function onAddNodeSuccess (event) {
+  function onAddNode (event) {
     let nodeMenuItems = [{'Name': 'Remove Node ...', 'Event': 'removeNode', 'EventCtx': {}}];
 
     let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.Name);
@@ -51,8 +52,25 @@
     // replace(urlPath);
   }
 
+  function onRemoveNode (event) {
+
+    let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.ParentName);
+
+    nodeGroup.children = nodeGroup.children.filter(n => n.Name != $selectedNode.Name && n.ParentName == nodeGroup.Name);
+    
+    // $selectedNode.Name = event.detail.Name;
+    // $selectedNode.ParentName = nodeGroup.Name;
+    // $selectedNode.Type = 'Node';
+
+    $nodeTreeRoot.children = $nodeTreeRoot.children;
+
+    // replace('/blank');
+    // replace(urlPath);
+  }
+
   let showAddNodeGroup = false;
   let showAddNode = false;
+  let showRemoveNode = true;
 
 </script>
 
@@ -80,7 +98,13 @@
 
           {#if child.expanded && child.children}
             {#each child.children as grandChild}
-              <Treenode node={grandChild} pnode={child} level={3} type='Node'/>
+              <Treenode 
+                node={grandChild} 
+                pnode={child} 
+                level={3} 
+                type='Node'
+                on:removeNode={() => showRemoveNode = true}
+                />
             {/each}
           {/if}
 
@@ -92,7 +116,10 @@
     on:addNodeGroupSuccess={onAddNodeGroupSuccess}/>
 
 <AddNode bind:isActive={showAddNode} 
-  on:addNodeSuccess={onAddNodeSuccess}/>
+  on:addNodeSuccess={onAddNode}/>
+
+<RemoveNode bind:isActive={showRemoveNode} 
+  on:removeNodeSuccess={onRemoveNode}/>
 
 
 <style>

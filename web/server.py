@@ -115,6 +115,25 @@ async def api_add_node(request):
     except Exception as e:
         return web.Response(text=str(e))
 
+async def api_delete_node(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        node_col = db[NODE_LISTS]
+
+        try:
+            node_col.delete_one({'Group': group, 'Name': name})
+            return web.json_response({'status' : 0})
+        except asyncio.TimeoutError:
+            return web.Response(text='todo: ssh connection failed')
+    except Exception as e:
+        return web.Response(text=str(e))
+
 async def api_get_node_groups(request):
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
@@ -227,6 +246,10 @@ app.add_routes([web.route('get'
 app.add_routes([web.route('post'
                             , '/api/nodes'
                             , api_add_node)])
+
+app.add_routes([web.route('delete'
+                            , '/api/nodes'
+                            , api_delete_node)])
 
 app.add_routes([web.route('get'
                             , '/api/node_groups'
