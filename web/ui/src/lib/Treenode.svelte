@@ -1,4 +1,5 @@
 <script>
+  import {goto} from "$app/navigation";
   import { createEventDispatcher } from "svelte";
   import { slide } from 'svelte/transition';
   import { fly } from 'svelte/transition';
@@ -36,8 +37,7 @@
     showMenu = false;
 
     if (node.UrlPathView) {
-      // replace('/blank');
-      // replace(node.UrlPathView);
+      goto(node.UrlPathView);
     }
   }
 

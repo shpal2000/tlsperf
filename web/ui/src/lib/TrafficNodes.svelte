@@ -1,7 +1,7 @@
 <script>
   import { nodeTreeRoot } from '$lib/store.js';
   import { selectedNode } from '$lib/store.js';
-  // import {replace} from "svelte-spa-router";
+  import {goto} from "$app/navigation";
   import Treenode from "$lib/Treenode.svelte";
   import AddNodeGroup from "$lib/AddNodeGroup.svelte";
   import AddNode from "$lib/AddNode.svelte";
@@ -49,8 +49,7 @@
 
     $nodeTreeRoot.children = $nodeTreeRoot.children;
 
-    // replace('/blank');
-    // replace(urlPath);
+    goto(urlPath);
   }
 
   function onRemoveNodeGroup (event) {
