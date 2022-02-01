@@ -1,7 +1,7 @@
 <script>
   import { profileTreeRoot } from '$lib/store.js';
   import { selectedNode } from '$lib/store.js';
-  // import { replace } from "svelte-spa-router";
+  import {goto} from "$app/navigation";
   import Treenode from "$lib/Treenode.svelte";
   import AddProfileGroup from "$lib/AddProfileGroup.svelte";
   import AddProfile from "$lib/AddProfile.svelte";
@@ -49,8 +49,7 @@
 
     $profileTreeRoot.children = $profileTreeRoot.children;
 
-    // replace('/blank');
-    // replace(urlPath);
+    goto(urlPath);
   }
   
   function onRemoveProfileGroup (event) {

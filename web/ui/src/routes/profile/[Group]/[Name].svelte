@@ -5,7 +5,7 @@
         const name = params.Name;
 
         try {
-            const res = await fetch (`/api/node.json?group=${group}&name=${name}`);
+            const res = await fetch (`/api/profile.json?group=${group}&name=${name}`);
             if (res.ok) {
                 const text = await res.text();
                 let isJson = true;
@@ -42,16 +42,16 @@
 
 <script>
     import { onMount } from "svelte";
-    import { nodeTreeRoot } from '$lib/store.js';
+    import { profileTreeRoot } from '$lib/store.js';
     import { selectedNode } from '$lib/store.js';
 
     export let Group;
     export let Name;
 
     onMount ( () => {
-        $nodeTreeRoot.expanded = true;
+        $profileTreeRoot.expanded = true;
 
-        let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==Group);
+        let nodeGroup = $profileTreeRoot.children.find (pg => pg.Name==Group);
 
         if (nodeGroup) {
             nodeGroup.expanded = true;
@@ -59,11 +59,11 @@
 
         $selectedNode.Name = Name;
         $selectedNode.ParentName = Group;
-        $selectedNode.Type = 'Node';
+        $selectedNode.Type = 'Profile';
 
     });
 
 </script>
 
 <h1>Welcome to SvelteKit</h1>
-<p>Node : {Group} - {Name}</p>
+<p>Profile : {Group} - {Name}</p>
