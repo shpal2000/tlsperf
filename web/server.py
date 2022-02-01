@@ -8,6 +8,7 @@ import time
 from pymongo import MongoClient
 import yaml
 import asyncssh
+# from bson.json_util import dumps
 
 import kubernetes.client
 
@@ -78,6 +79,18 @@ def localcmd(cmd_str, check_ouput=False):
         os.system(cmd_str)
         return None
 
+
+async def api_get_node(request):
+    group = request.query['group']
+    name = request.query['name']
+
+    mongoClient = MongoClient(DB_CSTRING)
+    db = mongoClient[DB_NAME]
+    node_col = db[NODE_LISTS]
+    node = node_col.find_one({'Group': group, 'Name': name}, {'_id' : False})
+    if not node:
+        return web.json_response({'status' : -1, 'message': 'node not found'})
+    return web.json_response({'status': 0, 'data': node})
 
 async def api_get_nodes(request):
     # node_group = request.query['nodegroup']
@@ -303,6 +316,9 @@ async def api_get_stats(request):
 
 app = web.Application()
 
+app.add_routes([web.route('get'
+                            , '/api/node'
+                            , api_get_node)])
 
 app.add_routes([web.route('get'
                             , '/api/nodes'
