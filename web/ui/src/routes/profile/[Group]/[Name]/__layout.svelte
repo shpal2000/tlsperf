@@ -65,5 +65,6 @@
 
 </script>
 
-<h1>Welcome to SvelteKit</h1>
 <p>Profile : {Group} - {Name}</p>
+
+<slot />
