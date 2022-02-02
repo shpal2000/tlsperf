@@ -52,7 +52,6 @@
     export let Group;
     export let Name;
 
-    let Profile = $page.stuff.Profile;
 
     onMount ( () => {
         $profileTreeRoot.expanded = true;
@@ -71,6 +70,6 @@
 </script>
 
 <p>Profile : {Group} - {Name}</p>
-<p>{JSON.stringify(Profile)}</p>
+<p>{JSON.stringify($page.stuff.Profile)}</p>
 
 <slot />
