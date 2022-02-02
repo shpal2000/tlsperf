@@ -64,7 +64,7 @@
         }
         isError = true;
     }
-    
+
     async function onAddNodeCancel () {
       resetState ();
 

@@ -114,6 +114,12 @@ async def api_add_node(request):
         db = mongoClient[DB_NAME]
         node_col = db[NODE_LISTS]
 
+        node = node_col.find_one({'Name': r_json['Name']
+                                        , 'Group': r_json['Group']}
+                                        , {'_id' : False})
+        if node:
+            return web.json_response({'status' : -1, 'message': 'already exist'})
+
         # sshLinux = SshLinux(r_json['SshIP']
         #                     , r_json['SshUser']
         #                     , r_json['SshUser'])
@@ -168,6 +174,7 @@ async def api_add_node_group(request):
                                         , {'_id' : False})
         if node:
             return web.json_response({'status' : -1, 'message': 'already exist'})
+        
         node_group_col.insert_one(r_json) 
         return web.json_response({'status' : 0})
     except Exception as err:
@@ -226,10 +233,17 @@ async def api_add_profile(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         profile_col = db[PROFILE_LISTS]
+
+        profile = profile_col.find_one({'Name': r_json['Name']
+                                        , 'Group': r_json['Group']}
+                                        , {'_id' : False})
+        if profile:
+            return web.json_response({'status' : -1, 'message': 'already exist'})
+
         profile_col.insert_one(r_json) 
         return web.json_response({'status' : 0})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_delete_profile(request):
     try:
@@ -266,10 +280,16 @@ async def api_add_profile_group(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         profile_group_col = db[PROFILE_GROUPS]
+
+        profile = profile_group_col.find_one({'Name': r_json['Name']}
+                                        , {'_id' : False})
+        if profile:
+            return web.json_response({'status' : -1, 'message': 'already exist'})
+
         profile_group_col.insert_one(r_json) 
         return web.json_response({'status' : 0})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_delete_profile_group(request):
     try:
