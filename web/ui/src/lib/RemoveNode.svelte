@@ -99,6 +99,7 @@
 </script>
 
 <div class="modal {isActive ? 'is-active' : ''}">
+    <div class="modal-background"></div>
     <div class="modal-card box">
         <header>
             <p class="modal-card-title">Remove Node</p>
@@ -129,14 +130,7 @@
                 </div>
             </div>
 
-            <div class="field is-grouped">
-                <div class="control">
-                  <button class="button is-info" on:click={onRemoveNodeOk}>Remove</button>
-                </div>
-                <div class="control">
-                  <button class="button is-info is-light" on:click={onRemoveNodeCancel}>Cancel</button>
-                </div>
-            </div>
+
 
             {#if isProgress}
                 <div class="field">
@@ -155,10 +149,25 @@
                     </div>
                 </div>          
             {/if}
+
+            <div class="field is-grouped">
+                <div class="control">
+                  <button class="button is-info" on:click={onRemoveNodeOk}>Remove</button>
+                </div>
+                <div class="control">
+                  <button class="button is-info is-light" on:click={onRemoveNodeCancel}>Cancel</button>
+                </div>
+            </div>
+
+
         </section>
     </div>
 </div>
 
 <style>
-
+    .errmsg {
+      background-color: transparent;
+      color: red;
+      overflow: auto;
+    }
 </style>

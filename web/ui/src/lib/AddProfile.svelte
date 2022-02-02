@@ -170,14 +170,7 @@
             </div>
           </div>
         </div>
-        <div class="field is-grouped">
-          <div class="control">
-            <button class="button  is-info" on:click={onAddProfileOk}>Add</button>
-          </div>
-          <div class="control">
-            <button class="button  is-light" on:click={onAddNodeCancel}>Cancel</button>
-          </div>
-        </div>
+
 
         {#if isProgress}
           <div class="field">
@@ -196,6 +189,16 @@
             </div>
           </div>          
         {/if}
+
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button  is-info" on:click={onAddProfileOk}>Add</button>
+          </div>
+          <div class="control">
+            <button class="button  is-light" on:click={onAddNodeCancel}>Cancel</button>
+          </div>
+        </div>
+
 
       </section>
     </div>

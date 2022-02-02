@@ -115,6 +115,7 @@
 </script>
 
 <div class="modal {isActive ? 'is-active' : ''}">
+    <div class="modal-background"></div>
     <div class="modal-card box">
       <header>
         <p class="modal-card-title">Add Node Folder</p>
@@ -136,15 +137,6 @@
           </div>
         </div>
 
-        <div class="field is-grouped">
-          <div class="control">
-            <button class="button is-info" on:click={onAddNodeGroupOk}>Add</button>
-          </div>
-          <div class="control">
-            <button class="button is-info is-light" on:click={onAddNodeGroupCancel}>Cancel</button>
-          </div>
-        </div>
-
         {#if isProgress}
         <div class="field">
           <div class="control">
@@ -163,6 +155,15 @@
           </div>          
         {/if}
 
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button is-info" on:click={onAddNodeGroupOk}>Add</button>
+          </div>
+          <div class="control">
+            <button class="button is-info is-light" on:click={onAddNodeGroupCancel}>Cancel</button>
+          </div>
+        </div>        
+
       </section>
     </div>
 </div>
@@ -173,5 +174,4 @@
     color: red;
     overflow: auto;
   }
-
 </style>
