@@ -204,69 +204,85 @@
         <p class="modal-card-title">Add Node</p>
       </header>
       <section class="modal-card-body">
-        <div class="field">
-          <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Alias</label>
-          <div class="control">
-            <input class="input {nameError ? 'is-danger' : '' }" 
-              type="text" 
-              placeholder="" 
-              bind:value={Name} 
-              on:input={validateName}
-              >
-            {#if nameError}
-              <p class="help">{nameHelp}</p>
-            {/if}
+        <div class="columns is-multiline is-mobile">
+          <div class="column is-half">
+            <div class="field">
+              <!-- svelte-ignore a11y-label-has-associated-control -->
+              <label class="label">Alias</label>
+              <div class="control">
+                <input class="input {nameError ? 'is-danger' : '' }" 
+                  type="text" 
+                  placeholder="" 
+                  bind:value={Name} 
+                  on:input={validateName}
+                  >
+                {#if nameError}
+                  <p class="help">{nameHelp}</p>
+                {/if}
+              </div>
+            </div>
+          </div>
+
+          <div class="column is-half">
+            <div class="field">
+              <!-- svelte-ignore a11y-label-has-associated-control -->
+              <label class="label">Ssh IP</label>
+              <div class="control">
+                <input class="input {sshIPError ? 'is-danger' : '' }" 
+                  type="text" 
+                  placeholder="" 
+                  bind:value={SshIP}
+                  on:input={validateSshIP}
+                  >
+                {#if sshIPError}
+                  <p class="help">{sshIPHelp}</p>
+                {/if}
+              </div>
+            </div>
+          </div>
+
+          <div class="column is-half">
+
+            <div class="field">
+              <!-- svelte-ignore a11y-label-has-associated-control -->
+              <label class="label">Ssh User</label>
+              <div class="control">
+                <input class="input {sshUserError ? 'is-danger' : '' }" 
+                  type="text" 
+                  placeholder="" 
+                  bind:value={SshUser}
+                  on:input={validateSshUser}
+                  >
+                {#if sshUserError}
+                  <p class="help">{sshUserHelp}</p>
+                {/if}
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="column is-half">
+
+            <div class="field">
+              <!-- svelte-ignore a11y-label-has-associated-control -->
+              <label class="label">Ssh Pass</label>
+              <div class="control">
+                <input class="input {sshPassError ? 'is-danger' : '' }" 
+                  type="password" 
+                  placeholder=""
+                  bind:value={SshPass}
+                  on:input={validateSshPass}
+                  >
+                {#if sshPassError}
+                  <p class="help">{sshPassHelp}</p>
+                {/if}
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <div class="field">
-          <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Ssh IP</label>
-          <div class="control">
-            <input class="input {sshIPError ? 'is-danger' : '' }" 
-              type="text" 
-              placeholder="" 
-              bind:value={SshIP}
-              on:input={validateSshIP}
-              >
-            {#if sshIPError}
-              <p class="help">{sshIPHelp}</p>
-            {/if}
-          </div>
-        </div>
-
-        <div class="field">
-          <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Ssh User</label>
-          <div class="control">
-            <input class="input {sshUserError ? 'is-danger' : '' }" 
-              type="text" 
-              placeholder="" 
-              bind:value={SshUser}
-              on:input={validateSshUser}
-              >
-            {#if sshUserError}
-              <p class="help">{sshUserHelp}</p>
-            {/if}
-          </div>
-        </div>
-
-        <div class="field">
-          <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Ssh Pass</label>
-          <div class="control">
-            <input class="input {sshPassError ? 'is-danger' : '' }" 
-              type="password" 
-              placeholder=""
-              bind:value={SshPass}
-              on:input={validateSshPass}
-              >
-            {#if sshPassError}
-              <p class="help">{sshPassHelp}</p>
-            {/if}
-          </div>
-        </div>
 
         {#if isProgress}
           <div class="field">
@@ -294,7 +310,7 @@
             <button class="button is-info is-light" on:click={onAddNodeCancel}>Cancel</button>
           </div>
         </div>
-                
+
       </section>
     </div>
 </div>

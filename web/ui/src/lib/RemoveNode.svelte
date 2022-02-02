@@ -120,7 +120,7 @@
 
             <div class="field">
                 <!-- svelte-ignore a11y-label-has-associated-control -->
-                <label class="label">Node</label>
+                <label class="label">Alias</label>
                 <div class="control">
                     <input class="input"
                         type="text"

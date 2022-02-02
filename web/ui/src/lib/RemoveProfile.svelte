@@ -120,7 +120,7 @@
 
             <div class="field">
                 <!-- svelte-ignore a11y-label-has-associated-control -->
-                <label class="label">Profile</label>
+                <label class="label">Name</label>
                 <div class="control">
                     <input class="input"
                         type="text"
@@ -158,7 +158,7 @@
                 </div>
             </div>
 
-            
+
         </section>
     </div>
 </div>
