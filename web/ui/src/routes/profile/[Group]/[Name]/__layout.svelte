@@ -20,8 +20,7 @@
                     if (json.status == 0) {
                         return {
                             props: {
-                                Group: json.data.Group,
-                                Name: json.data.Name
+                                Profile: json.data
                             }
                         }
                     } else {
@@ -42,29 +41,35 @@
 
 <script>
     import { onMount } from "svelte";
+    import { setContext } from "svelte";
+    import { writable } from "svelte/store";
+
     import { profileTreeRoot } from '$lib/store.js';
     import { selectedNode } from '$lib/store.js';
 
-    export let Group;
-    export let Name;
+    export let Profile;
 
     onMount ( () => {
         $profileTreeRoot.expanded = true;
 
-        let nodeGroup = $profileTreeRoot.children.find (pg => pg.Name==Group);
+        let nodeGroup = $profileTreeRoot.children.find (pg => pg.Name==Profile.Group);
 
         if (nodeGroup) {
             nodeGroup.expanded = true;
         }
 
-        $selectedNode.Name = Name;
-        $selectedNode.ParentName = Group;
+        $selectedNode.Name = Profile.Name;
+        $selectedNode.ParentName = Profile.Group;
         $selectedNode.Type = 'Profile';
 
+        const StoredProfile = writable (Profile);
+
+        setContext('Profile', StoredProfile)
     });
 
 </script>
 
-<p>Profile : {Group} - {Name}</p>
+<p>Profile : {Profile.Group} - {Profile.Name}</p>
+<p>{JSON.stringify(Profile)}</p>
 
 <slot />

@@ -64,7 +64,53 @@ PROFILE_LISTS= 'tlsperf_profile_list'
 
 stats_ticks = 60
 
-def start_tlsserver_tlsclient(prof_j):
+def set_profile_TlsClientServer (prof_j):
+    cs_groups = [
+        { "client_ips" :  ["12.20.51.1/16", "12.20.51.2/16"], 
+            "server_ip": "12.20.61.1/16"
+        },
+        { "client_ips" :  ["12.20.52.1/16", "12.20.52.2/16"], 
+            "server_ip": "12.20.62.1/16"
+        },
+        { "client_ips" :  ["12.20.53.1/16", "12.20.53.2/16"], 
+            "server_ip": "12.20.63.1/16"
+        },
+        { "client_ips" :  ["12.20.54.1/16", "12.20.54.2/16"], 
+            "server_ip": "12.20.64.1/16"
+        },
+        { "client_ips" :  ["12.20.55.1/16", "12.20.55.2/16"], 
+            "server_ip": "12.20.65.1/16"
+        },
+        { "client_ips" :  ["12.20.56.1/16", "12.20.56.2/16"], 
+            "server_ip": "12.20.66.1/16"
+        },
+        { "client_ips" :  ["12.20.57.1/16", "12.20.57.2/16"], 
+            "server_ip": "12.20.67.1/16"
+        },
+        { "client_ips" :  ["12.20.58.1/16", "12.20.58.2/16"], 
+            "server_ip": "12.20.68.1/16"
+        },
+    ]    
+    
+    prof_j['cs_groups'] = []
+    csg_index = 0
+    for csg in cs_groups:
+        csg_index += 1
+        csg["app_id"] = "csg-" + str(csg_index)
+        
+        csg["app_gid"] = prof_j['Group'] + '/' + prof_j['Name']
+
+        csg["server_port"] = 443
+        csg["server_ssl"] = 1
+        csg["send_recv_len"] = 1
+        csg["cps"] = 1
+        csg["max_active_conn_count"] = 10
+        csg["server_certificate"] = "cert"
+        csg["server_key"] = "key"
+
+        prof_j['cs_groups'].append(csg)
+
+def start_profile_TlsClientServer(prof_j):
 
     clients = []
     servers = []
@@ -240,6 +286,8 @@ async def api_add_profile(request):
         if profile:
             return web.json_response({'status' : -1, 'message': 'already exist'})
 
+        set_profile_TlsClientServer(r_json)
+
         profile_col.insert_one(r_json) 
         return web.json_response({'status' : 0})
     except Exception as err:
@@ -329,7 +377,7 @@ async def api_profile_run(request):
                                             'Name': name}
                                         , {'_id' : False})
         if profile:
-            start_tlsserver_tlsclient(profile)
+            start_profile_TlsClientServer(profile)
         else:
             return web.json_response({'status' : -1, 'message': 'tbd'})
         return web.json_response({'status' : 0})
