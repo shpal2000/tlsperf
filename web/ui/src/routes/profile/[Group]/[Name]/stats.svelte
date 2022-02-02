@@ -1,12 +1,11 @@
-<!-- <p>stats</p>
+<p>stats</p>
 
 <script>
-    import { getContext } from "svelte";
+    import { page } from '$app/stores'
 
-    const StoredProfile = getContext('Profile')
-
+    let Profile = $page.stuff.Profile;
 
 </script>
 
-<p>Profile / stats : {$StoredProfile.Group} - {$StoredProfile.Name}</p>
-<p>{JSON.stringify($StoredProfile)}</p> -->
+<p>Profile / stats : {Profile.Group} - {Profile.Name}</p>
+<p>{JSON.stringify(Profile)}</p>
