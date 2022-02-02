@@ -140,11 +140,10 @@
       validateSshUser ();
       validateSshPass ();
 
-      controller = new AbortController();
-      signal = controller.signal;
-
-
       if (!nameError && !sshIPError && !sshUserError && !sshPassError) {
+        controller = new AbortController();
+        signal = controller.signal;
+
         try {
           errorMsg = '';
           isError = false;
@@ -278,11 +277,11 @@
         </div>
 
         {#if isProgress}
-        <div class="field">
-          <div class="control">
-            <ProgressBar helperText=""/>
+          <div class="field">
+            <div class="control">
+              <ProgressBar helperText=""/>
+            </div>
           </div>
-        </div>
         {/if}
 
         {#if isError}
