@@ -98,32 +98,10 @@
     </ul>
 </nav>
 
-
-<div class="tabs is-left ">
-    <ul>
-      <li class="{activeTab=='Config' ? 'is-active' : 'inactive-background'}" on:click={onConfigClick}>
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a>
-          <span>Config</span>
-        </a>
-      </li>
-      <li class="{activeTab=='Stats' ? 'is-active' : 'inactive-background'}" on:click={onStatsClick}>
-          <!-- svelte-ignore a11y-missing-attribute -->
-          <a>
-            <span>Stats</span>
-          </a>
-      </li>
-    </ul>
-</div>
-
 <style>
     .breadcrumb-margin {
-      margin-top: 8px;
-      margin-left: 1.1rem;
-    }
-
-    .inactive-background {
-      /* background-color: whitesmoke; */
+        margin-top: 24px;
+        margin-left: 1.1rem;
     }
 </style>
 

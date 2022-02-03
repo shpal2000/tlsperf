@@ -1,10 +1,10 @@
-<p>config</p>
-
 <script>
     import { page } from '$app/stores'
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
 
+    let chartValues = [];
+    let chartLabels = [];
 
     let data = {
               labels: chartLabels,
@@ -108,7 +108,7 @@
     ];
 </script>
 
-<div class="columns is-multiline is-mobile">
+<div class="columns is-multiline is-mobile breadcrumb-margin">
     <div class="column is-1"></div>
     <div class="column is-10">
       <div class="tile is-ancestor is-mobile">
@@ -313,3 +313,28 @@
     </div>
     <div class="column is-1"></div>
   </div>
+
+
+  <style>
+    .breadcrumb-margin {
+      margin-top: 16px;
+      margin-left: 1.1rem;
+    }
+
+    .my-border {
+      border: 1px solid lightgrey;
+      padding-left: 15px;
+      padding-right: 15px;
+      padding-top: 10px;
+      padding-bottom: 15px;
+    }
+
+    .inactive-background {
+      background-color: whitesmoke;
+    }
+
+    .profile-content-margin {
+      margin-top: 3rem;
+    }
+
+</style>

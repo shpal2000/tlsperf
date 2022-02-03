@@ -1,5 +1,3 @@
-<p>stats</p>
-
 <script>
     import { page } from '$app/stores'
 
