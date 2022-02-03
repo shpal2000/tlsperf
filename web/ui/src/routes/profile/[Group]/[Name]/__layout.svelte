@@ -47,10 +47,23 @@
     import { onMount } from "svelte";
     import { profileTreeRoot } from '$lib/store.js';
     import { selectedNode } from '$lib/store.js';
-    import { page } from '$app/stores'
+    import { page } from '$app/stores';
+    import {goto} from "$app/navigation";
 
     export let Group;
     export let Name;
+
+    let activeTab = 'Config';
+
+    function onConfigClick(e) {
+        goto('/profile/'+Group+'/'+Name)
+        activeTab = 'Config';
+    }
+
+    function onStatsClick(e) {
+        goto('/profile/'+Group+'/'+Name+'/stats');
+        activeTab = 'Stats';
+    }
 
 
     onMount ( () => {
@@ -69,7 +82,49 @@
 
 </script>
 
-<p>Profile : {Group} - {Name}</p>
-<p>{JSON.stringify($page.stuff.Profile)}</p>
+<!-- <p>Profile : {Group} - {Name}</p>
+<p>{JSON.stringify($page.stuff.Profile)}</p> -->
+
+<nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
+    <ul>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <li class="is-active" ><a>Profiles</a></li>
+
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <li class="is-active" ><a>{Group}</a></li>
+
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <li class="is-active" ><a>{Name}</a></li>
+    </ul>
+</nav>
+
+
+<div class="tabs is-left ">
+    <ul>
+      <li class="{activeTab=='Config' ? 'is-active' : 'inactive-background'}" on:click={onConfigClick}>
+        <!-- svelte-ignore a11y-missing-attribute -->
+        <a>
+          <span>Config</span>
+        </a>
+      </li>
+      <li class="{activeTab=='Stats' ? 'is-active' : 'inactive-background'}" on:click={onStatsClick}>
+          <!-- svelte-ignore a11y-missing-attribute -->
+          <a>
+            <span>Stats</span>
+          </a>
+      </li>
+    </ul>
+</div>
+
+<style>
+    .breadcrumb-margin {
+      margin-top: 8px;
+      margin-left: 1.1rem;
+    }
+
+    .inactive-background {
+      /* background-color: whitesmoke; */
+    }
+</style>
 
 <slot />
