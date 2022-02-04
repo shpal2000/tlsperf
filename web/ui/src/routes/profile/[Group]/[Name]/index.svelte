@@ -175,6 +175,7 @@
             size="short"
             headers={statsHeaders}
             rows={statsData}
+            zebra
             />
           </div>
         </div>
@@ -190,6 +191,7 @@
         expandable
         headers={csGroupHeaders}
         rows={csGroupsData}
+        size="short"
         >
         <div slot="expanded-row" let:row>
           <div class="columns is-multiline is-mobile">

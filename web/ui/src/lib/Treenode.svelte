@@ -63,15 +63,15 @@
         transition:slide 
         on:contextmenu|preventDefault={onContextMenu}
         class:selected="{$selectedNode.Name==node.Name && $selectedNode.ParentName==pnode.Name && $selectedNode.Type==type}">
-    {#if node.children}
-      {#if !node.expanded}
-        <ClosedIcon /> {node.Name}
+      {#if node.children}
+        {#if !node.expanded}
+          <ClosedIcon /> <p>{node.Name}</p>
+        {:else}
+          <OpenedIcon /> <p>{node.Name}</p>
+        {/if}
       {:else}
-        <OpenedIcon /> {node.Name}
+        <CircleIcon /> <p>{node.Name}</p>
       {/if}
-    {:else}
-      <CircleIcon /> {node.Name}
-    {/if}
 </li>
 
 {#if showMenu && node.MenuItems}
@@ -107,6 +107,7 @@
       padding: 0.60rem;
       display: flex;
       cursor: pointer;
+      vertical-align: middle;
 
       -webkit-user-select: none;
       -moz-user-select: none;
