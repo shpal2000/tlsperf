@@ -3,6 +3,132 @@
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
 
+    import { ProgressBar } from "carbon-components-svelte";
+
+    let Transactions;
+    let transactionsError;
+    let transactionsHelp;
+
+    let Cps;
+    let cpsError;
+    let cpsHelp;
+
+    let DataLength;
+    let dataLengthError;
+    let dataLengthHelp;
+
+    let MaxPipeline;
+    let maxPipelineError;
+    let maxPipelineHelp;
+
+    function resetState() {
+      Transactions = 100;
+      transactionsError = false;
+
+      Cps = 1;
+      cpsError = false;
+
+      DataLength = 1;
+      dataLengthError = false;
+
+      MaxPipeline = 1;
+      maxPipelineError = false;
+    }
+
+    resetState();
+
+    import { createEventDispatcher } from "svelte";
+
+    const dispatch = createEventDispatcher ();
+
+
+    function validateTransactions () {
+      let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      if (Transactions.trim() == ''){
+        transactionsHelp = 'required';
+        transactionsError = true;
+      } else if (!numRegex.test(Transactions)){
+        transactionsHelp = 'invalid - number only';
+        transactionsError = true;
+      } else {
+        transactionsError = false;
+      }
+    }
+
+    function validateCps () {
+      let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      if (Cps.trim() == ''){
+        cpsHelp = 'required';
+        cpsError = true;
+      } else if (!numRegex.test(Cps)){
+        cpsHelp = 'invalid - number only';
+        cpsError = true;
+      } else {
+        cpsError = false;
+      }
+    }
+
+    function validateDataLength () {
+      let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      if (DataLength.trim() == ''){
+        dataLengthHelp = 'required';
+        dataLengthError = true;
+      } else if (!numRegex.test(DataLength)){
+        dataLengthHelp = 'invalid - number only';
+        dataLengthError = true;
+      } else {
+        dataLengthError = false;
+      }
+    }
+
+    function validateMaxPipeline () {
+      let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      if (MaxPipeline.trim() == ''){
+        maxPipelineHelp = 'required';
+        maxPipelineError = true;
+      } else if (!numRegex.test(MaxPipeline)){
+        maxPipelineHelp = 'invalid - number only';
+        maxPipelineError = true;
+      } else {
+        maxPipelineError = false;
+      }
+    }
+
+
+    function onCommon () {
+
+      validateTransactions ();
+      validateCps ();
+      validateDataLength ();
+      validateMaxPipeline ();
+
+      controller = new AbortController();
+      signal = controller.signal;
+
+      if (!transactionsError && !cpsError && !dataLengthError && !maxPipelineError) {
+        return true;
+      }
+
+      return false;
+    }
+
+    async function onSave () {
+      if (onCommon()){
+
+      }
+    }
+
+    async function onSaveAndRun () {
+      if (onCommon()){
+
+      }
+    }
+
+
     let chartValues = [];
     let chartLabels = [];
 
@@ -121,7 +247,15 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Transactions</label>
                     <div class="control">
-                      <input class="input " type="text" placeholder="Text input">
+                      <input class="input {transactionsError ? 'is-danger' : ''}" 
+                        type="text" 
+                        placeholder=""
+                        bind:value={Transactions}
+                        on:input={validateTransactions}
+                      >
+                      {#if transactionsError}
+                        <p class="help">{transactionsHelp}</p>
+                      {/if}
                     </div>
                   </div>
                 </div>
@@ -131,7 +265,15 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">DataLength</label>
                     <div class="control">
-                      <input class="input " type="text" placeholder="Text input">
+                      <input class="input {dataLengthError ? 'is-danger' : ''}" 
+                        type="text" 
+                        placeholder=""
+                        bind:value={DataLength}
+                        on:input={validateDataLength}
+                      >
+                      {#if dataLengthError}
+                        <p class="help">{dataLengthHelp}</p>
+                      {/if}
                     </div>
                   </div>
                 </div>
@@ -141,7 +283,15 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">CPS</label>
                     <div class="control">
-                      <input class="input " type="text" placeholder="Text input">
+                      <input class="input {cpsError ? 'is-danger' : ''}" 
+                        type="text" 
+                        placeholder=""
+                        bind:value={Cps}
+                        on:input={validateCps}
+                      >
+                      {#if cpsError}
+                        <p class="help">{cpsHelp}</p>
+                      {/if}
                     </div>
                   </div>
                 </div>
@@ -151,17 +301,25 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">MaxPipeline</label>
                     <div class="control">
-                      <input class="input " type="text" placeholder="Text input">
+                      <input class="input {maxPipelineError ? 'is-danger' : ''}" 
+                        type="text" 
+                        placeholder=""
+                        bind:value={MaxPipeline}
+                        on:input={validateMaxPipeline}
+                      >
+                      {#if maxPipelineError}
+                        <p class="help">{maxPipelineHelp}</p>
+                      {/if}
                     </div>
                   </div>
                 </div>
               </div>
               <div class="field is-grouped">
                 <div class="control">
-                  <button class="button  is-info">Run</button>
+                  <button class="button  is-info" on:click={onSaveAndRun} >Save & Run</button>
                 </div>
                 <div class="control">
-                  <button class="button  is-light">Save</button>
+                  <button class="button  is-light" on:click={onSave} >Save</button>
                 </div>
               </div>
             </section> 
@@ -331,12 +489,10 @@
       padding-bottom: 15px;
     }
 
-    .inactive-background {
-      background-color: whitesmoke;
-    }
-
-    .profile-content-margin {
-      margin-top: 3rem;
+    .errmsg {
+      background-color: transparent;
+      color: red;
+      overflow: auto;
     }
 
 </style>
