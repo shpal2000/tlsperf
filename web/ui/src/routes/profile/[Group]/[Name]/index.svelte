@@ -451,14 +451,27 @@
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
         <div class="tile is-6 is-parent">
+          <div class="tile is-child">
+            <label class="label ">CPS:</label>
+          </div>
+        </div>
+        <div class="tile is-6 is-parent">
+          <div class="tile is-child">
+            <label class="label ">Throughput:</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="column is-12">
+      <div class="tile is-ancestor is-mobile">
+        <div class="tile is-6 is-parent">
           <div class="tile is-child my-border">
-            <label class="label ">CPS</label>
             <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
           </div>
         </div>
         <div class="tile is-6 is-parent">
           <div class="tile is-child my-border">
-            <label class="label ">Throughput</label>
             <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
           </div>
         </div>
@@ -736,7 +749,7 @@
     }
 
     .my-border {
-      border: 1px solid lightgrey;
+      border: 1px solid grey;
       padding-left: 15px;
       padding-right: 15px;
       padding-top: 10px;
