@@ -296,36 +296,52 @@
         }
     });
 
-    chartCtxLatency = chartCanvasLatency.getContext('2d');
-    chartLatency = new Chart(chartCtxLatency, {
-        type: 'line',
-        data: data,
-        options: {
-          animation:{
-            duration: 0
-          },
+  //   chartCtxLatency = chartCanvasLatency.getContext('2d');
+  //   chartLatency = new Chart(chartCtxLatency, {
+  //       type: 'line',
+  //       data: data,
+  //       options: {
+  //         animation:{
+  //           duration: 0
+  //         },
 
-          interaction: {
-            intersect: false
-          },
+  //         interaction: {
+  //           intersect: false
+  //         },
 
-          plugins: {
-            legend: false
-          },
+  //         plugins: {
+  //           legend: false
+  //         },
 
-          scales: {
-            x: {
-              type: 'linear'
-            }
-          }
-        }
-    });
+  //         scales: {
+  //           x: {
+  //             type: 'linear'
+  //           }
+  //         }
+  //       }
+  //   });
 
   });
 
 
 
 </script>
+
+<nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
+  <ul>
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <li class="is-active" ><a>Profiles</a></li>
+
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <li class="is-active" ><a>{$page.stuff.Profile.Group}</a></li>
+
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <li class="is-active" ><a>{$page.stuff.Profile.Name}</a></li>
+
+      <!-- svelte-ignore missing-declaration -->
+      <li class="is-active"><a> [ Duration: {Transactions / Cps} seconds ] </a></li>
+  </ul>
+</nav>
 
 <div class="columns is-multiline is-mobile profile-margin">
     <div class="column is-12">
@@ -434,19 +450,16 @@
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
-        <div class="tile is-4 is-parent">
+        <div class="tile is-6 is-parent">
           <div class="tile is-child my-border">
+            <label class="label ">CPS</label>
             <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
           </div>
         </div>
-        <div class="tile is-4 is-parent">
+        <div class="tile is-6 is-parent">
           <div class="tile is-child my-border">
+            <label class="label ">Throughput</label>
             <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
-          </div>
-        </div>
-        <div class="tile is-4 is-parent">
-          <div class="tile is-child my-border">
-            <canvas bind:this={chartCanvasLatency} id="latencyChart"></canvas>
           </div>
         </div>
       </div>
@@ -581,14 +594,145 @@
         </div>
       </DataTable>
     </div>
+
+    <div class="column is-12">
+      <!-- svelte-ignore a11y-label-has-associated-control -->
+      <label class="label ">Cert Store:</label>
+      <DataTable
+        expandable
+        headers={csGroupHeaders}
+        rows={csGroupsData}
+        size="medium"
+        >
+        <div slot="expanded-row" let:row>
+          <div class="columns is-multiline is-mobile">
+            <div class="column is-2">
+            </div>
+
+            <div class="column is-8">
+              <div class="columns is-multiline is-mobile">
+                <div class="column is-half">
+                  <br>
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">Client Subnet</label>
+                    <div class="control">
+                      <input class="input is-small" type="text" placeholder="Text input">
+                    </div>
+                  </div>
+                  <br>
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">Client IPs</label>
+                    <div class="control">
+                      <input class="input is-small" type="text" placeholder="Text input">
+                    </div>
+                  </div>
+                  <br>
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">Protocol</label>
+                    <div class="select is-fullwidth is-small">
+                      <select class="">
+                        <option>TLS</option>
+                        <option>TCP</option>
+                      </select>
+                    </div>
+                  </div>
+                  <br>
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">TLS Version</label>
+                    <div class="select is-fullwidth is-small">
+                      <select class="">
+                        <option>All</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-half">
+                  <br>
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">Server Subnet</label>
+                    <div class="control">
+                      <input class="input is-small" type="text" placeholder="Text input">
+                    </div>
+                  </div>
+                  <br>
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">Server IP</label>
+                    <div class="control">
+                      <input class="input is-small" type="text" placeholder="Text input">
+                    </div>
+                  </div>
+                  <br>
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">Server Port</label>
+                    <div class="control">
+                      <input class="input is-small" type="text" placeholder="Text input">
+                    </div>
+                  </div>
+                  <br>
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">Ciphers</label>
+                    <div class="select is-fullwidth is-small">
+                      <select class="">
+                        <option>All</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-full">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">Server Cert</label>
+                    <div class="control cert-key-height">
+                      <textarea class="textarea cert-key-height" placeholder="input"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-full">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label is-small">Server Key</label>
+                    <div class="control cert-key-height">
+                      <textarea class="textarea cert-key-height" placeholder="input"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-half">
+                  <div class="field is-grouped">
+                    <div class="control">
+                      <button class="button is-small is-info">Save</button>
+                    </div>
+                    <div class="control">
+                      <button class="button is-small is-light">Cancel</button>
+                    </div>
+                  </div>
+                  <br>
+                </div>
+              </div>
+            </div>
+
+            <div class="column is-2">
+            </div>
+          </div>
+        </div>
+      </DataTable>
+    </div>
+    
   </div>
 
 
   <style>
     .profile-margin {
-      margin-top: 8px;
-      margin-left: 3rem;
-      margin-right: 3rem;
+      margin-top: 0px;
+      margin-left: 5rem;
+      margin-right: 5rem;
     }
 
     .my-border {
@@ -597,6 +741,11 @@
       padding-right: 15px;
       padding-top: 10px;
       padding-bottom: 15px;
+    }
+
+    .breadcrumb-margin {
+        margin-top: 8px;
+        margin-left: 1.25rem;
     }
 
     .errmsg {

@@ -85,27 +85,10 @@
 <!-- <p>Profile : {Group} - {Name}</p>
 <p>{JSON.stringify($page.stuff.Profile)}</p> -->
 
-<nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
-    <ul>
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <li class="is-active" ><a>Profiles</a></li>
 
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <li class="is-active" ><a>{Group}</a></li>
-
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <li class="is-active" ><a>{Name}</a></li>
-
-        <!-- svelte-ignore missing-declaration -->
-        <li class="is-active"><a> [ Duration: 1000 seconds ] </a></li>
-    </ul>
-</nav>
 
 <style>
-    .breadcrumb-margin {
-        margin-top: 8px;
-        margin-left: 1.1rem;
-    }
+
 </style>
 
 <slot />
