@@ -330,13 +330,13 @@
 <nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
   <ul>
       <!-- svelte-ignore a11y-missing-attribute -->
-      <li class="is-active" ><a>Profiles</a></li>
+      <li class="is-active" ><a>Profile</a></li>
 
       <!-- svelte-ignore a11y-missing-attribute -->
       <li class="is-active" ><a>{$page.stuff.Profile.Group}</a></li>
 
       <!-- svelte-ignore a11y-missing-attribute -->
-      <li class="is-active" ><a>{$page.stuff.Profile.Name}</a></li>
+      <li class="is-active" ><a>{$page.stuff.Profile.Type} : {$page.stuff.Profile.Name}</a></li>
 
       <!-- svelte-ignore missing-declaration -->
       <li class="is-active"><a> [ Duration: {Transactions / Cps} seconds ] </a></li>
