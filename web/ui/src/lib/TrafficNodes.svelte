@@ -1,11 +1,12 @@
 <script>
   import { nodeTreeRoot } from '$lib/store.js';
   import { selectedNode } from '$lib/store.js';
-  // import {replace} from "svelte-spa-router";
+  import {goto} from "$app/navigation";
   import Treenode from "$lib/Treenode.svelte";
   import AddNodeGroup from "$lib/AddNodeGroup.svelte";
   import AddNode from "$lib/AddNode.svelte";
   import RemoveNode from "$lib/RemoveNode.svelte";
+  import RemoveNodeGroup from "$lib/RemoveNodeGroup.svelte";
 
   function onAddNodeGroupSuccess (event) {
     let nodeGroupMenuItems = [{'Name': 'Add Node ...', 'Event': 'addNode', 'EventCtx': {}}, 
@@ -48,29 +49,35 @@
 
     $nodeTreeRoot.children = $nodeTreeRoot.children;
 
-    // replace('/blank');
-    // replace(urlPath);
+    goto(urlPath);
   }
 
+  function onRemoveNodeGroup (event) {
+
+    $nodeTreeRoot.children = $nodeTreeRoot.children.filter(ng => ng.Name != $selectedNode.Name);
+
+    $selectedNode.Name = 'Traffic Nodes';
+
+    $nodeTreeRoot.children = $nodeTreeRoot.children;
+  }
+  
   function onRemoveNode (event) {
 
     let nodeGroup = $nodeTreeRoot.children.find (ng => ng.Name==$selectedNode.ParentName);
 
-    nodeGroup.children = nodeGroup.children.filter(n => n.Name != $selectedNode.Name && n.ParentName == nodeGroup.Name);
-    
-    // $selectedNode.Name = event.detail.Name;
-    // $selectedNode.ParentName = nodeGroup.Name;
-    // $selectedNode.Type = 'Node';
+    nodeGroup.children = nodeGroup.children.filter(n => n.Name != $selectedNode.Name);
+ 
+    $selectedNode.Name = nodeGroup.Name;
+    $selectedNode.ParentName = 'Traffic Nodes';
+    $selectedNode.Type = 'NodeGroup';
 
     $nodeTreeRoot.children = $nodeTreeRoot.children;
-
-    // replace('/blank');
-    // replace(urlPath);
   }
 
   let showAddNodeGroup = false;
   let showAddNode = false;
-  let showRemoveNode = true;
+  let showRemoveNode = false;
+  let showRemoveNodeGroup = false;
 
 </script>
 
@@ -94,6 +101,7 @@
           type='NodeGroup'
           on:expandToggle={() => child.expanded = !child.expanded}
           on:addNode={() => showAddNode = true}
+          on:removeNodeGroup={() => showRemoveNodeGroup = true}
           />
 
           {#if child.expanded && child.children}
@@ -118,6 +126,9 @@
 <AddNode bind:isActive={showAddNode} 
   on:addNodeSuccess={onAddNode}/>
 
+<RemoveNodeGroup bind:isActive={showRemoveNodeGroup} 
+  on:removeNodeGroupSuccess={onRemoveNodeGroup}/>
+  
 <RemoveNode bind:isActive={showRemoveNode} 
   on:removeNodeSuccess={onRemoveNode}/>
 

@@ -83,6 +83,7 @@
             <a class="navbar-item" href="/">
                 <p class="is-size-6">MyTLS</p>
             </a>
+
             <!-- svelte-ignore a11y-missing-attribute -->
             <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarTopMenu" on:click="{() => isActive=!isActive}">
                 <span aria-hidden="true"></span>
@@ -96,12 +97,16 @@
             </div>
 
             <div class="navbar-end">    
-                <div class="navbar-item">
+                <!-- <div class="navbar-item">
                     <div class="buttons">
                         <button class="button is-info is-small">Sign in</button>
                         <button class="button is-info is-small is-outlined">Sign up</button>
                     </div>
                 </div>
+
+                <a class="navbar-item" href="/about">
+                    <button class="button is-info is-small is-outlined">About</button>
+                </a> -->
             </div>
         </div>
     </nav>
@@ -109,8 +114,8 @@
     <div class="columns is-gapless">
         <div class="column is-one-fifth">
             <div class="leftbar">
-                <TrafficNodes />
                 <TrafficProfiles />
+                <!-- <TrafficNodes /> -->
             </div>
         </div>
 
@@ -140,6 +145,7 @@
         height: calc(100vh - 3.25rem);
         overflow: scroll;
     }
+
 </style>
 
 

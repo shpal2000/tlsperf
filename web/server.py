@@ -8,6 +8,7 @@ import time
 from pymongo import MongoClient
 import yaml
 import asyncssh
+# from bson.json_util import dumps
 
 import kubernetes.client
 
@@ -63,7 +64,53 @@ PROFILE_LISTS= 'tlsperf_profile_list'
 
 stats_ticks = 60
 
-def start_tlsserver_tlsclient(prof_j):
+def set_profile_TlsClientServer (prof_j):
+    cs_groups = [
+        { "client_ips" :  ["12.20.51.1/16", "12.20.51.2/16"], 
+            "server_ip": "12.20.61.1/16"
+        },
+        { "client_ips" :  ["12.20.52.1/16", "12.20.52.2/16"], 
+            "server_ip": "12.20.62.1/16"
+        },
+        { "client_ips" :  ["12.20.53.1/16", "12.20.53.2/16"], 
+            "server_ip": "12.20.63.1/16"
+        },
+        { "client_ips" :  ["12.20.54.1/16", "12.20.54.2/16"], 
+            "server_ip": "12.20.64.1/16"
+        },
+        { "client_ips" :  ["12.20.55.1/16", "12.20.55.2/16"], 
+            "server_ip": "12.20.65.1/16"
+        },
+        { "client_ips" :  ["12.20.56.1/16", "12.20.56.2/16"], 
+            "server_ip": "12.20.66.1/16"
+        },
+        { "client_ips" :  ["12.20.57.1/16", "12.20.57.2/16"], 
+            "server_ip": "12.20.67.1/16"
+        },
+        { "client_ips" :  ["12.20.58.1/16", "12.20.58.2/16"], 
+            "server_ip": "12.20.68.1/16"
+        },
+    ]    
+    
+    prof_j['cs_groups'] = []
+    csg_index = 0
+    for csg in cs_groups:
+        csg_index += 1
+        csg["app_id"] = "csg-" + str(csg_index)
+        
+        csg["app_gid"] = prof_j['Group'] + '/' + prof_j['Name']
+
+        csg["server_port"] = 443
+        csg["server_ssl"] = 1
+        csg["send_recv_len"] = 1
+        csg["cps"] = 1
+        csg["max_active_conn_count"] = 10
+        csg["server_certificate"] = "cert"
+        csg["server_key"] = "key"
+
+        prof_j['cs_groups'].append(csg)
+
+def start_profile_TlsClientServer(prof_j):
 
     clients = []
     servers = []
@@ -78,6 +125,18 @@ def localcmd(cmd_str, check_ouput=False):
         os.system(cmd_str)
         return None
 
+
+async def api_get_node(request):
+    group = request.query['group']
+    name = request.query['name']
+
+    mongoClient = MongoClient(DB_CSTRING)
+    db = mongoClient[DB_NAME]
+    node_col = db[NODE_LISTS]
+    node = node_col.find_one({'Group': group, 'Name': name}, {'_id' : False})
+    if not node:
+        return web.json_response({'status' : -1, 'message': 'node not found'})
+    return web.json_response({'status': 0, 'data': node})
 
 async def api_get_nodes(request):
     # node_group = request.query['nodegroup']
@@ -100,6 +159,12 @@ async def api_add_node(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         node_col = db[NODE_LISTS]
+
+        node = node_col.find_one({'Name': r_json['Name']
+                                        , 'Group': r_json['Group']}
+                                        , {'_id' : False})
+        if node:
+            return web.json_response({'status' : -1, 'message': 'already exist'})
 
         # sshLinux = SshLinux(r_json['SshIP']
         #                     , r_json['SshUser']
@@ -126,11 +191,10 @@ async def api_delete_node(request):
         db = mongoClient[DB_NAME]
         node_col = db[NODE_LISTS]
 
-        try:
-            node_col.delete_one({'Group': group, 'Name': name})
-            return web.json_response({'status' : 0})
-        except asyncio.TimeoutError:
-            return web.Response(text='todo: ssh connection failed')
+        # check if runnig?
+        node_col.delete_one({'Group': group, 'Name': name})
+
+        return web.json_response({'status' : 0})
     except Exception as e:
         return web.Response(text=str(e))
 
@@ -156,10 +220,47 @@ async def api_add_node_group(request):
                                         , {'_id' : False})
         if node:
             return web.json_response({'status' : -1, 'message': 'already exist'})
+        
         node_group_col.insert_one(r_json) 
         return web.json_response({'status' : 0})
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
+
+async def api_delete_node_group(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        node_group_col = db[NODE_GROUPS]
+        node_col = db[NODE_LISTS]
+        nodes = node_col.find({}, {'_id' : False})
+        if not nodes:
+            nodes = []
+        else:
+            nodes = list(nodes)
+        
+        if list(filter(lambda a : a['Group'] == name,  nodes)):
+            return web.json_response({'status' : -1, 'message': 'Folder not empty'})
+
+        node_group_col.delete_one({'Name': name})
+        return web.json_response({'status' : 0})
+    except Exception as e:
+        return web.Response(text=str(e))
+
+async def api_get_profile(request):
+    group = request.query['group']
+    name = request.query['name']
+
+    mongoClient = MongoClient(DB_CSTRING)
+    db = mongoClient[DB_NAME]
+    profile_col = db[PROFILE_LISTS]
+    profile = profile_col.find_one({'Group': group, 'Name': name}, {'_id' : False})
+    if not profile:
+        return web.json_response({'status' : -1, 'message': 'profile not found'})
+    return web.json_response({'status': 0, 'data': profile})
 
 async def api_get_profiles(request):
     mongoClient = MongoClient(DB_CSTRING)
@@ -178,7 +279,34 @@ async def api_add_profile(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         profile_col = db[PROFILE_LISTS]
+
+        profile = profile_col.find_one({'Name': r_json['Name']
+                                        , 'Group': r_json['Group']}
+                                        , {'_id' : False})
+        if profile:
+            return web.json_response({'status' : -1, 'message': 'already exist'})
+
+        set_profile_TlsClientServer(r_json)
+
         profile_col.insert_one(r_json) 
+        return web.json_response({'status' : 0})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
+
+async def api_delete_profile(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_col = db[PROFILE_LISTS]
+
+        # check if running ??
+        profile_col.delete_one({'Name': name, 'Group': group})
+
         return web.json_response({'status' : 0})
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
@@ -200,7 +328,37 @@ async def api_add_profile_group(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         profile_group_col = db[PROFILE_GROUPS]
+
+        profile = profile_group_col.find_one({'Name': r_json['Name']}
+                                        , {'_id' : False})
+        if profile:
+            return web.json_response({'status' : -1, 'message': 'already exist'})
+
         profile_group_col.insert_one(r_json) 
+        return web.json_response({'status' : 0})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
+
+async def api_delete_profile_group(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_group_col = db[PROFILE_GROUPS]
+        profile_col = db[PROFILE_LISTS]
+        profiles = profile_col.find({}, {'_id' : False})
+        if not profiles:
+            profiles = []
+        else:
+            profiles = list(profiles)
+
+        if list(filter(lambda a : a['Group'] == name,  profiles)):
+            return web.json_response({'status' : -1, 'message': 'Folder not empty'})
+
+        profile_group_col.delete_one({'Name': name})
         return web.json_response({'status' : 0})
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
@@ -219,7 +377,7 @@ async def api_profile_run(request):
                                             'Name': name}
                                         , {'_id' : False})
         if profile:
-            start_tlsserver_tlsclient(profile)
+            start_profile_TlsClientServer(profile)
         else:
             return web.json_response({'status' : -1, 'message': 'tbd'})
         return web.json_response({'status' : 0})
@@ -238,6 +396,9 @@ async def api_get_stats(request):
 
 app = web.Application()
 
+app.add_routes([web.route('get'
+                            , '/api/node'
+                            , api_get_node)])
 
 app.add_routes([web.route('get'
                             , '/api/nodes'
@@ -259,6 +420,14 @@ app.add_routes([web.route('post'
                             , '/api/node_groups'
                             , api_add_node_group)])
 
+app.add_routes([web.route('delete'
+                            , '/api/node_groups'
+                            , api_delete_node_group)])
+
+app.add_routes([web.route('get'
+                            , '/api/profile'
+                            , api_get_profile)])
+
 app.add_routes([web.route('get'
                             , '/api/profiles'
                             , api_get_profiles)])
@@ -267,6 +436,11 @@ app.add_routes([web.route('post'
                             , '/api/profiles'
                             , api_add_profile)])
 
+app.add_routes([web.route('delete'
+                            , '/api/profiles'
+                            , api_delete_profile)])
+
+
 app.add_routes([web.route('get'
                             , '/api/profile_groups'
                             , api_get_profile_groups)])
@@ -274,6 +448,10 @@ app.add_routes([web.route('get'
 app.add_routes([web.route('post'
                             , '/api/profile_groups'
                             , api_add_profile_group)])
+
+app.add_routes([web.route('delete'
+                            , '/api/profile_groups'
+                            , api_delete_profile_group)])
 
 app.add_routes([web.route('post'
                             , '/api/profile_run'

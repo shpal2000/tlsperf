@@ -37,7 +37,7 @@
         isError = true;
     }
     
-    async function onRemoveNodeCancel () {
+    async function onRemoveProfileGroupCancel () {
         resetState ();
 
         if (controller) {
@@ -45,7 +45,7 @@
         }
     }
 
-    async function onRemoveNodeOk () {
+    async function onRemoveProfileGroupOk () {
         controller = new AbortController();
         signal = controller.signal;
 
@@ -53,12 +53,11 @@
             errorMsg = '';
             isError = false;
             isProgress = true;
-            const res = await fetch ('/api/nodes.json', {
+            const res = await fetch ('/api/profile_groups.json', {
                 signal,
                 method: 'DELETE',
                 body: JSON.stringify({
-                    Name: $selectedNode.Name,
-                    Group : $selectedNode.ParentName
+                    Name: $selectedNode.Name
                 })
             });
             isProgress = false;
@@ -76,7 +75,7 @@
         
                 if (isJson) {
                     if (json.status == 0){
-                        dispatch ('removeNodeSuccess', {Name: $selectedNode.Name});
+                        dispatch ('removeProfileGroupSuccess', {Name: $selectedNode.Name});
                         resetState();
                     } else {
                         console.log(json);
@@ -102,25 +101,14 @@
     <div class="modal-background"></div>
     <div class="modal-card box">
         <header>
-            <p class="modal-card-title">Remove Node</p>
+            <p class="modal-card-title">Remove Folder</p>
         </header>
         <section class="modal-card-body">
+
 
             <div class="field">
                 <!-- svelte-ignore a11y-label-has-associated-control -->
                 <label class="label">Folder</label>
-                <div class="control">
-                    <input class="input"
-                        type="text"
-                        value={$selectedNode.ParentName} 
-                        readonly
-                        />
-                </div>
-            </div>
-
-            <div class="field">
-                <!-- svelte-ignore a11y-label-has-associated-control -->
-                <label class="label">Alias</label>
                 <div class="control">
                     <input class="input"
                         type="text"
@@ -129,7 +117,6 @@
                         />
                 </div>
             </div>
-
 
 
             {#if isProgress}
@@ -152,14 +139,13 @@
 
             <div class="field is-grouped">
                 <div class="control">
-                  <button class="button is-info" on:click={onRemoveNodeOk}>Remove</button>
+                  <button class="button is-info" on:click={onRemoveProfileGroupOk}>Remove</button>
                 </div>
                 <div class="control">
-                  <button class="button is-info is-light" on:click={onRemoveNodeCancel}>Cancel</button>
+                  <button class="button is-info is-light" on:click={onRemoveProfileGroupCancel}>Cancel</button>
                 </div>
             </div>
-
-
+            
         </section>
     </div>
 </div>

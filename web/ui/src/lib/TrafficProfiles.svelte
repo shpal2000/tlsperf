@@ -1,12 +1,14 @@
 <script>
   import { profileTreeRoot } from '$lib/store.js';
   import { selectedNode } from '$lib/store.js';
-  // import { replace } from "svelte-spa-router";
-  import Treenode from "./Treenode.svelte";
-  import AddProfileGroup from "./AddProfileGroup.svelte";
-  import AddProfile from "./AddProfile.svelte";
+  import {goto} from "$app/navigation";
+  import Treenode from "$lib/Treenode.svelte";
+  import AddProfileGroup from "$lib/AddProfileGroup.svelte";
+  import AddProfile from "$lib/AddProfile.svelte";
+  import RemoveProfile from "$lib/RemoveProfile.svelte";
+  import RemoveProfileGroup from "$lib/RemoveProfileGroup.svelte";
 
-  function onAddProfileGroupSuccess (event) {
+  function onAddProfileGroup (event) {
     let profileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}, 
                               {'Name': 'Remove Folder ...', 'Event': 'removeProfileGroup', 'EventCtx': {}}];
 
@@ -26,7 +28,7 @@
     $profileTreeRoot.children = $profileTreeRoot.children;
   }
 
-  function onAddProfileSuccess (event) {
+  function onAddProfile (event) {
     let profileMenuItems = [{'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
 
     let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==$selectedNode.Name);
@@ -47,12 +49,34 @@
 
     $profileTreeRoot.children = $profileTreeRoot.children;
 
-    // replace('/blank');
-    // replace(urlPath);
+    goto(urlPath);
   }
   
+  function onRemoveProfileGroup (event) {
+
+    $profileTreeRoot.children = $profileTreeRoot.children.filter(pg => pg.Name != $selectedNode.Name);
+
+    $selectedNode.Name = 'Traffic Profiles';
+
+    $profileTreeRoot.children = $profileTreeRoot.children;
+  }
+
+  function onRemoveProfile (event) {
+    let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==$selectedNode.ParentName);
+
+    profileGroup.children = profileGroup.children.filter(p => p.Name != $selectedNode.Name);
+
+    $selectedNode.Name = profileGroup.Name;
+    $selectedNode.ParentName = 'Traffic Profiles';
+    $selectedNode.Type = 'ProfileGroup';
+
+    $profileTreeRoot.children = $profileTreeRoot.children;
+  }
+
   let showAddProfileGroup = false;
   let showAddProfile = false;
+  let showRemoveProfileGroup = false;
+  let showRemoveProfile = false;
 </script>
 
 
@@ -76,11 +100,17 @@
           type='ProfileGroup'
           on:expandToggle={() => child.expanded = !child.expanded}
           on:addProfile={() => showAddProfile = true}
+          on:removeProfileGroup={() => showRemoveProfileGroup = true}
           />
 
           {#if child.expanded && child.children}
             {#each child.children as grandChild}
-              <Treenode node={grandChild} pnode={child} level={3} type='Profile'/>
+              <Treenode 
+                node={grandChild}
+                pnode={child}
+                level={3} 
+                type='Profile'
+                on:removeProfile={() => showRemoveProfile = true}/>
             {/each}
           {/if}
 
@@ -89,11 +119,18 @@
 </ul> 
 
 <AddProfileGroup bind:isActive={showAddProfileGroup} 
-    on:addProfileGroupSuccess={onAddProfileGroupSuccess}/>
+    on:addProfileGroupSuccess={onAddProfileGroup}/>
 
 <AddProfile bind:isActive={showAddProfile} 
-    on:addProfileSuccess={onAddProfileSuccess}/>
-  
+    on:addProfileSuccess={onAddProfile}/>
+
+<RemoveProfileGroup bind:isActive={showRemoveProfileGroup} 
+    on:removeProfileGroupSuccess={onRemoveProfileGroup}/>
+
+<RemoveProfile bind:isActive={showRemoveProfile} 
+    on:removeProfileSuccess={onRemoveProfile}/>
+
+    
 <style>
     ul {
         list-style-type: none;
