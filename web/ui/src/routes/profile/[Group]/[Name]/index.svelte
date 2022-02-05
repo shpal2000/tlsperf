@@ -234,9 +234,8 @@
     ];
 </script>
 
-<div class="columns is-multiline is-mobile breadcrumb-margin">
-    <div class="column is-1"></div>
-    <div class="column is-10">
+<div class="columns is-multiline is-mobile profile-margin">
+    <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
         <div class="tile is-6 is-parent">
           <div class="tile is-child my-border">
@@ -339,17 +338,15 @@
         </div>
       </div>
     </div>
-    <div class="column is-1"></div>
 
-    <div class="column is-1"></div>
-    <div class="column is-10">
+    <div class="column is-12">
       <!-- svelte-ignore a11y-label-has-associated-control -->
       <label class="label ">Traffic Paths:</label>
       <DataTable
         expandable
         headers={csGroupHeaders}
         rows={csGroupsData}
-        size="short"
+        size="medium"
         >
         <div slot="expanded-row" let:row>
           <div class="columns is-multiline is-mobile">
@@ -471,14 +468,14 @@
         </div>
       </DataTable>
     </div>
-    <div class="column is-1"></div>
   </div>
 
 
   <style>
-    .breadcrumb-margin {
+    .profile-margin {
       margin-top: 16px;
-      margin-left: 1.1rem;
+      margin-left: 3rem;
+      margin-right: 3rem;
     }
 
     .my-border {

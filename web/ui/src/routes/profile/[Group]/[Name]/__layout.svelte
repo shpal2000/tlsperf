@@ -95,6 +95,9 @@
 
         <!-- svelte-ignore a11y-missing-attribute -->
         <li class="is-active" ><a>{Name}</a></li>
+
+        <!-- svelte-ignore missing-declaration -->
+        <li class="is-active"><a> [ Duration: 1000 seconds ] </a></li>
     </ul>
 </nav>
 

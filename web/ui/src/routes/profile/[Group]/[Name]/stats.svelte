@@ -14,6 +14,8 @@
 
 </script>
 
+<p>stats</p>
+
 <div class="columns is-multiline is-mobile">
     <div class="column is-1"></div>
     <div class="column is-10">
