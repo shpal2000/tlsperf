@@ -2,8 +2,8 @@
     import { page } from '$app/stores'
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
-
     import { ProgressBar } from "carbon-components-svelte";
+    import Chart from 'chart.js/auto';
 
     let Transactions;
     let transactionsError;
@@ -37,7 +37,7 @@
 
     resetState();
 
-    import { createEventDispatcher } from "svelte";
+    import { createEventDispatcher, onMount } from "svelte";
 
     const dispatch = createEventDispatcher ();
 
@@ -142,6 +142,17 @@
               }]
         };
 
+    let chartCtxCps;
+    let chartCanvasCps;
+    let chartCps;
+
+    let chartCtxThpt;
+    let chartCanvasThpt;
+    let chartThpt;
+
+    let chartCtxLatency;
+    let chartCanvasLatency;
+    let chartLatency;
 
     const csGroupHeaders = [
       {key: 'Group', value: 'Group'},
@@ -232,6 +243,88 @@
         Client: 1,
         Server: 1}
     ];
+
+  onMount ( () => {
+
+    chartCtxCps = chartCanvasCps.getContext('2d');
+    chartCps = new Chart(chartCtxCps, {
+        type: 'line',
+        data: data,
+        options: {
+          animation:{
+            duration: 0
+          },
+
+          interaction: {
+            intersect: false
+          },
+
+          plugins: {
+            legend: false
+          },
+
+          scales: {
+            x: {
+              type: 'linear'
+            }
+          }
+        }
+    });
+
+    chartCtxThpt = chartCanvasThpt.getContext('2d');
+    chartThpt = new Chart(chartCtxThpt, {
+        type: 'line',
+        data: data,
+        options: {
+          animation:{
+            duration: 0
+          },
+
+          interaction: {
+            intersect: false
+          },
+
+          plugins: {
+            legend: false
+          },
+
+          scales: {
+            x: {
+              type: 'linear'
+            }
+          }
+        }
+    });
+
+    chartCtxLatency = chartCanvasLatency.getContext('2d');
+    chartLatency = new Chart(chartCtxLatency, {
+        type: 'line',
+        data: data,
+        options: {
+          animation:{
+            duration: 0
+          },
+
+          interaction: {
+            intersect: false
+          },
+
+          plugins: {
+            legend: false
+          },
+
+          scales: {
+            x: {
+              type: 'linear'
+            }
+          }
+        }
+    });
+
+  });
+
+
+
 </script>
 
 <div class="columns is-multiline is-mobile profile-margin">
@@ -334,6 +427,26 @@
             rows={statsData}
             zebra
             />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="column is-12">
+      <div class="tile is-ancestor is-mobile">
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
+          </div>
+        </div>
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
+          </div>
+        </div>
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <canvas bind:this={chartCanvasLatency} id="latencyChart"></canvas>
           </div>
         </div>
       </div>
@@ -473,7 +586,7 @@
 
   <style>
     .profile-margin {
-      margin-top: 16px;
+      margin-top: 8px;
       margin-left: 3rem;
       margin-right: 3rem;
     }
