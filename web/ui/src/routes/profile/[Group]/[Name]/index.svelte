@@ -21,18 +21,32 @@
     let maxPipelineError;
     let maxPipelineHelp;
 
+    let ClientPort;
+    let clientPortSelectHelp;
+    let clientPortSelectError;
+
+    let ServerPort;
+    let serverPortSelectHelp;
+    let serverPortSelectError;
+
     function resetState() {
-      Transactions = 100;
+      Transactions = '100';
       transactionsError = false;
 
-      Cps = 1;
+      Cps = '1';
       cpsError = false;
 
-      DataLength = 1;
+      DataLength = '1';
       dataLengthError = false;
 
-      MaxPipeline = 1;
+      MaxPipeline = '1';
       maxPipelineError = false;
+  
+      ClientPort = '';
+      ServerPort = '';
+
+      serverPortSelectError = false;
+      serverPortSelectError = false;
     }
 
     resetState();
@@ -98,6 +112,29 @@
       }
     }
 
+    function validateClientServerPorts () {
+      clientPortSelectError = false;
+      serverPortSelectError = false;
+
+      if (ClientPort == '') {
+        clientPortSelectError = true;
+        clientPortSelectHelp = 'required';
+      }
+
+      if (ServerPort == '') {
+        serverPortSelectError = true;
+        serverPortSelectHelp = 'required';
+      }
+
+      if (ClientPort != '' 
+        && ServerPort != ''
+        && ClientPort == ServerPort) {
+          clientPortSelectError = true;
+          serverPortSelectError = true;
+          clientPortSelectHelp = 'server port selected';
+          serverPortSelectHelp = 'client port selected';
+      }
+    }
 
     function onCommon () {
 
@@ -105,11 +142,15 @@
       validateCps ();
       validateDataLength ();
       validateMaxPipeline ();
+      validateClientServerPorts ();
 
-      controller = new AbortController();
-      signal = controller.signal;
+      if (!transactionsError 
+          && !cpsError 
+          && !dataLengthError 
+          && !maxPipelineError
+          && ClientPort != ''
+          && ServerPort != '') {
 
-      if (!transactionsError && !cpsError && !dataLengthError && !maxPipelineError) {
         return true;
       }
 
@@ -118,13 +159,15 @@
 
     async function onSave () {
       if (onCommon()){
-
+        // controller = new AbortController();
+        // signal = controller.signal;
       }
     }
 
     async function onSaveAndRun () {
       if (onCommon()){
-
+        // controller = new AbortController();
+        // signal = controller.signal;
       }
     }
 
@@ -350,7 +393,7 @@
           <div class="tile is-child my-border">
             <section>
               <div class="columns is-multiline is-mobile">
-                <div class="column is-half">
+                <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Transactions</label>
@@ -368,25 +411,7 @@
                   </div>
                 </div>
       
-                <div class="column is-half">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">DataLength</label>
-                    <div class="control">
-                      <input class="input {dataLengthError ? 'is-danger' : ''}" 
-                        type="text" 
-                        placeholder=""
-                        bind:value={DataLength}
-                        on:input={validateDataLength}
-                      >
-                      {#if dataLengthError}
-                        <p class="help">{dataLengthHelp}</p>
-                      {/if}
-                    </div>
-                  </div>
-                </div>
-                <br>
-                <div class="column is-half">
+                <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">CPS</label>
@@ -403,8 +428,26 @@
                     </div>
                   </div>
                 </div>
+
+                <div class="column is-one-third">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">DataLength</label>
+                    <div class="control">
+                      <input class="input {dataLengthError ? 'is-danger' : ''}" 
+                        type="text" 
+                        placeholder=""
+                        bind:value={DataLength}
+                        on:input={validateDataLength}
+                      >
+                      {#if dataLengthError}
+                        <p class="help">{dataLengthHelp}</p>
+                      {/if}
+                    </div>
+                  </div>
+                </div>
       
-                <div class="column is-half">
+                <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">MaxPipeline</label>
@@ -418,6 +461,50 @@
                       {#if maxPipelineError}
                         <p class="help">{maxPipelineHelp}</p>
                       {/if}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-one-third">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">ClientPort</label>
+                    <div class="control">
+                      <div class="select is-fullwidth ">
+                        <select 
+                          bind:value={ClientPort} 
+                          on:change={validateClientServerPorts}
+                          class="input {clientPortSelectError ? 'is-danger' : ''}"
+                          >
+                            <option>Node1:ens192</option>
+                            <option>Node1:ens224</option>
+                        </select>
+                        {#if clientPortSelectError}
+                        <p class="help">{clientPortSelectHelp}</p>
+                        {/if}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+      
+                <div class="column is-one-third">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">ServerPort</label>
+                    <div class="control">
+                      <div class="select is-fullwidth ">
+                        <select 
+                          bind:value={ServerPort} 
+                          on:change={validateClientServerPorts}
+                          class="input {serverPortSelectError ? 'is-danger' : ''}"
+                          >
+                          <option>Node1:ens192</option>
+                          <option>Node1:ens224</option>
+                        </select>
+                        {#if serverPortSelectError}
+                        <p class="help">{serverPortSelectHelp}</p>
+                        {/if}
+                      </div>
                     </div>
                   </div>
                 </div>
