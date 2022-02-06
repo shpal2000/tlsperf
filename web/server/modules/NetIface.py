@@ -1,3 +1,7 @@
+import os
+import sys
+
+net_iface_template = '''
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
@@ -19,3 +23,11 @@ spec:
         }
       ]
     }'
+'''
+
+def get_yaml (input_map):
+  return net_iface_template.format(**input_map)
+
+if __name__ == '__main__':
+  pass
+

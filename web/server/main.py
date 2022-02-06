@@ -10,6 +10,10 @@ import yaml
 import asyncssh
 # from bson.json_util import dumps
 
+from modules import NetIface
+from modules import TlsClient  
+from modules import TlsServer  
+
 import kubernetes.client
 
 class SshLinux():
@@ -115,8 +119,25 @@ def start_profile_TlsClientServer(prof_j):
     clients = []
     servers = []
 
-    for csg in prof_j['CsGroups']:
+    for csg in prof_j['cs_groups']:
+        csg_input_map = {}
+        csg_config_map_yaml = TlsClient.get_config_map_yaml (csg_input_map)
+        csg_pod_yaml = TlsClient.get_pod_yaml (csg_input_map)
+        clients.append ({'config_map' : csg_config_map_yaml,
+                            'pod':  csg_pod_yaml})
+
+        csg_input_map = {}
+        csg_config_map_yaml = TlsServer.get_config_map_yaml (csg_input_map)
+        csg_pod_yaml = TlsServer.get_pod_yaml (csg_input_map)
+        servers.append ({'config_map' : csg_config_map_yaml,
+                            'pod':  csg_pod_yaml})
+
+    for server in servers:
         pass
+
+    for client in clients:
+        pass
+
 
 def localcmd(cmd_str, check_ouput=False):
     if check_ouput:
