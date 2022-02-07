@@ -430,14 +430,27 @@ if __name__ == '__main__':
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         task_col = db[TASK_LISTS]
+        profile_col = db[PROFILE_LISTS]
 
         query = {'Group': cmdArgs.group, 'Name': cmdArgs.name}
-        update = { '$set': {'Status': 'init', 'Events': ['timestamp: init']}}
-        task = task_col.find_one(query)
-        if task and task['Status'] in ['stopped', 'aborted']:
-            task_col.update_one(query, update)
-        else:
-            task_col.insert_one(query, update)
+
+
+        profile_col.delete_many(query)
+        task_col.delete_many(query)
+
+        profile = {}
+        profile['Group'] = cmdArgs.group
+        profile['Name'] = cmdArgs.name        
+        profile['Type'] = 'TlsClientServer'        
+        set_profile_defaults(profile)
+        profile_col.insert_one(profile)       
+
+        task = {}
+        task['Group'] = cmdArgs.group
+        task['Name'] = cmdArgs.name 
+        task['Status'] = 'init' 
+        task['Events'] = ['timestamp: init']
+        task_col.insert_one(task)
 
         start (cmdArgs.group, cmdArgs.name)
     
