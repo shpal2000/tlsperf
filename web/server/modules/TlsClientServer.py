@@ -170,7 +170,7 @@ metadata:
   annotations:
     k8s.v1.cni.cncf.io/networks: '[
             {{ "name": "{ClientInterfaceName}",
-               "ips": [{ClientIPs}]
+               "ips": [{ClientIPsAnno}]
             }}]'
 spec:
   containers:
@@ -201,12 +201,12 @@ server_config_map = '''
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: TlsServer--{AppGid}--{AppId}
+  name: tlsserver--{AppGid}--{AppId}
 data:
   config.json: >
     {{
-      "app_id" : "TlsServer--{AppGid}--{AppId}",
-      "app_gid" : "TlsServer--{AppGid}",
+      "app_id" : "tlsserver--{AppGid}--{AppId}",
+      "app_gid" : "tlsserver--{AppGid}",
 
       "server_ip"   : "{ServerIP}",
       "server_port" : {ServerPort},
@@ -230,15 +230,15 @@ server_pod = '''
 apiVersion: v1
 kind: Pod
 metadata:
-  name: TlsServer--{AppGid}--{AppId}
+  name: tlsserver--{AppGid}--{AppId}
   annotations:
     k8s.v1.cni.cncf.io/networks: '[
-            { "name": "{ServerInterfaceName}",
-              "ips": [{ServerIPs}]
-            }]'
+            {{"name": "{ServerInterfaceName}",
+              "ips": ["{ServerIP}"]
+            }}]'
 spec:
   containers:
-  - name: TlsServer--{AppGid}--{AppId}
+  - name: tlsserver--{AppGid}--{AppId}
     image: tlspack/tlsperf:latest
     imagePullPolicy: Always
     command: ["tlsserver.exe"]
@@ -254,26 +254,28 @@ spec:
   volumes:
   - name: config-volume
     configMap:
-      name: TlsServer--{AppGid}--{AppId} 
+      name: tlsserver--{AppGid}--{AppId} 
   nodeSelector:
     tgid: {ServerNodeLabel}
 '''
 
 
-def get_v1_api ():
-    with open ('/var/run/secrets/kubernetes.io/serviceaccount/token') as f:
-        k8s_token = f.read()
-    k8s_config = kubernetes.client.Configuration()
-    k8s_config.api_key['authorization'] = k8s_token
-    k8s_config.api_key_prefix['authorization'] = 'Bearer'
-    k8s_config.host='https://kubernetes.default.svc'
-    k8s_config.ssl_ca_cert='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+with open ('/var/run/secrets/kubernetes.io/serviceaccount/token') as f:
+    k8s_token = f.read()
+k8s_config = kubernetes.client.Configuration()
+k8s_config.api_key['authorization'] = k8s_token
+k8s_config.api_key_prefix['authorization'] = 'Bearer'
+k8s_config.host='https://kubernetes.default.svc'
+k8s_config.ssl_ca_cert='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+
+def get_v1_api_instance ():
     v1_api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
     return v1_api
 
+
 def start (group, name):
 
-    v1Api= get_v1_api ()
+    v1Api= get_v1_api_instance ()
 
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
@@ -290,9 +292,14 @@ def start (group, name):
 
     start_jsons = []
     for csg in profile['cs_groups']:
+        cips = ''
+        for cip in csg["client_ips"]:
+          cips = cips + '"' + cip+ '",'
+        cips = cips.rstrip(',')
+          
         input_map = {
-            'AppGid': csg["app_gid"],
-            'AppId': csg["app_id"],
+            'AppGid': csg["app_gid"].lower(),
+            'AppId': csg["app_id"].lower(),
             'ServerKey': csg["server_key"],
             'ServerCert': csg["server_cert"],
             'ServerIP': csg["server_ip"],
@@ -302,16 +309,59 @@ def start (group, name):
             'WebPortStats': 7000,
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
-            'ClientIPs': ','.join(csg["client_ips"]),
+            'ClientIPs': csg["client_ips"],
+            'ClientIPsAnno': cips,
             'Transactions': csg["total_conn_count"],
-            'MaxPipeline': csg["max_active_conn_count"]
+            'MaxPipeline': csg["max_active_conn_count"],
+
+            'ServerNodeLabel': 'kube-master',
+            'ClientNodeLabel': 'kube-master',
+            'ServerInterfaceName': 'eth0',
+            'ClientInterfaceName': 'eth0'
         }
 
-        server_config_map_yaml = server_config_map.format(**input_map)
-        server_config_map_json = yaml.safe_load(server_config_map_yaml)
+        server_cmap = kubernetes.client.V1ConfigMap()
+        server_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+        server_cmap.data = {}
+        server_cmap.data['config.json'] = '''{{
+          "app_id" : "tlsserver--{AppGid}--{AppId}",
+          "app_gid" : "tlsserver--{AppGid}",
 
-        client_config_map_yaml = client_config_map.format(**input_map)
-        client_config_map_json = yaml.safe_load(client_config_map_yaml)
+          "server_ip"   : "{ServerIP}",
+          "server_port" : {ServerPort},
+          "server_ssl"  : {IsTls},
+
+          "stats_ip"   : "{WebIP}",
+          "stats_port" : {WebPortStats},
+
+          "send_recv_len" : {ClientServerDataLen}
+        }}'''.format(**input_map)
+        server_cmap.data['key.pem'] = '{ServerKey}'.format(**input_map)
+        server_cmap.data['cert.pem'] = '{ServerCert}'.format(**input_map)
+
+
+        client_cmap = kubernetes.client.V1ConfigMap()
+        client_cmap.metadata = kubernetes.client.V1ObjectMeta(name='TlsClient--{AppGid}--{AppId}'.format(**input_map))
+        client_cmap.data = {}
+        client_cmap.data['config.json'] = '''{{
+          "app_id" : "tlsclient--{AppGid}--{AppId}",
+          "app_gid" : "tlsclient--{AppGid}",
+
+          "server_ip"   : "{ServerIP}",
+          "server_port" : {ServerPort},
+          "server_ssl"  : {IsTls},
+
+          "stats_ip"   : "{WebIP}",
+          "stats_port" : {WebPortStats},
+
+          "send_recv_len" : {ClientServerDataLen},
+
+          "client_ips"  : [{ClientIPs}]
+          "cps": {CPS},
+          "total_conn_count" : {Transactions},
+          "max_active_conn_count" : {MaxPipeline}
+        }}'''.format(**input_map)
+
 
         server_pod_yaml = server_pod.format(**input_map)
         server_pod_json = yaml.safe_load(server_pod_yaml)
@@ -320,9 +370,9 @@ def start (group, name):
         client_pod_json = yaml.safe_load(client_pod_yaml)
 
         start_jsons.append ({
-            'server_config_map_json': server_config_map_json,
-            'client_config_map_json': client_config_map_json,
+            'server_cmap': server_cmap,
             'server_pod_json': server_pod_json,
+            'client_cmap': client_cmap,
             'client_pod_json': client_pod_json
         })
 
@@ -331,7 +381,7 @@ def start (group, name):
     task_col.update_one(query, update)
     for start_json in start_jsons:
         resp = v1Api.create_namespaced_config_map(namespace='default',
-                                    body=start_json['server_config_map_json'])
+                                    body=start_json['server_cmap'])
         resp = v1Api.create_namespaced_pod (namespace='default',
                                     body=start_json['server_pod_json'])
 
@@ -356,7 +406,7 @@ def start (group, name):
     task_col.update_one(query, update)
     for start_json in start_jsons:
         resp = v1Api.create_namespaced_config_map(namespace='default',
-                                    body=start_json['client_config_map_json'])
+                                    body=start_json['client_cmap'])
         resp = v1Api.create_namespaced_pod (namespace='default',
                                     body=start_json['client_pod_json'])
 
@@ -382,7 +432,7 @@ def start (group, name):
 
 def stop (group, name):
 
-    v1Api= get_v1_api ()
+    v1Api= get_v1_api_instance ()
   
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
