@@ -10,11 +10,13 @@ import yaml
 import asyncssh
 # from bson.json_util import dumps
 
+from config import *
+
 from modules import NetIface
-from modules import TlsClient  
-from modules import TlsServer  
+from modules import TlsClientServer  
 
 import kubernetes.client
+
 
 class SshLinux():
     def __init__(self, ip, username, password):
@@ -57,14 +59,6 @@ k8s_config.api_key_prefix['authorization'] = 'Bearer'
 k8s_config.host='https://kubernetes.default.svc'
 k8s_config.ssl_ca_cert='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 v1Api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
-
-DB_CSTRING = 'localhost:27017'
-DB_NAME = 'tlsperf_db'
-REALTIME_STATS = 'tlsperf_realtime_stats'
-NODE_GROUPS= 'tlsperf_node_groups'
-NODE_LISTS= 'tlsperf_node_list'
-PROFILE_GROUPS= 'tlsperf_profile_groups'
-PROFILE_LISTS= 'tlsperf_profile_list'
 
 stats_ticks = 60
 
