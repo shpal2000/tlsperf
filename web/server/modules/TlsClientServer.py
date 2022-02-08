@@ -166,7 +166,7 @@ def start (group, name):
         for cip in csg["client_ips"]:
           cips = cips + '"' + cip+ '",'
         cips = cips.rstrip(',')
-          
+        
         input_map = {
             'AppGid': csg["app_gid"].lower(),
             'AppId': csg["app_id"].lower(),
@@ -179,8 +179,7 @@ def start (group, name):
             'WebPortStats': 7000,
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
-            'ClientIPs': csg["client_ips"],
-            'ClientIPsAnno': cips,
+            'ClientIPs': cips,
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
@@ -226,7 +225,7 @@ def start (group, name):
 
           "send_recv_len" : {ClientServerDataLen},
 
-          "client_ips"  : [{ClientIPs}]
+          "client_ips"  : [{ClientIPs}],  
           "cps": {CPS},
           "total_conn_count" : {Transactions},
           "max_active_conn_count" : {MaxPipeline}
@@ -262,12 +261,12 @@ def start (group, name):
         client_pod = kubernetes.client.V1Pod()
 
         client_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
-        client_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPsAnno}]}}]'.format(**input_map)}
+        client_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPs}]}}]'.format(**input_map)}
         
         container = kubernetes.client.V1Container(name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
         container.image = 'tlspack/tlsperf:latest'
-        container.command = ["tlsclient.exe"]
-        container.args = []
+        container.command = ["ping"]
+        container.args = ["www.google.com"]
         container.env = [
           kubernetes.client.V1EnvVar(
             name='MY_POD_IP',
@@ -357,6 +356,9 @@ def stop (group, name):
     task = task_col.find_one(query)
     events = list(task['Events'])
 
+    profile_col = db[PROFILE_LISTS]
+    profile = profile_col.find_one(query)
+
     events.append('timestamp: stopping clients pods')
     update = { '$set': {'Status': 'stopping clients', 'Events': events}}
     task_col.update_one(query, update)
@@ -380,7 +382,7 @@ def stop (group, name):
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
             'ClientIPs': csg["client_ips"],
-            'ClientIPsAnno': cips,
+            'ClientIPs': cips,
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
@@ -417,7 +419,7 @@ def stop (group, name):
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
             'ClientIPs': csg["client_ips"],
-            'ClientIPsAnno': cips,
+            'ClientIPs': cips,
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
