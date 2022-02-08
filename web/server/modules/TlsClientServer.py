@@ -133,35 +133,6 @@ def set_profile_defaults (prof_j):
 
 
 # ###############################yaml templates ########################### #
-
-client_config_map = '''
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tlsclient--{AppGid}--{AppId}
-data:
-  config.json: >
-    {{
-      "app_id" : "tlsclient--{AppGid}--{AppId}",
-      "app_gid" : "tlsclient--{AppGid}",
-
-      "server_ip"   : "{ServerIP}",
-      "server_port" : {ServerPort},
-      "server_ssl"  : {IsTls},
-
-      "stats_ip"   : "{WebIP}",
-      "stats_port" : {WebPortStats},
-
-      "send_recv_len" : {ClientServerDataLen},
-
-      "client_ips"  : [{ClientIPs}]
-      "cps": {CPS},
-      "total_conn_count" : {Transactions},
-      "max_active_conn_count" : {MaxPipeline}
-    }}
-'''
-
-
 client_pod = '''
 apiVersion: v1
 kind: Pod
@@ -195,36 +166,6 @@ spec:
   nodeSelector:
     tgid: {ClientNodeLabel}
 '''
-
-
-server_config_map = '''
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tlsserver--{AppGid}--{AppId}
-data:
-  config.json: >
-    {{
-      "app_id" : "tlsserver--{AppGid}--{AppId}",
-      "app_gid" : "tlsserver--{AppGid}",
-
-      "server_ip"   : "{ServerIP}",
-      "server_port" : {ServerPort},
-      "server_ssl"  : {IsTls},
-
-      "stats_ip"   : "{WebIP}",
-      "stats_port" : {WebPortStats},
-
-      "send_recv_len" : {ClientServerDataLen}
-    }}
-  
-  key.pem: |
-    {ServerKey}
-
-  cert.pem: |
-    {ServerCert}
-'''
-
 
 server_pod = '''
 apiVersion: v1
@@ -290,7 +231,7 @@ def start (group, name):
     profile = profile_col.find_one(query)
 
 
-    start_jsons = []
+    start_pod_info = []
     for csg in profile['cs_groups']:
         cips = ''
         for cip in csg["client_ips"]:
@@ -341,7 +282,7 @@ def start (group, name):
 
 
         client_cmap = kubernetes.client.V1ConfigMap()
-        client_cmap.metadata = kubernetes.client.V1ObjectMeta(name='TlsClient--{AppGid}--{AppId}'.format(**input_map))
+        client_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
         client_cmap.data = {}
         client_cmap.data['config.json'] = '''{{
           "app_id" : "tlsclient--{AppGid}--{AppId}",
@@ -363,27 +304,54 @@ def start (group, name):
         }}'''.format(**input_map)
 
 
-        server_pod_yaml = server_pod.format(**input_map)
-        server_pod_json = yaml.safe_load(server_pod_yaml)
+        # server_pod_yaml = server_pod.format(**input_map)
+        # server_pod_json = yaml.safe_load(server_pod_yaml)
 
-        client_pod_yaml = client_pod.format(**input_map)
-        client_pod_json = yaml.safe_load(client_pod_yaml)
+        # client_pod_yaml = client_pod.format(**input_map)
+        # client_pod_json = yaml.safe_load(client_pod_yaml)
 
-        start_jsons.append ({
+        server_pod = kubernetes.client.V1Pod()
+
+        server_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+        # server_pod.metadata.annotations['k8s.v1.cni.cncf.io/networks'] = '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPsAnno}]}}]'.format(**input_map)
+        server_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ServerInterfaceName}", "ips": ["{ServerIP}"]'.format(**input_map)}
+        
+        container = kubernetes.client.V1Container(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+        container.image = 'tlspack/tlsperf:latest'
+        container.command = ["tlsserver.exe"]
+        container.args = []
+        container.env = [
+          kubernetes.client.V1EnvVar(
+            name='MY_POD_IP',
+            value_from=kubernetes.client.V1EnvVarSource(field_ref=kubernetes.client.V1ObjectFieldSelector(field_path='status.podIP')))
+        ]
+        container.volume_mounts= [
+          kubernetes.client.V1VolumeMount(
+            name='config-volume',
+            mount_path='/configs/'
+          )
+        ]
+        volume = kubernetes.client.V1Volume(name='config-volume'
+                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsserver--{AppGid}--{AppId}'.format(**input_map)))
+
+        server_pod.spec = kubernetes.client.V1PodSpec(containers=[container], 
+                                                      volumes=[volume])
+
+        start_pod_info.append ({
             'server_cmap': server_cmap,
-            'server_pod_json': server_pod_json,
+            'server_pod': server_pod,
             'client_cmap': client_cmap,
-            'client_pod_json': client_pod_json
+            'client_pod': client_pod
         })
 
     events.append('timestamp: starting server pods')
     update = { '$set': {'Status': 'starting servers', 'Events': events}}
     task_col.update_one(query, update)
-    for start_json in start_jsons:
+    for start_json in start_pod_info:
         resp = v1Api.create_namespaced_config_map(namespace='default',
                                     body=start_json['server_cmap'])
         resp = v1Api.create_namespaced_pod (namespace='default',
-                                    body=start_json['server_pod_json'])
+                                    body=start_json['server_pod'])
 
     events.append('timestamp: checking server pods status')
     update = { '$set': {'Status': 'checking servers', 'Events': events}}
@@ -392,38 +360,38 @@ def start (group, name):
     while not all_pod_started:
         all_pod_started = True
         time.sleep(1)
-        for start_json in start_jsons:
+        for start_json in start_pod_info:
             resp = v1Api.read_namespaced_pod (namespace='default',
                                     name=start_json['server_pod_json']['metadata']['name'])
             if resp.status.phase == 'Pending':
                 all_pod_started = False
                 break
 
-    time.sleep(5)
+    # time.sleep(5)
 
-    events.append('timestamp: starting clients pods')
-    update = { '$set': {'Status': 'starting clients', 'Events': events}}
-    task_col.update_one(query, update)
-    for start_json in start_jsons:
-        resp = v1Api.create_namespaced_config_map(namespace='default',
-                                    body=start_json['client_cmap'])
-        resp = v1Api.create_namespaced_pod (namespace='default',
-                                    body=start_json['client_pod_json'])
+    # events.append('timestamp: starting clients pods')
+    # update = { '$set': {'Status': 'starting clients', 'Events': events}}
+    # task_col.update_one(query, update)
+    # for start_json in start_pod_info:
+    #     resp = v1Api.create_namespaced_config_map(namespace='default',
+    #                                 body=start_json['client_cmap'])
+    #     resp = v1Api.create_namespaced_pod (namespace='default',
+    #                                 body=start_json['client_pod'])
 
 
-    events.append('timestamp: checking clients pods status')
-    update = { '$set': {'Status': 'checking clients', 'Events': events}}
-    task_col.update_one(query, update)
-    all_pod_started = False
-    while not all_pod_started:
-        all_pod_started = True
-        time.sleep(1)
-        for start_json in start_jsons:
-            resp = v1Api.read_namespaced_pod (namespace='default',
-                                    name=start_json['client_pod_json']['metadata']['name'])
-            if resp.status.phase == 'Pending':
-                all_pod_started = False
-                break
+    # events.append('timestamp: checking clients pods status')
+    # update = { '$set': {'Status': 'checking clients', 'Events': events}}
+    # task_col.update_one(query, update)
+    # all_pod_started = False
+    # while not all_pod_started:
+    #     all_pod_started = True
+    #     time.sleep(1)
+    #     for start_json in start_pod_info:
+    #         resp = v1Api.read_namespaced_pod (namespace='default',
+    #                                 name=start_json['client_pod_json']['metadata']['name'])
+    #         if resp.status.phase == 'Pending':
+    #             all_pod_started = False
+    #             break
 
     events.append('timestamp: client, server pods running')
     update = { '$set': {'Status': 'running', 'Events': events}}
