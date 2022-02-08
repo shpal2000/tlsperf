@@ -314,7 +314,7 @@ def start (group, name):
 
         server_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
         # server_pod.metadata.annotations['k8s.v1.cni.cncf.io/networks'] = '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPsAnno}]}}]'.format(**input_map)
-        server_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ServerInterfaceName}", "ips": ["{ServerIP}"]'.format(**input_map)}
+        server_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ServerInterfaceName}", "ips": ["{ServerIP}"]}}]'.format(**input_map)}
         
         container = kubernetes.client.V1Container(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
         container.image = 'tlspack/tlsperf:latest'
@@ -335,7 +335,8 @@ def start (group, name):
                       , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsserver--{AppGid}--{AppId}'.format(**input_map)))
 
         server_pod.spec = kubernetes.client.V1PodSpec(containers=[container], 
-                                                      volumes=[volume])
+                                                      volumes=[volume],
+                                                      termination_grace_period_seconds=0)
 
         start_pod_info.append ({
             'server_cmap': server_cmap,
@@ -362,7 +363,7 @@ def start (group, name):
         time.sleep(1)
         for start_json in start_pod_info:
             resp = v1Api.read_namespaced_pod (namespace='default',
-                                    name=start_json['server_pod_json']['metadata']['name'])
+                                    name=start_json['server_pod'].metadata.name)
             if resp.status.phase == 'Pending':
                 all_pod_started = False
                 break
@@ -396,6 +397,19 @@ def start (group, name):
     events.append('timestamp: client, server pods running')
     update = { '$set': {'Status': 'running', 'Events': events}}
     task_col.update_one(query, update)
+
+
+    print ('running')
+
+
+    del_option = kubernetes.client.V1DeleteOptions(grace_period_seconds=0)
+    print (del_option)
+    for start_json in start_pod_info:
+        resp = v1Api.delete_namespaced_pod (namespace='default',
+                                            name=start_json['server_pod'].metadata.name)
+
+    print ('stopped')
+
 
 
 def stop (group, name):
