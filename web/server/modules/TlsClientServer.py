@@ -296,8 +296,24 @@ def start (group, name):
     update = { '$set': {'Status': 'starting server', 'Events': events}}
     task_col.update_one(query, update)
     for start_json in start_pod_info:
+        try:
+          resp = v1Api.delete_namespaced_config_map(namespace='default',
+                                          name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+          events.append('timestamp: stale server config map removed')
+        except kubernetes.client.rest.ApiException as err:
+          events.append('timestamp: stale server config map not found')
+                    
         resp = v1Api.create_namespaced_config_map(namespace='default',
                                     body=start_json['server_cmap'])
+
+
+        try:
+          resp = v1Api.delete_namespaced_pod(namespace='default',
+                                          name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+          events.append('timestamp: stale server pod removed')
+        except kubernetes.client.rest.ApiException as err:
+          events.append('timestamp: stale server pod not found')
+
         resp = v1Api.create_namespaced_pod (namespace='default',
                                     body=start_json['server_pod'])
 
@@ -320,8 +336,23 @@ def start (group, name):
     update = { '$set': {'Status': 'starting client', 'Events': events}}
     task_col.update_one(query, update)
     for start_json in start_pod_info:
+        try:
+          resp = v1Api.delete_namespaced_config_map(namespace='default',
+                                          name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
+          events.append('timestamp: stale client config map removed')
+        except kubernetes.client.rest.ApiException as err:
+          events.append('timestamp: stale client config map not found')
+
         resp = v1Api.create_namespaced_config_map(namespace='default',
                                     body=start_json['client_cmap'])
+
+        try:
+          resp = v1Api.delete_namespaced_pod(namespace='default',
+                                          name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
+          events.append('timestamp: stale client pod removed')
+        except kubernetes.client.rest.ApiException as err:
+          events.append('timestamp: stale client pod not found')
+
         resp = v1Api.create_namespaced_pod (namespace='default',
                                     body=start_json['client_pod'])
 
@@ -392,9 +423,17 @@ def stop (group, name):
             'ClientInterfaceName': 'eth0'
         }
         name = 'tlsclient--{AppGid}--{AppId}'.format(**input_map)
-        resp = v1Api.delete_namespaced_pod (namespace='default',
-                                            name=name)
+        try:
+          resp = v1Api.delete_namespaced_pod (namespace='default',
+                                              name=name)
+        except kubernetes.client.rest.ApiException as err:
+          events.append('timestamp: delete client pod failed')
 
+        try:
+          resp = v1Api.delete_namespaced_config_map (namespace='default',
+                                              name=name)
+        except kubernetes.client.rest.ApiException as err:
+          events.append('timestamp: delete client config map failed')
 
     events.append('timestamp: stopping server pods')
     update = { '$set': {'Status': 'stopping server', 'Events': events}}
@@ -429,8 +468,17 @@ def stop (group, name):
             'ClientInterfaceName': 'eth0'
         }
         name = 'tlsserver--{AppGid}--{AppId}'.format(**input_map)
-        resp = v1Api.delete_namespaced_pod (namespace='default',
-                                            name=name)
+        try:
+          resp = v1Api.delete_namespaced_pod (namespace='default',
+                                              name=name)
+        except kubernetes.client.rest.ApiException as err:
+          events.append('timestamp: delete server pod failed')
+
+        try:
+          resp = v1Api.delete_namespaced_config_map (namespace='default',
+                                              name=name)
+        except kubernetes.client.rest.ApiException as err:
+          events.append('timestamp: delete server config map failed')
 
     events.append('timestamp: client, server pods stopped')
     update = { '$set': {'Status': 'stopped', 'Events': events}}

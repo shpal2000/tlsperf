@@ -284,10 +284,8 @@ async def api_delete_profile_group(request):
 
 async def api_get_profile_run(request):
     try:
-        r_text = await request.text()
-        r_json = json.loads(r_text)
-        group = r_json['Group']
-        name = r_json['Name']
+        group = request.query['group']
+        name = request.query['name']
 
         query = {'Group': group, 'Name': name}
         
@@ -332,11 +330,12 @@ async def api_start_profile_run(request):
                                                          '--group', group,
                                                          '--name', name)
             await proc.wait()
+            task = task_col.find_one(query)
             return web.json_response({'status' : 0, 'info': {'Status' : task['Status'], 'Events' : list(task['Events'])}})
         else:
             return web.json_response({'status' : -1, 'message': 'profile not found'})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_stop_profile_run(request):
     try:
@@ -365,11 +364,14 @@ async def api_stop_profile_run(request):
                                                          '--group', group,
                                                          '--name', name)
             await proc.wait()
-            return web.json_response({'status' : 0, 'info': {'Status' : task['Status'], 'Events' : list(task['Events'])}})
+            task = task_col.find_one(query)
+            task_info = {'Status' : task['Status'], 'Events' : list(task['Events'])}
+            task_col.delete_one (query)
+            return web.json_response({'status' : 0, 'info': task_info})
         else:
             return web.json_response({'status' : -1, 'message': 'profile not found'})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_get_stats(request):
     mongoClient = MongoClient(DB_CSTRING)
