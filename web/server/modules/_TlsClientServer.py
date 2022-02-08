@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import time
+import yaml
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -66,6 +67,9 @@ IiTeT4+t5dboeDFh3HNsLqlh9w==
 -----END CERTIFICATE-----
 '''
 
+
+# ########################### set profile defaults ######################### #
+
 def set_profile_defaults (prof_j):
 
     cs_groups = [
@@ -128,19 +132,86 @@ def set_profile_defaults (prof_j):
         prof_j['cs_groups'].append(csg)
 
 
+# ###############################yaml templates ########################### #
+client_pod = '''
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tlsclient--{AppGid}--{AppId}
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '[
+            {{ "name": "{ClientInterfaceName}",
+               "ips": [{ClientIPsAnno}]
+            }}]'
+spec:
+  containers:
+  - name: tlsclient--{AppGid}--{AppId}
+    image: tlspack/tlsperf:latest
+    imagePullPolicy: Always
+    command: [tlsclient.exe]
+    args: []
+    env:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+    volumeMounts:
+    - name: config-volume
+      mountPath: /configs/
+  volumes:
+  - name: config-volume
+    configMap:
+      name: tlsclient--{AppGid}--{AppId} 
+
+  nodeSelector:
+    tgid: {ClientNodeLabel}
+'''
+
+server_pod = '''
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tlsserver--{AppGid}--{AppId}
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '[
+            {{"name": "{ServerInterfaceName}",
+              "ips": ["{ServerIP}"]
+            }}]'
+spec:
+  containers:
+  - name: tlsserver--{AppGid}--{AppId}
+    image: tlspack/tlsperf:latest
+    imagePullPolicy: Always
+    command: ["tlsserver.exe"]
+    args: []
+    env:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+    volumeMounts:
+    - name: config-volume
+      mountPath: /configs/
+  volumes:
+  - name: config-volume
+    configMap:
+      name: tlsserver--{AppGid}--{AppId} 
+  nodeSelector:
+    tgid: {ServerNodeLabel}
+'''
+
+
+with open ('/var/run/secrets/kubernetes.io/serviceaccount/token') as f:
+    k8s_token = f.read()
+k8s_config = kubernetes.client.Configuration()
+k8s_config.api_key['authorization'] = k8s_token
+k8s_config.api_key_prefix['authorization'] = 'Bearer'
+k8s_config.host='https://kubernetes.default.svc'
+k8s_config.ssl_ca_cert='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 
 def get_v1_api_instance ():
-
-  with open ('/var/run/secrets/kubernetes.io/serviceaccount/token') as f:
-      k8s_token = f.read()
-  k8s_config = kubernetes.client.Configuration()
-  k8s_config.api_key['authorization'] = k8s_token
-  k8s_config.api_key_prefix['authorization'] = 'Bearer'
-  k8s_config.host='https://kubernetes.default.svc'
-  k8s_config.ssl_ca_cert='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
-
-  v1_api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
-  return v1_api
+    v1_api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
+    return v1_api
 
 
 def start (group, name):
@@ -232,9 +303,17 @@ def start (group, name):
           "max_active_conn_count" : {MaxPipeline}
         }}'''.format(**input_map)
 
+
+        # server_pod_yaml = server_pod.format(**input_map)
+        # server_pod_json = yaml.safe_load(server_pod_yaml)
+
+        # client_pod_yaml = client_pod.format(**input_map)
+        # client_pod_json = yaml.safe_load(client_pod_yaml)
+
         server_pod = kubernetes.client.V1Pod()
 
         server_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+        # server_pod.metadata.annotations['k8s.v1.cni.cncf.io/networks'] = '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPsAnno}]}}]'.format(**input_map)
         server_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ServerInterfaceName}", "ips": ["{ServerIP}"]}}]'.format(**input_map)}
         
         container = kubernetes.client.V1Container(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
@@ -259,33 +338,6 @@ def start (group, name):
                                                       volumes=[volume],
                                                       termination_grace_period_seconds=0)
 
-        client_pod = kubernetes.client.V1Pod()
-
-        client_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
-        client_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPsAnno}]}}]'.format(**input_map)}
-        
-        container = kubernetes.client.V1Container(name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
-        container.image = 'tlspack/tlsperf:latest'
-        container.command = ["tlsclient.exe"]
-        container.args = []
-        container.env = [
-          kubernetes.client.V1EnvVar(
-            name='MY_POD_IP',
-            value_from=kubernetes.client.V1EnvVarSource(field_ref=kubernetes.client.V1ObjectFieldSelector(field_path='status.podIP')))
-        ]
-        container.volume_mounts= [
-          kubernetes.client.V1VolumeMount(
-            name='config-volume',
-            mount_path='/configs/'
-          )
-        ]
-        volume = kubernetes.client.V1Volume(name='config-volume'
-                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsclient--{AppGid}--{AppId}'.format(**input_map)))
-
-        client_pod.spec = kubernetes.client.V1PodSpec(containers=[container], 
-                                                      volumes=[volume],
-                                                      termination_grace_period_seconds=0)
-
         start_pod_info.append ({
             'server_cmap': server_cmap,
             'server_pod': server_pod,
@@ -294,7 +346,7 @@ def start (group, name):
         })
 
     events.append('timestamp: starting server pods')
-    update = { '$set': {'Status': 'starting server', 'Events': events}}
+    update = { '$set': {'Status': 'starting servers', 'Events': events}}
     task_col.update_one(query, update)
     for start_json in start_pod_info:
         resp = v1Api.create_namespaced_config_map(namespace='default',
@@ -303,11 +355,12 @@ def start (group, name):
                                     body=start_json['server_pod'])
 
     events.append('timestamp: checking server pods status')
-    update = { '$set': {'Status': 'checking server', 'Events': events}}
+    update = { '$set': {'Status': 'checking servers', 'Events': events}}
     task_col.update_one(query, update)
     all_pod_started = False
     while not all_pod_started:
         all_pod_started = True
+        time.sleep(1)
         for start_json in start_pod_info:
             resp = v1Api.read_namespaced_pod (namespace='default',
                                     name=start_json['server_pod'].metadata.name)
@@ -315,33 +368,47 @@ def start (group, name):
                 all_pod_started = False
                 break
 
-    time.sleep(5)
+    # time.sleep(5)
 
-    events.append('timestamp: starting client pods')
-    update = { '$set': {'Status': 'starting client', 'Events': events}}
-    task_col.update_one(query, update)
-    for start_json in start_pod_info:
-        resp = v1Api.create_namespaced_config_map(namespace='default',
-                                    body=start_json['client_cmap'])
-        resp = v1Api.create_namespaced_pod (namespace='default',
-                                    body=start_json['client_pod'])
+    # events.append('timestamp: starting clients pods')
+    # update = { '$set': {'Status': 'starting clients', 'Events': events}}
+    # task_col.update_one(query, update)
+    # for start_json in start_pod_info:
+    #     resp = v1Api.create_namespaced_config_map(namespace='default',
+    #                                 body=start_json['client_cmap'])
+    #     resp = v1Api.create_namespaced_pod (namespace='default',
+    #                                 body=start_json['client_pod'])
 
-    events.append('timestamp: checking client pods status')
-    update = { '$set': {'Status': 'checking client', 'Events': events}}
-    task_col.update_one(query, update)
-    all_pod_started = False
-    while not all_pod_started:
-        all_pod_started = True
-        for start_json in start_pod_info:
-            resp = v1Api.read_namespaced_pod (namespace='default',
-                                    name=start_json['client_pod'].metadata.name)
-            if resp.status.phase == 'Pending':
-                all_pod_started = False
-                break
+
+    # events.append('timestamp: checking clients pods status')
+    # update = { '$set': {'Status': 'checking clients', 'Events': events}}
+    # task_col.update_one(query, update)
+    # all_pod_started = False
+    # while not all_pod_started:
+    #     all_pod_started = True
+    #     time.sleep(1)
+    #     for start_json in start_pod_info:
+    #         resp = v1Api.read_namespaced_pod (namespace='default',
+    #                                 name=start_json['client_pod_json']['metadata']['name'])
+    #         if resp.status.phase == 'Pending':
+    #             all_pod_started = False
+    #             break
 
     events.append('timestamp: client, server pods running')
     update = { '$set': {'Status': 'running', 'Events': events}}
     task_col.update_one(query, update)
+
+
+    print ('running')
+
+
+    del_option = kubernetes.client.V1DeleteOptions(grace_period_seconds=0)
+    print (del_option)
+    for start_json in start_pod_info:
+        resp = v1Api.delete_namespaced_pod (namespace='default',
+                                            name=start_json['server_pod'].metadata.name)
+
+    print ('stopped')
 
 
 
@@ -361,74 +428,17 @@ def stop (group, name):
     update = { '$set': {'Status': 'stopping clients', 'Events': events}}
     task_col.update_one(query, update)
 
-    for csg in profile['cs_groups']:
-        cips = ''
-        for cip in csg["client_ips"]:
-          cips = cips + '"' + cip+ '",'
-        cips = cips.rstrip(',')
-          
-        input_map = {
-            'AppGid': csg["app_gid"].lower(),
-            'AppId': csg["app_id"].lower(),
-            'ServerKey': csg["server_key"],
-            'ServerCert': csg["server_cert"],
-            'ServerIP': csg["server_ip"],
-            'ServerPort': csg["server_port"],
-            'IsTls': csg["server_ssl"],
-            'WebIP': "10.32.0.4",
-            'WebPortStats': 7000,
-            'ClientServerDataLen': csg["send_recv_len"],
-            'CPS': csg["cps"],
-            'ClientIPs': csg["client_ips"],
-            'ClientIPsAnno': cips,
-            'Transactions': csg["total_conn_count"],
-            'MaxPipeline': csg["max_active_conn_count"],
-
-            'ServerNodeLabel': 'kube-master',
-            'ClientNodeLabel': 'kube-master',
-            'ServerInterfaceName': 'eth0',
-            'ClientInterfaceName': 'eth0'
-        }
-        name = 'tlsclient--{AppGid}--{AppId}'.format(**input_map)
-        resp = v1Api.delete_namespaced_pod (namespace='default',
-                                            name=name)
-
-
-    events.append('timestamp: stopping server pods')
-    update = { '$set': {'Status': 'stopping server', 'Events': events}}
+    events.append('timestamp: checking clients pods status')
+    update = { '$set': {'Status': 'checking clients', 'Events': events}}
     task_col.update_one(query, update)
 
-    for csg in profile['cs_groups']:
-        cips = ''
-        for cip in csg["client_ips"]:
-          cips = cips + '"' + cip+ '",'
-        cips = cips.rstrip(',')
-          
-        input_map = {
-            'AppGid': csg["app_gid"].lower(),
-            'AppId': csg["app_id"].lower(),
-            'ServerKey': csg["server_key"],
-            'ServerCert': csg["server_cert"],
-            'ServerIP': csg["server_ip"],
-            'ServerPort': csg["server_port"],
-            'IsTls': csg["server_ssl"],
-            'WebIP': "10.32.0.4",
-            'WebPortStats': 7000,
-            'ClientServerDataLen': csg["send_recv_len"],
-            'CPS': csg["cps"],
-            'ClientIPs': csg["client_ips"],
-            'ClientIPsAnno': cips,
-            'Transactions': csg["total_conn_count"],
-            'MaxPipeline': csg["max_active_conn_count"],
+    events.append('timestamp: stopping server pods')
+    update = { '$set': {'Status': 'stopping servers', 'Events': events}}
+    task_col.update_one(query, update)
 
-            'ServerNodeLabel': 'kube-master',
-            'ClientNodeLabel': 'kube-master',
-            'ServerInterfaceName': 'eth0',
-            'ClientInterfaceName': 'eth0'
-        }
-        name = 'tlsserver--{AppGid}--{AppId}'.format(**input_map)
-        resp = v1Api.delete_namespaced_pod (namespace='default',
-                                            name=name)
+    events.append('timestamp: checking server pods status')
+    update = { '$set': {'Status': 'checking servers', 'Events': events}}
+    task_col.update_one(query, update)
 
     events.append('timestamp: client, server pods stopped')
     update = { '$set': {'Status': 'stopped', 'Events': events}}

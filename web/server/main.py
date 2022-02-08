@@ -1,22 +1,15 @@
 import os
-import aiohttp, json
+import aiohttp
 from aiohttp import web
 import asyncio
 import json
-import subprocess
-import time
 from pymongo import MongoClient
 import yaml
 import asyncssh
-# from bson.json_util import dumps
 
 from config import *
 
-from modules import NetIface
-from modules import TlsClientServer  
-
-import kubernetes.client
-
+from modules import TlsClientServer
 
 class SshLinux():
     def __init__(self, ip, username, password):
@@ -50,96 +43,7 @@ class SshLinux():
             self.log.append(read_msg)
             return read_msg
 
-with open ('/var/run/secrets/kubernetes.io/serviceaccount/token') as f:
-    k8s_token = f.read()
-
-k8s_config = kubernetes.client.Configuration()
-k8s_config.api_key['authorization'] = k8s_token
-k8s_config.api_key_prefix['authorization'] = 'Bearer'
-k8s_config.host='https://kubernetes.default.svc'
-k8s_config.ssl_ca_cert='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
-v1Api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
-
 stats_ticks = 60
-
-def set_profile_TlsClientServer (prof_j):
-    cs_groups = [
-        { "client_ips" :  ["12.20.51.1/16", "12.20.51.2/16"], 
-            "server_ip": "12.20.61.1/16"
-        },
-        { "client_ips" :  ["12.20.52.1/16", "12.20.52.2/16"], 
-            "server_ip": "12.20.62.1/16"
-        },
-        { "client_ips" :  ["12.20.53.1/16", "12.20.53.2/16"], 
-            "server_ip": "12.20.63.1/16"
-        },
-        { "client_ips" :  ["12.20.54.1/16", "12.20.54.2/16"], 
-            "server_ip": "12.20.64.1/16"
-        },
-        { "client_ips" :  ["12.20.55.1/16", "12.20.55.2/16"], 
-            "server_ip": "12.20.65.1/16"
-        },
-        { "client_ips" :  ["12.20.56.1/16", "12.20.56.2/16"], 
-            "server_ip": "12.20.66.1/16"
-        },
-        { "client_ips" :  ["12.20.57.1/16", "12.20.57.2/16"], 
-            "server_ip": "12.20.67.1/16"
-        },
-        { "client_ips" :  ["12.20.58.1/16", "12.20.58.2/16"], 
-            "server_ip": "12.20.68.1/16"
-        },
-    ]    
-    
-    prof_j['cs_groups'] = []
-    csg_index = 0
-    for csg in cs_groups:
-        csg_index += 1
-        csg["app_id"] = "csg-" + str(csg_index)
-        
-        csg["app_gid"] = prof_j['Group'] + '/' + prof_j['Name']
-
-        csg["server_port"] = 443
-        csg["server_ssl"] = 1
-        csg["send_recv_len"] = 1
-        csg["cps"] = 1
-        csg["max_active_conn_count"] = 10
-        csg["server_certificate"] = "cert"
-        csg["server_key"] = "key"
-
-        prof_j['cs_groups'].append(csg)
-
-def start_profile_TlsClientServer(prof_j):
-
-    clients = []
-    servers = []
-
-    for csg in prof_j['cs_groups']:
-        csg_input_map = {}
-        csg_config_map_yaml = TlsClient.get_config_map_yaml (csg_input_map)
-        csg_pod_yaml = TlsClient.get_pod_yaml (csg_input_map)
-        clients.append ({'config_map' : csg_config_map_yaml,
-                            'pod':  csg_pod_yaml})
-
-        csg_input_map = {}
-        csg_config_map_yaml = TlsServer.get_config_map_yaml (csg_input_map)
-        csg_pod_yaml = TlsServer.get_pod_yaml (csg_input_map)
-        servers.append ({'config_map' : csg_config_map_yaml,
-                            'pod':  csg_pod_yaml})
-
-    for server in servers:
-        pass
-
-    for client in clients:
-        pass
-
-
-def localcmd(cmd_str, check_ouput=False):
-    if check_ouput:
-        return subprocess.check_output(cmd_str, shell=True, close_fds=True).decode("utf-8").strip()
-    else:
-        os.system(cmd_str)
-        return None
-
 
 async def api_get_node(request):
     group = request.query['group']
@@ -301,7 +205,7 @@ async def api_add_profile(request):
         if profile:
             return web.json_response({'status' : -1, 'message': 'already exist'})
 
-        set_profile_TlsClientServer(r_json)
+        TlsClientServer.set_profile_defaults(r_json)
 
         profile_col.insert_one(r_json) 
         return web.json_response({'status' : 0})
@@ -378,24 +282,92 @@ async def api_delete_profile_group(request):
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
 
-async def api_profile_run(request):
+async def api_get_profile_run(request):
     try:
         r_text = await request.text()
         r_json = json.loads(r_text)
         group = r_json['Group']
         name = r_json['Name']
 
+        query = {'Group': group, 'Name': name}
+        
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
-        profile_col = db[PROFILE_LISTS]
-        profile = profile_col.find_one({'Group': group,
-                                            'Name': name}
-                                        , {'_id' : False})
-        if profile:
-            start_profile_TlsClientServer(profile)
+
+        task_col = db[TASK_LISTS]
+        task = task_col.find_one(query)
+
+        if task:
+            return web.json_response({'status' : 0, 'info': {'Status' : task['Status'], 'Events' : list(task['Events'])}})
         else:
-            return web.json_response({'status' : -1, 'message': 'tbd'})
-        return web.json_response({'status' : 0})
+            return web.json_response({'status' : -1, 'message': 'Not running'})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
+
+async def api_start_profile_run(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
+
+        query = {'Group': group, 'Name': name}
+        
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+
+        profile_col = db[PROFILE_LISTS]
+        profile = profile_col.find_one(query)
+
+        task_col = db[TASK_LISTS]
+        task = task_col.find_one(query)
+
+        if task:
+            return web.json_response({'status' : -1, 'message': 'Already running'})
+        if profile:
+            task_col.insert_one({'Group': group, 'Name': name, 'Events': []})
+            proc = await asyncio.create_subprocess_exec('python3',
+                                                        './modules/TlsClientServer.py',
+                                                         '--ops', 'start',
+                                                         '--group', group,
+                                                         '--name', name)
+            await proc.wait()
+            return web.json_response({'status' : 0, 'info': {'Status' : task['Status'], 'Events' : list(task['Events'])}})
+        else:
+            return web.json_response({'status' : -1, 'message': 'profile not found'})
+    except:
+        return web.json_response({'status' : -1, 'message': 'tbd'})
+
+async def api_stop_profile_run(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
+
+        query = {'Group': group, 'Name': name}
+        
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+
+        profile_col = db[PROFILE_LISTS]
+        profile = profile_col.find_one(query)
+
+        task_col = db[TASK_LISTS]
+        task = task_col.find_one(query)
+
+        if not task:
+            return web.json_response({'status' : -1, 'message': 'Not running'})
+        if profile:
+            proc = await asyncio.create_subprocess_exec('python3',
+                                                        './modules/TlsClientServer.py',
+                                                         '--ops', 'stop',
+                                                         '--group', group,
+                                                         '--name', name)
+            await proc.wait()
+            return web.json_response({'status' : 0, 'info': {'Status' : task['Status'], 'Events' : list(task['Events'])}})
+        else:
+            return web.json_response({'status' : -1, 'message': 'profile not found'})
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
 
@@ -468,9 +440,17 @@ app.add_routes([web.route('delete'
                             , '/api/profile_groups'
                             , api_delete_profile_group)])
 
+app.add_routes([web.route('get'
+                            , '/api/profile_run'
+                            , api_get_profile_run)])
+
 app.add_routes([web.route('post'
                             , '/api/profile_run'
-                            , api_profile_run)])
+                            , api_start_profile_run)])
+
+app.add_routes([web.route('delete'
+                            , '/api/profile_run'
+                            , api_stop_profile_run)])
 
 # app.add_routes([web.route('post'
 #                             , '/api/stop_run'
