@@ -323,6 +323,25 @@ async def api_get_profile_run(request):
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
 
+async def task_start_profile_run(group, name):
+
+    proc = await asyncio.create_subprocess_exec('python3',
+                                                './modules/TlsClientServer.py',
+                                                    '--ops', 'start',
+                                                    '--group', group,
+                                                    '--name', name)
+
+    await proc.wait()
+
+    mongoClient = MongoClient(DB_CSTRING)
+    db = mongoClient[DB_NAME]
+
+    query = {'Group': group, 'Name': name}
+    task_col = db[TASK_LISTS]
+
+    update = {'$set': {'Status': 'done'}}
+    task_col.update_one(query, update)
+
 async def api_start_profile_run(request):
     try:
         r_text = await request.text()
@@ -345,23 +364,33 @@ async def api_start_profile_run(request):
             if task['State'] == 'run':
                 return web.json_response({'status' : -1, 'message': 'is already running'})
 
-
             update = { '$set': {'Type': 'start_run', 'Status': 'progress', 'State': 'run', 'Events': []}}
             task_col.update_one(query, update)
-            proc = await asyncio.create_subprocess_exec('python3',
-                                                        './modules/TlsClientServer.py',
-                                                         '--ops', 'start',
-                                                         '--group', group,
-                                                         '--name', name)
 
-            await proc.wait()
-            update = {'$set': {'Status': 'done'}}
-            task_col.update_one(query, update)
+            asyncio.create_task (task_start_profile_run(group, name))
+
             return web.json_response({'status' : 0})
         else:
             return web.json_response({'status' : -1, 'message': 'profile not found'})
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
+
+async def task_stop_profile_run(group, name):
+    proc = await asyncio.create_subprocess_exec('python3',
+                                                './modules/TlsClientServer.py',
+                                                    '--ops', 'stop',
+                                                    '--group', group,
+                                                    '--name', name)
+    await proc.wait()
+
+    mongoClient = MongoClient(DB_CSTRING)
+    db = mongoClient[DB_NAME]
+
+    query = {'Group': group, 'Name': name}
+    task_col = db[TASK_LISTS]
+    
+    update = {'$set': {'Status': 'done', 'State': 'view'}}
+    task_col.update_one(query, update)
 
 async def api_stop_profile_run(request):
     try:
@@ -390,14 +419,9 @@ async def api_stop_profile_run(request):
 
             update = { '$set': {'Type': 'stop_run', 'Status': 'progress', 'Events': []}}
             task_col.update_one(query, update)
-            proc = await asyncio.create_subprocess_exec('python3',
-                                                        './modules/TlsClientServer.py',
-                                                         '--ops', 'stop',
-                                                         '--group', group,
-                                                         '--name', name)
-            await proc.wait()
-            update = {'$set': {'Status': 'done', 'State': 'view'}}
-            task_col.update_one(query, update)
+
+            asyncio.create_task (task_stop_profile_run(group, name))
+
             return web.json_response({'status' : 0})
         else:
             return web.json_response({'status' : -1, 'message': 'profile not found'})
