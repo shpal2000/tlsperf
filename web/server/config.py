@@ -1,0 +1,8 @@
+DB_CSTRING = 'localhost:27017'
+DB_NAME = 'tlsperf_db'
+REALTIME_STATS = 'tlsperf_realtime_stats'
+NODE_GROUPS= 'tlsperf_node_groups'
+NODE_LISTS= 'tlsperf_node_list'
+PROFILE_GROUPS= 'tlsperf_profile_groups'
+PROFILE_LISTS= 'tlsperf_profile_list'
+TASK_LISTS = 'tlsperf_task_list'
