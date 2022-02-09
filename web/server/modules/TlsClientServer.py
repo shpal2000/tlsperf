@@ -162,23 +162,28 @@ def start (group, name):
     start_pod_info = []
     for csg in profile['cs_groups']:
         cips = ''
+        _cips = ''
         for cip in csg["client_ips"]:
           cips = cips + '"' + cip+ '",'
+          _cips = _cips + '"' + cip.split('/')[0] + '",'
         cips = cips.rstrip(',')
+        _cips = _cips.rstrip(',')
         
         input_map = {
             'AppGid': csg["app_gid"].lower(),
             'AppId': csg["app_id"].lower(),
             'ServerKey': csg["server_key"],
             'ServerCert': csg["server_cert"],
-            'ServerIP': csg["server_ip"],
+            'ServerIPAnno': csg["server_ip"],
+            'ServerIP': csg["server_ip"].split('/')[0],
             'ServerPort': csg["server_port"],
             'IsTls': csg["server_ssl"],
             'WebIP': "10.32.0.4",
             'WebPortStats': 7000,
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
-            'ClientIPs': cips,
+            'ClientIPsAnno': cips,
+            'ClientIPs': _cips,
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
@@ -233,7 +238,7 @@ def start (group, name):
         server_pod = kubernetes.client.V1Pod()
 
         server_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
-        server_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ServerInterfaceName}", "ips": ["{ServerIP}"]}}]'.format(**input_map)}
+        server_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ServerInterfaceName}", "ips": ["{ServerIPAnno}"]}}]'.format(**input_map)}
         
         container = kubernetes.client.V1Container(name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
         container.image = 'tlspack/tlsperf:latest'
@@ -260,7 +265,7 @@ def start (group, name):
         client_pod = kubernetes.client.V1Pod()
 
         client_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
-        client_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPs}]}}]'.format(**input_map)}
+        client_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPsAnno}]}}]'.format(**input_map)}
         
         container = kubernetes.client.V1Container(name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
         container.image = 'tlspack/tlsperf:latest'
@@ -393,26 +398,31 @@ def stop (group, name):
     update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
 
+    start_pod_info = []
     for csg in profile['cs_groups']:
         cips = ''
+        _cips = ''
         for cip in csg["client_ips"]:
           cips = cips + '"' + cip+ '",'
+          _cips = _cips + '"' + cip.split('/')[0] + '",'
         cips = cips.rstrip(',')
+        _cips = _cips.rstrip(',')
           
         input_map = {
             'AppGid': csg["app_gid"].lower(),
             'AppId': csg["app_id"].lower(),
             'ServerKey': csg["server_key"],
             'ServerCert': csg["server_cert"],
-            'ServerIP': csg["server_ip"],
+            'ServerIPAnno': csg["server_ip"],
+            'ServerIP': csg["server_ip"].split('/')[0],
             'ServerPort': csg["server_port"],
             'IsTls': csg["server_ssl"],
             'WebIP': "10.32.0.4",
             'WebPortStats': 7000,
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
-            'ClientIPs': csg["client_ips"],
-            'ClientIPs': cips,
+            'ClientIPsAnno': cips,
+            'ClientIPs': _cips,
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
@@ -440,24 +450,28 @@ def stop (group, name):
 
     for csg in profile['cs_groups']:
         cips = ''
+        _cips = ''
         for cip in csg["client_ips"]:
           cips = cips + '"' + cip+ '",'
+          _cips = _cips + '"' + cip.split('/')[0] + '",'
         cips = cips.rstrip(',')
+        _cips = _cips.rstrip(',')
           
         input_map = {
             'AppGid': csg["app_gid"].lower(),
             'AppId': csg["app_id"].lower(),
             'ServerKey': csg["server_key"],
             'ServerCert': csg["server_cert"],
-            'ServerIP': csg["server_ip"],
+            'ServerIPAnno': csg["server_ip"],
+            'ServerIP': csg["server_ip"].split('/')[0],
             'ServerPort': csg["server_port"],
             'IsTls': csg["server_ssl"],
             'WebIP': "10.32.0.4",
             'WebPortStats': 7000,
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
-            'ClientIPs': csg["client_ips"],
-            'ClientIPs': cips,
+            'ClientIPsAnno': cips,
+            'ClientIPs': _cips,
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
