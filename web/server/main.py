@@ -194,20 +194,31 @@ async def api_add_profile(request):
     try:
         r_text = await request.text()
         r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
 
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         profile_col = db[PROFILE_LISTS]
+        task_col = db[TASK_LISTS]
 
-        profile = profile_col.find_one({'Name': r_json['Name']
-                                        , 'Group': r_json['Group']}
-                                        , {'_id' : False})
+        query = {'Group': group, 'Name': name}
+
+        profile = profile_col.find_one(query)
         if profile:
             return web.json_response({'status' : -1, 'message': 'already exist'})
 
         TlsClientServer.set_profile_defaults(r_json)
 
-        profile_col.insert_one(r_json) 
+        profile_col.insert_one(r_json)
+
+        task_col.insert_one ({'Group': group,
+                                'Name': name,
+                                'Type': '',    # start_run/stop_run/abort_run/generate_report/abort_report
+                                'Status': 'done', #done/progress
+                                'State': 'view', #view/run
+                                'Events': []})
+
         return web.json_response({'status' : 0})
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
@@ -222,9 +233,13 @@ async def api_delete_profile(request):
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         profile_col = db[PROFILE_LISTS]
+        task_col = db[TASK_LISTS]
+
+        query = {'Group': group, 'Name': name}
 
         # check if running ??
-        profile_col.delete_one({'Name': name, 'Group': group})
+        profile_col.delete_one(query)
+        task_col.delete_one(query)
 
         return web.json_response({'status' : 0})
     except:
@@ -293,10 +308,10 @@ async def api_get_profile_run(request):
         db = mongoClient[DB_NAME]
 
         task_col = db[TASK_LISTS]
-        task = task_col.find_one(query)
+        task = task_col.find_one(query, {'_id' : False})
 
         if task:
-            return web.json_response({'status' : 0, 'info': {'Status' : task['Status'], 'Events' : list(task['Events'])}})
+            return web.json_response({'status' : 0, 'info': task})
         else:
             return web.json_response({'status' : -1, 'message': 'Not running'})
     except:
@@ -320,18 +335,23 @@ async def api_start_profile_run(request):
         task_col = db[TASK_LISTS]
         task = task_col.find_one(query)
 
-        if task:
-            return web.json_response({'status' : -1, 'message': 'Already running'})
         if profile:
-            task_col.insert_one({'Group': group, 'Name': name, 'Events': []})
+            if task['State'] == 'run':
+                return web.json_response({'status' : -1, 'message': 'is already running'})
+
+
+            update = { '$set': {'Type': 'start_run', 'Status': 'progress', 'State': 'run', 'Events': []}}
+            task_col.update_one(query, update)
             proc = await asyncio.create_subprocess_exec('python3',
                                                         './modules/TlsClientServer.py',
                                                          '--ops', 'start',
                                                          '--group', group,
                                                          '--name', name)
+
             await proc.wait()
-            task = task_col.find_one(query)
-            return web.json_response({'status' : 0, 'info': {'Status' : task['Status'], 'Events' : list(task['Events'])}})
+            update = {'$set': {'Status': 'done'}}
+            task_col.update_one(query, update)
+            return web.json_response({'status' : 0})
         else:
             return web.json_response({'status' : -1, 'message': 'profile not found'})
     except Exception as err:
@@ -355,19 +375,24 @@ async def api_stop_profile_run(request):
         task_col = db[TASK_LISTS]
         task = task_col.find_one(query)
 
-        if not task:
-            return web.json_response({'status' : -1, 'message': 'Not running'})
         if profile:
+            if task['State'] == 'view':
+                return web.json_response({'status' : -1, 'message': 'not running'})
+
+            if task['Status'] == 'progress' and task['Type'] == 'stop_run':
+                return web.json_response({'status' : -1, 'message': 'stop already in porgress'})
+
+            update = { '$set': {'Type': 'stop_run', 'Status': 'progress', 'Events': []}}
+            task_col.update_one(query, update)
             proc = await asyncio.create_subprocess_exec('python3',
                                                         './modules/TlsClientServer.py',
                                                          '--ops', 'stop',
                                                          '--group', group,
                                                          '--name', name)
             await proc.wait()
-            task = task_col.find_one(query)
-            task_info = {'Status' : task['Status'], 'Events' : list(task['Events'])}
-            task_col.delete_one (query)
-            return web.json_response({'status' : 0, 'info': task_info})
+            update = {'$set': {'Status': 'done', 'State': 'view'}}
+            task_col.update_one(query, update)
+            return web.json_response({'status' : 0})
         else:
             return web.json_response({'status' : -1, 'message': 'profile not found'})
     except Exception as err:

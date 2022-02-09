@@ -114,7 +114,7 @@ def set_profile_defaults (prof_j):
         csg_index += 1
         csg["app_id"] = "CSG" + str(csg_index)
         
-        csg["app_gid"] = prof_j['Group'] + '--' + prof_j['Name']
+        csg["app_gid"] = prof_j['Group'] + '-' + prof_j['Name']
 
         csg["server_port"] = 443
         csg["server_ssl"] = 1
@@ -190,11 +190,11 @@ def start (group, name):
         }
 
         server_cmap = kubernetes.client.V1ConfigMap()
-        server_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+        server_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
         server_cmap.data = {}
         server_cmap.data['config.json'] = '''{{
-          "app_id" : "tlsserver--{AppGid}--{AppId}",
-          "app_gid" : "tlsserver--{AppGid}",
+          "app_id" : "tlsserver-{AppGid}-{AppId}",
+          "app_gid" : "tlsserver-{AppGid}",
 
           "server_ip"   : "{ServerIP}",
           "server_port" : {ServerPort},
@@ -210,11 +210,11 @@ def start (group, name):
 
 
         client_cmap = kubernetes.client.V1ConfigMap()
-        client_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
+        client_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
         client_cmap.data = {}
         client_cmap.data['config.json'] = '''{{
-          "app_id" : "tlsclient--{AppGid}--{AppId}",
-          "app_gid" : "tlsclient--{AppGid}",
+          "app_id" : "tlsclient-{AppGid}-{AppId}",
+          "app_gid" : "tlsclient-{AppGid}",
 
           "server_ip"   : "{ServerIP}",
           "server_port" : {ServerPort},
@@ -233,10 +233,10 @@ def start (group, name):
 
         server_pod = kubernetes.client.V1Pod()
 
-        server_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+        server_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
         server_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ServerInterfaceName}", "ips": ["{ServerIP}"]}}]'.format(**input_map)}
         
-        container = kubernetes.client.V1Container(name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+        container = kubernetes.client.V1Container(name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
         container.image = 'tlspack/tlsperf:latest'
         container.command = ["tlsserver.exe"]
         container.args = []
@@ -252,7 +252,7 @@ def start (group, name):
           )
         ]
         volume = kubernetes.client.V1Volume(name='config-volume'
-                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsserver--{AppGid}--{AppId}'.format(**input_map)))
+                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsserver-{AppGid}-{AppId}'.format(**input_map)))
 
         server_pod.spec = kubernetes.client.V1PodSpec(containers=[container], 
                                                       volumes=[volume],
@@ -260,10 +260,10 @@ def start (group, name):
 
         client_pod = kubernetes.client.V1Pod()
 
-        client_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
+        client_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
         client_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPs}]}}]'.format(**input_map)}
         
-        container = kubernetes.client.V1Container(name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
+        container = kubernetes.client.V1Container(name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
         container.image = 'tlspack/tlsperf:latest'
         container.command = ["ping"]
         container.args = ["www.google.com"]
@@ -279,7 +279,7 @@ def start (group, name):
           )
         ]
         volume = kubernetes.client.V1Volume(name='config-volume'
-                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsclient--{AppGid}--{AppId}'.format(**input_map)))
+                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsclient-{AppGid}-{AppId}'.format(**input_map)))
 
         client_pod.spec = kubernetes.client.V1PodSpec(containers=[container], 
                                                       volumes=[volume],
@@ -293,12 +293,12 @@ def start (group, name):
         })
 
     events.append('timestamp: starting server pods')
-    update = { '$set': {'Status': 'starting server', 'Events': events}}
+    update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
     for start_json in start_pod_info:
         try:
           resp = v1Api.delete_namespaced_config_map(namespace='default',
-                                          name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+                                          name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
           events.append('timestamp: stale server config map removed')
         except kubernetes.client.rest.ApiException as err:
           events.append('timestamp: stale server config map not found')
@@ -309,7 +309,7 @@ def start (group, name):
 
         try:
           resp = v1Api.delete_namespaced_pod(namespace='default',
-                                          name='tlsserver--{AppGid}--{AppId}'.format(**input_map))
+                                          name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
           events.append('timestamp: stale server pod removed')
         except kubernetes.client.rest.ApiException as err:
           events.append('timestamp: stale server pod not found')
@@ -318,7 +318,7 @@ def start (group, name):
                                     body=start_json['server_pod'])
 
     events.append('timestamp: checking server pods status')
-    update = { '$set': {'Status': 'checking server', 'Events': events}}
+    update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
     all_pod_started = False
     while not all_pod_started:
@@ -333,12 +333,12 @@ def start (group, name):
     time.sleep(5)
 
     events.append('timestamp: starting client pods')
-    update = { '$set': {'Status': 'starting client', 'Events': events}}
+    update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
     for start_json in start_pod_info:
         try:
           resp = v1Api.delete_namespaced_config_map(namespace='default',
-                                          name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
+                                          name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
           events.append('timestamp: stale client config map removed')
         except kubernetes.client.rest.ApiException as err:
           events.append('timestamp: stale client config map not found')
@@ -348,7 +348,7 @@ def start (group, name):
 
         try:
           resp = v1Api.delete_namespaced_pod(namespace='default',
-                                          name='tlsclient--{AppGid}--{AppId}'.format(**input_map))
+                                          name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
           events.append('timestamp: stale client pod removed')
         except kubernetes.client.rest.ApiException as err:
           events.append('timestamp: stale client pod not found')
@@ -357,7 +357,7 @@ def start (group, name):
                                     body=start_json['client_pod'])
 
     events.append('timestamp: checking client pods status')
-    update = { '$set': {'Status': 'checking client', 'Events': events}}
+    update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
     all_pod_started = False
     while not all_pod_started:
@@ -370,7 +370,7 @@ def start (group, name):
                 break
 
     events.append('timestamp: client, server pods running')
-    update = { '$set': {'Status': 'running', 'Events': events}}
+    update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
 
 
@@ -391,7 +391,7 @@ def stop (group, name):
     profile = profile_col.find_one(query)
 
     events.append('timestamp: stopping clients pods')
-    update = { '$set': {'Status': 'stopping clients', 'Events': events}}
+    update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
 
     for csg in profile['cs_groups']:
@@ -422,7 +422,7 @@ def stop (group, name):
             'ServerInterfaceName': 'eth0',
             'ClientInterfaceName': 'eth0'
         }
-        name = 'tlsclient--{AppGid}--{AppId}'.format(**input_map)
+        name = 'tlsclient-{AppGid}-{AppId}'.format(**input_map)
         try:
           resp = v1Api.delete_namespaced_pod (namespace='default',
                                               name=name)
@@ -436,7 +436,7 @@ def stop (group, name):
           events.append('timestamp: delete client config map failed')
 
     events.append('timestamp: stopping server pods')
-    update = { '$set': {'Status': 'stopping server', 'Events': events}}
+    update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
 
     for csg in profile['cs_groups']:
@@ -467,7 +467,7 @@ def stop (group, name):
             'ServerInterfaceName': 'eth0',
             'ClientInterfaceName': 'eth0'
         }
-        name = 'tlsserver--{AppGid}--{AppId}'.format(**input_map)
+        name = 'tlsserver-{AppGid}-{AppId}'.format(**input_map)
         try:
           resp = v1Api.delete_namespaced_pod (namespace='default',
                                               name=name)
@@ -481,7 +481,7 @@ def stop (group, name):
           events.append('timestamp: delete server config map failed')
 
     events.append('timestamp: client, server pods stopped')
-    update = { '$set': {'Status': 'stopped', 'Events': events}}
+    update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
 
 
@@ -497,45 +497,5 @@ if __name__ == '__main__':
     
     elif cmdArgs.ops == 'stop':
         stop (cmdArgs.group, cmdArgs.name)
-    
-    elif cmdArgs.ops == 'teststart':
-        mongoClient = MongoClient(DB_CSTRING)
-        db = mongoClient[DB_NAME]
-        task_col = db[TASK_LISTS]
-        profile_col = db[PROFILE_LISTS]
 
-        query = {'Group': cmdArgs.group, 'Name': cmdArgs.name}
-
-
-        profile_col.delete_many(query)
-        task_col.delete_many(query)
-
-        profile = {}
-        profile['Group'] = cmdArgs.group
-        profile['Name'] = cmdArgs.name        
-        profile['Type'] = 'TlsClientServer'        
-        set_profile_defaults(profile)
-        profile_col.insert_one(profile)       
-
-        task = {}
-        task['Group'] = cmdArgs.group
-        task['Name'] = cmdArgs.name 
-        task['Status'] = 'init' 
-        task['Events'] = ['timestamp: init']
-        task_col.insert_one(task)
-
-        start (cmdArgs.group, cmdArgs.name)
-    
-    elif cmdArgs.ops == 'teststop':
-        mongoClient = MongoClient(DB_CSTRING)
-        db = mongoClient[DB_NAME]
-        task_col = db[TASK_LISTS]
-
-        query = {'Group': cmdArgs.group, 'Name': cmdArgs.name}
-        update = { '$set': {'Status': 'stopping', 'Events': ['timestamp: stopping']}}
-        task = task_col.find_one(query)
-        if task and task['Status'] not in ['stopped', 'aborted']:
-            task_col.update_one(query, update)
-            
-        stop (cmdArgs.group, cmdArgs.name)
 
