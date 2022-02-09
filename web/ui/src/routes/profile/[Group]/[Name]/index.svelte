@@ -9,7 +9,7 @@
     let transactionsError;
     let transactionsHelp;
 
-    let Cps;
+    let CPS;
     let cpsError;
     let cpsHelp;
 
@@ -29,17 +29,17 @@
     let serverPortSelectHelp;
     let serverPortSelectError;
 
-    function resetState() {
-      Transactions = '100';
+    function setState() {
+      Transactions = $page.stuff.Profile.Transactions.toString();
       transactionsError = false;
 
-      Cps = '1';
+      CPS = $page.stuff.Profile.CPS.toString();
       cpsError = false;
 
-      DataLength = '1';
+      DataLength = $page.stuff.Profile.DataLength.toString();
       dataLengthError = false;
 
-      MaxPipeline = '1';
+      MaxPipeline = $page.stuff.Profile.MaxPipeline.toString();
       maxPipelineError = false;
   
       ClientPort = '';
@@ -48,8 +48,6 @@
       serverPortSelectError = false;
       serverPortSelectError = false;
     }
-
-    resetState();
 
     import { createEventDispatcher, onMount } from "svelte";
 
@@ -73,10 +71,10 @@
     function validateCps () {
       let numRegex = new RegExp('^[0-9]+$', 'i');
 
-      if (Cps.trim() == ''){
+      if (CPS.trim() == ''){
         cpsHelp = 'required';
         cpsError = true;
-      } else if (!numRegex.test(Cps)){
+      } else if (!numRegex.test(CPS)){
         cpsHelp = 'invalid - number only';
         cpsError = true;
       } else {
@@ -289,6 +287,8 @@
 
   onMount ( () => {
 
+    setState();
+
     chartCtxCps = chartCanvasCps.getContext('2d');
     chartCps = new Chart(chartCtxCps, {
         type: 'line',
@@ -382,7 +382,7 @@
       <li class="is-active" ><a>{$page.stuff.Profile.Type} : {$page.stuff.Profile.Name}</a></li>
 
       <!-- svelte-ignore missing-declaration -->
-      <li class="is-active"><a> [ Duration: {Transactions / Cps} seconds ] </a></li>
+      <li class="is-active"><a> [ Duration: {Transactions / CPS} seconds ] </a></li>
   </ul>
 </nav>
 
@@ -419,7 +419,7 @@
                       <input class="input {cpsError ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
-                        bind:value={Cps}
+                        bind:value={CPS}
                         on:input={validateCps}
                       >
                       {#if cpsError}
@@ -514,7 +514,7 @@
                   <button class="button  is-info" on:click={onSaveAndRun} >Save & Run</button>
                 </div>
                 <div class="control">
-                  <button class="button  is-light" on:click={onSave} >Save</button>
+                  <button class="button  is-info is-outlined" on:click={onSave} >Save</button>
                 </div>
               </div>
             </section> 
@@ -568,136 +568,6 @@
     <div class="column is-12">
       <!-- svelte-ignore a11y-label-has-associated-control -->
       <label class="label ">Traffic Paths:</label>
-      <DataTable
-        expandable
-        headers={csGroupHeaders}
-        rows={csGroupsData}
-        size="medium"
-        >
-        <div slot="expanded-row" let:row>
-          <div class="columns is-multiline is-mobile">
-            <div class="column is-2">
-            </div>
-
-            <div class="column is-8">
-              <div class="columns is-multiline is-mobile">
-                <div class="column is-half">
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Client Subnet</label>
-                    <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
-                    </div>
-                  </div>
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Client IPs</label>
-                    <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
-                    </div>
-                  </div>
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Protocol</label>
-                    <div class="select is-fullwidth is-small">
-                      <select class="">
-                        <option>TLS</option>
-                        <option>TCP</option>
-                      </select>
-                    </div>
-                  </div>
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">TLS Version</label>
-                    <div class="select is-fullwidth is-small">
-                      <select class="">
-                        <option>All</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div class="column is-half">
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server Subnet</label>
-                    <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
-                    </div>
-                  </div>
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server IP</label>
-                    <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
-                    </div>
-                  </div>
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server Port</label>
-                    <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
-                    </div>
-                  </div>
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Ciphers</label>
-                    <div class="select is-fullwidth is-small">
-                      <select class="">
-                        <option>All</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div class="column is-full">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server Cert</label>
-                    <div class="control cert-key-height">
-                      <textarea class="textarea cert-key-height" placeholder="input"></textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="column is-full">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server Key</label>
-                    <div class="control cert-key-height">
-                      <textarea class="textarea cert-key-height" placeholder="input"></textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="column is-half">
-                  <div class="field is-grouped">
-                    <div class="control">
-                      <button class="button is-small is-info">Save</button>
-                    </div>
-                    <div class="control">
-                      <button class="button is-small is-light">Cancel</button>
-                    </div>
-                  </div>
-                  <br>
-                </div>
-              </div>
-            </div>
-
-            <div class="column is-2">
-            </div>
-          </div>
-        </div>
-      </DataTable>
-    </div>
-
-    <div class="column is-12">
-      <!-- svelte-ignore a11y-label-has-associated-control -->
-      <label class="label ">Cert Store:</label>
       <DataTable
         expandable
         headers={csGroupHeaders}
