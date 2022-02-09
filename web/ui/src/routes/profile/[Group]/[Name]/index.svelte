@@ -1,21 +1,3 @@
-<!-- <script context="module">
-
-  export async function load ( {params, fetch, session, stuff, url} ) {
-      const group = params.Group;
-      const name = params.Name;
-      return {
-                props: {
-                    Group: json.data.Group,
-                    Name: json.data.Name
-                }
-        }
-  }
-
-</script> -->
-
-
-
-
 <script>
     import { page } from '$app/stores'
     import { routeViewState } from '$lib/store';
@@ -25,10 +7,9 @@
     import { ProgressBar } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
-    // export let Group;
-    // export let Name;
-
+    let markUnsaved
     let Profile = null;
+    let SavedProfile = null;
 
     // let Transactions;
     let transactionsError;
@@ -74,39 +55,79 @@
 
 
     function validateTransactions () {
-      if (Profile.Transactions){
-        transactionsError = false;
-      } else {
-        transactionsHelp = 'invalid';
-        transactionsError = true;
-      }
-    }
+      let numRegex = new RegExp('^[0-9]+$', 'i');
 
-    function validateCps () {
-      if (Profile.CPS){
-        cpsError = false;
+      if (Profile.Transactions.trim() == ''){
+        transactionsHelp = 'required';
+        transactionsError = true;
+      } else if (!numRegex.test(Profile.Transactions)){
+        transactionsHelp = 'invalid - number only';
+        transactionsError = true;
+      } else if (Profile.Transactions != SavedProfile.Transactions){
+        transactionsError = true;
+        transactionsHelp = "modified"
       } else {
-        cpsHelp = 'invalid';
-        cpsError = true;
+        transactionsError = false;
       }
+
+      checkUnsaved();
+    }
+  
+    function validateCps () {
+      let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      if (Profile.CPS.trim() == ''){
+        cpsHelp = 'required';
+        cpsError = true;
+      } else if (!numRegex.test(Profile.CPS)){
+        cpsHelp = 'invalid - number only';
+        cpsError = true;
+      } else if (Profile.CPS != SavedProfile.CPS){
+        cpsError = true;
+        cpsHelp = "modified"
+      } else {
+        cpsError = false;
+      }
+
+      checkUnsaved();
     }
 
     function validateDataLength () {
-      if (Profile.DataLength){
-        dataLengthError = false;
-      } else {
-        dataLengthHelp = 'invalid';
+      let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      if (Profile.DataLength.trim() == ''){
+        dataLengthHelp = 'required';
         dataLengthError = true;
+      } else if (!numRegex.test(Profile.DataLength)){
+        dataLengthHelp = 'invalid - number only';
+        dataLengthError = true;
+      } else if (Profile.DataLength != SavedProfile.DataLength){
+        dataLengthError = true;
+        dataLengthHelp = "modified"
+      } else {
+        dataLengthError = false;
       }
+
+      checkUnsaved();
     }
 
     function validateMaxPipeline () {
-      if (Profile.MaxPipeline){
-        maxPipelineError = false;
-      } else {
-        maxPipelineHelp = 'invalid';
+      let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      if (Profile.MaxPipeline.trim() == ''){
+        maxPipelineHelp = 'required';
         maxPipelineError = true;
+      } else if (!numRegex.test(Profile.MaxPipeline)){
+        maxPipelineHelp = 'invalid - number only';
+        maxPipelineError = true;
+      } else if (Profile.MaxPipeline != SavedProfile.MaxPipeline){
+        maxPipelineError = true;
+        maxPipelineHelp = "modified"
+      } else {
+        maxPipelineError = false;
       }
+
+      checkUnsaved();
     }
 
     function validateClientServerPorts () {
@@ -131,6 +152,27 @@
           clientPortSelectHelp = 'server port selected';
           serverPortSelectHelp = 'client port selected';
       }
+
+      if (!clientPortSelectError &&  Profile.ClientPort !=  SavedProfile.ClientPort) {
+        clientPortSelectError = true;
+        clientPortSelectHelp = "modified";
+      }
+
+      if (!serverPortSelectError &&  Profile.ServerPort !=  SavedProfile.ServerPort) {
+        serverPortSelectError = true;
+        serverPortSelectHelp = "modified";
+      }
+
+      checkUnsaved();
+    }
+
+    function checkUnsaved() {
+      markUnsaved = transactionsError 
+                    || cpsError
+                    || dataLengthError
+                    || maxPipelineError
+                    || clientPortSelectError
+                    || serverPortSelectError;
     }
 
     function validateAllFields() {
@@ -145,17 +187,9 @@
 
       validateAllFields ();
 
-      if (!transactionsError 
-          && !cpsError 
-          && !dataLengthError 
-          && !maxPipelineError
-          && Profile.ClientPort != ''
-          && Profile.ServerPort != '') {
+      checkUnsaved ();
 
-        return true;
-      }
-
-      return false;
+      return !markUnsaved;
     }
 
     async function onSave () {
@@ -290,23 +324,41 @@
 
 
   beforeUpdate ( () => {
-    console.log ('beforeUpdate');
+
     const routeViewKey = 'profile/'+$page.stuff.Profile.Group + '/' + $page.stuff.Profile.Name;
 
     if (Profile 
             && Profile.Group == $page.stuff.Profile.Group
             && Profile.Name == $page.stuff.Profile.Name) {
-      return; //skip updating Profile; as this is case of field update
-    }
 
-    if ($routeViewState[routeViewKey]) {
-      Profile = $routeViewState[routeViewKey];
+      //skip updating Profile; as this is case of field update
+
     } else {
-      Profile = JSON.parse(JSON.stringify($page.stuff.Profile));
-      $routeViewState[routeViewKey] = Profile;
+
+      if ($routeViewState[routeViewKey]) {
+        Profile = $routeViewState[routeViewKey].Profile;
+        SavedProfile = $routeViewState[routeViewKey].SavedProfile;
+
+      } else {
+        Profile = JSON.parse(JSON.stringify($page.stuff.Profile));
+        
+        //all number field to string
+        Profile.Transactions = Profile.Transactions.toString();
+        Profile.CPS = Profile.CPS.toString();
+        Profile.DataLength = Profile.DataLength.toString();
+        Profile.MaxPipeline = Profile.MaxPipeline.toString();
+
+        SavedProfile = JSON.parse(JSON.stringify(Profile));
+
+        $routeViewState[routeViewKey] = {Profile, SavedProfile};
+      }
+
+      validateAllFields ();
+
     }
 
-    validateAllFields ();
+    // markUnsaved = JSON.stringify(Profile) != JSON.stringify(SavedProfile);
+
   });
 
   onMount ( () => {
@@ -405,6 +457,8 @@
 
       <!-- svelte-ignore missing-declaration -->
       <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] </a></li>
+
+      <li class="is-active"><a> [ {markUnsaved}] </a></li>
   </ul>
 </nav>
 
@@ -421,7 +475,7 @@
                     <label class="label ">Transactions</label>
                     <div class="control">
                       <input class="input {transactionsError ? 'is-danger' : ''}" 
-                        type="number" 
+                        type="text" 
                         placeholder=""
                         bind:value={Profile.Transactions}
                         on:input={validateTransactions}
@@ -439,7 +493,7 @@
                     <label class="label ">CPS</label>
                     <div class="control">
                       <input class="input {cpsError ? 'is-danger' : ''}" 
-                        type="number" 
+                        type="text" 
                         placeholder=""
                         bind:value={Profile.CPS}
                         on:input={validateCps}
@@ -457,7 +511,7 @@
                     <label class="label ">DataLength</label>
                     <div class="control">
                       <input class="input {dataLengthError ? 'is-danger' : ''}" 
-                        type="number" 
+                        type="text" 
                         placeholder=""
                         bind:value={Profile.DataLength}
                         on:input={validateDataLength}
@@ -475,7 +529,7 @@
                     <label class="label ">MaxPipeline</label>
                     <div class="control">
                       <input class="input {maxPipelineError ? 'is-danger' : ''}" 
-                        type="number" 
+                        type="text" 
                         placeholder=""
                         bind:value={Profile.MaxPipeline}
                         on:input={validateMaxPipeline}
