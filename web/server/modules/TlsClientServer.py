@@ -105,6 +105,8 @@ def set_profile_defaults (prof_j):
     prof_j["DataLength"] = 1
     prof_j["MaxPipeline"] = 10
     prof_j["Transactions"] = 60000
+    prof_j["ClientPort"] = ""
+    prof_j["ServerPort"] = ""
 
     prof_j['cs_groups'] = []
     csg_index = 0

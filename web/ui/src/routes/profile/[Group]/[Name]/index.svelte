@@ -1,112 +1,111 @@
+<!-- <script context="module">
+
+  export async function load ( {params, fetch, session, stuff, url} ) {
+      const group = params.Group;
+      const name = params.Name;
+      return {
+                props: {
+                    Group: json.data.Group,
+                    Name: json.data.Name
+                }
+        }
+  }
+
+</script> -->
+
+
+
+
 <script>
     import { page } from '$app/stores'
+    import { routeViewState } from '$lib/store';
+
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
     import { ProgressBar } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
-    let Transactions;
+    // export let Group;
+    // export let Name;
+
+    let Profile = null;
+
+    // let Transactions;
     let transactionsError;
     let transactionsHelp;
 
-    let CPS;
+    // let CPS;
     let cpsError;
     let cpsHelp;
 
-    let DataLength;
+    // let DataLength;
     let dataLengthError;
     let dataLengthHelp;
 
-    let MaxPipeline;
+    // let MaxPipeline;
     let maxPipelineError;
     let maxPipelineHelp;
 
-    let ClientPort;
+    // let ClientPort;
     let clientPortSelectHelp;
     let clientPortSelectError;
 
-    let ServerPort;
+    // let ServerPort;
     let serverPortSelectHelp;
     let serverPortSelectError;
 
     function setState() {
-      Transactions = $page.stuff.Profile.Transactions.toString();
+
       transactionsError = false;
 
-      CPS = $page.stuff.Profile.CPS.toString();
       cpsError = false;
 
-      DataLength = $page.stuff.Profile.DataLength.toString();
       dataLengthError = false;
 
-      MaxPipeline = $page.stuff.Profile.MaxPipeline.toString();
       maxPipelineError = false;
   
-      ClientPort = '';
-      ServerPort = '';
-
-      serverPortSelectError = false;
+      clientPortSelectError = false;
       serverPortSelectError = false;
     }
 
-    import { createEventDispatcher, onMount } from "svelte";
+    import { createEventDispatcher, onMount, beforeUpdate } from "svelte";
 
     const dispatch = createEventDispatcher ();
 
 
     function validateTransactions () {
-      let numRegex = new RegExp('^[0-9]+$', 'i');
-
-      if (Transactions.trim() == ''){
-        transactionsHelp = 'required';
-        transactionsError = true;
-      } else if (!numRegex.test(Transactions)){
-        transactionsHelp = 'invalid - number only';
-        transactionsError = true;
-      } else {
+      if (Profile.Transactions){
         transactionsError = false;
+      } else {
+        transactionsHelp = 'invalid';
+        transactionsError = true;
       }
     }
 
     function validateCps () {
-      let numRegex = new RegExp('^[0-9]+$', 'i');
-
-      if (CPS.trim() == ''){
-        cpsHelp = 'required';
-        cpsError = true;
-      } else if (!numRegex.test(CPS)){
-        cpsHelp = 'invalid - number only';
-        cpsError = true;
-      } else {
+      if (Profile.CPS){
         cpsError = false;
+      } else {
+        cpsHelp = 'invalid';
+        cpsError = true;
       }
     }
 
     function validateDataLength () {
-      let numRegex = new RegExp('^[0-9]+$', 'i');
-
-      if (DataLength.trim() == ''){
-        dataLengthHelp = 'required';
-        dataLengthError = true;
-      } else if (!numRegex.test(DataLength)){
-        dataLengthHelp = 'invalid - number only';
-        dataLengthError = true;
-      } else {
+      if (Profile.DataLength){
         dataLengthError = false;
+      } else {
+        dataLengthHelp = 'invalid';
+        dataLengthError = true;
       }
     }
 
     function validateMaxPipeline () {
-      let numRegex = new RegExp('^[0-9]+$', 'i');
-
-      if (MaxPipeline.trim() == ''){
-        maxPipelineHelp = 'required';
-        maxPipelineError = true;
-      } else if (!numRegex.test(MaxPipeline)){
-        maxPipelineHelp = 'invalid - number only';
-        maxPipelineError = true;
-      } else {
+      if (Profile.MaxPipeline){
         maxPipelineError = false;
+      } else {
+        maxPipelineHelp = 'invalid';
+        maxPipelineError = true;
       }
     }
 
@@ -114,19 +113,19 @@
       clientPortSelectError = false;
       serverPortSelectError = false;
 
-      if (ClientPort == '') {
+      if (Profile.ClientPort == '') {
         clientPortSelectError = true;
         clientPortSelectHelp = 'required';
       }
 
-      if (ServerPort == '') {
+      if (Profile.ServerPort == '') {
         serverPortSelectError = true;
         serverPortSelectHelp = 'required';
       }
 
-      if (ClientPort != '' 
-        && ServerPort != ''
-        && ClientPort == ServerPort) {
+      if (Profile.ClientPort != '' 
+        && Profile.ServerPort != ''
+        && Profile.ClientPort == Profile.ServerPort) {
           clientPortSelectError = true;
           serverPortSelectError = true;
           clientPortSelectHelp = 'server port selected';
@@ -134,20 +133,24 @@
       }
     }
 
-    function onCommon () {
-
+    function validateAllFields() {
       validateTransactions ();
       validateCps ();
       validateDataLength ();
       validateMaxPipeline ();
       validateClientServerPorts ();
+    }
+
+    function onCommon () {
+
+      validateAllFields ();
 
       if (!transactionsError 
           && !cpsError 
           && !dataLengthError 
           && !maxPipelineError
-          && ClientPort != ''
-          && ServerPort != '') {
+          && Profile.ClientPort != ''
+          && Profile.ServerPort != '') {
 
         return true;
       }
@@ -285,10 +288,29 @@
         Server: 1}
     ];
 
+
+  beforeUpdate ( () => {
+    console.log ('beforeUpdate');
+    const routeViewKey = 'profile/'+$page.stuff.Profile.Group + '/' + $page.stuff.Profile.Name;
+
+    if (Profile 
+            && Profile.Group == $page.stuff.Profile.Group
+            && Profile.Name == $page.stuff.Profile.Name) {
+      return; //skip updating Profile; as this is case of field update
+    }
+
+    if ($routeViewState[routeViewKey]) {
+      Profile = $routeViewState[routeViewKey];
+    } else {
+      Profile = JSON.parse(JSON.stringify($page.stuff.Profile));
+      $routeViewState[routeViewKey] = Profile;
+    }
+
+    validateAllFields ();
+  });
+
   onMount ( () => {
-
-    setState();
-
+    
     chartCtxCps = chartCanvasCps.getContext('2d');
     chartCps = new Chart(chartCtxCps, {
         type: 'line',
@@ -376,13 +398,13 @@
       <li class="is-active" ><a>Profile</a></li>
 
       <!-- svelte-ignore a11y-missing-attribute -->
-      <li class="is-active" ><a>{$page.stuff.Profile.Group}</a></li>
+      <li class="is-active" ><a>{Profile.Group}</a></li>
 
       <!-- svelte-ignore a11y-missing-attribute -->
-      <li class="is-active" ><a>{$page.stuff.Profile.Type} : {$page.stuff.Profile.Name}</a></li>
+      <li class="is-active" ><a>{Profile.Type} : {Profile.Name}</a></li>
 
       <!-- svelte-ignore missing-declaration -->
-      <li class="is-active"><a> [ Duration: {Transactions / CPS} seconds ] </a></li>
+      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] </a></li>
   </ul>
 </nav>
 
@@ -399,9 +421,9 @@
                     <label class="label ">Transactions</label>
                     <div class="control">
                       <input class="input {transactionsError ? 'is-danger' : ''}" 
-                        type="text" 
+                        type="number" 
                         placeholder=""
-                        bind:value={Transactions}
+                        bind:value={Profile.Transactions}
                         on:input={validateTransactions}
                       >
                       {#if transactionsError}
@@ -417,9 +439,9 @@
                     <label class="label ">CPS</label>
                     <div class="control">
                       <input class="input {cpsError ? 'is-danger' : ''}" 
-                        type="text" 
+                        type="number" 
                         placeholder=""
-                        bind:value={CPS}
+                        bind:value={Profile.CPS}
                         on:input={validateCps}
                       >
                       {#if cpsError}
@@ -435,9 +457,9 @@
                     <label class="label ">DataLength</label>
                     <div class="control">
                       <input class="input {dataLengthError ? 'is-danger' : ''}" 
-                        type="text" 
+                        type="number" 
                         placeholder=""
-                        bind:value={DataLength}
+                        bind:value={Profile.DataLength}
                         on:input={validateDataLength}
                       >
                       {#if dataLengthError}
@@ -453,9 +475,9 @@
                     <label class="label ">MaxPipeline</label>
                     <div class="control">
                       <input class="input {maxPipelineError ? 'is-danger' : ''}" 
-                        type="text" 
+                        type="number" 
                         placeholder=""
-                        bind:value={MaxPipeline}
+                        bind:value={Profile.MaxPipeline}
                         on:input={validateMaxPipeline}
                       >
                       {#if maxPipelineError}
@@ -472,7 +494,7 @@
                     <div class="control">
                       <div class="select is-fullwidth ">
                         <select 
-                          bind:value={ClientPort} 
+                          bind:value={Profile.ClientPort} 
                           on:change={validateClientServerPorts}
                           class="input {clientPortSelectError ? 'is-danger' : ''}"
                           >
@@ -494,7 +516,7 @@
                     <div class="control">
                       <div class="select is-fullwidth ">
                         <select 
-                          bind:value={ServerPort} 
+                          bind:value={Profile.ServerPort} 
                           on:change={validateClientServerPorts}
                           class="input {serverPortSelectError ? 'is-danger' : ''}"
                           >
