@@ -236,8 +236,14 @@ async def api_delete_profile(request):
         task_col = db[TASK_LISTS]
 
         query = {'Group': group, 'Name': name}
+        task = task_col.find_one(query, {'_id' : False})
 
-        # check if running ??
+        if task['State'] == 'run':
+            return web.json_response({'status' : -1, 'message': 'is running'})
+
+        if task['Status'] == 'progress':
+            return web.json_response({'status' : -1, 'message': '{} in porgress'.format(task['Type'])})
+
         profile_col.delete_one(query)
         task_col.delete_one(query)
 
@@ -313,7 +319,7 @@ async def api_get_profile_run(request):
         if task:
             return web.json_response({'status' : 0, 'info': task})
         else:
-            return web.json_response({'status' : -1, 'message': 'Not running'})
+            return web.json_response({'status' : -1, 'message': 'profile not found'})
     except:
         return web.json_response({'status' : -1, 'message': 'tbd'})
 
@@ -379,8 +385,8 @@ async def api_stop_profile_run(request):
             if task['State'] == 'view':
                 return web.json_response({'status' : -1, 'message': 'not running'})
 
-            if task['Status'] == 'progress' and task['Type'] == 'stop_run':
-                return web.json_response({'status' : -1, 'message': 'stop already in porgress'})
+            if task['Status'] == 'progress':
+                return web.json_response({'status' : -1, 'message': '{} already in porgress'.format(task['Type'])})
 
             update = { '$set': {'Type': 'stop_run', 'Status': 'progress', 'Events': []}}
             task_col.update_one(query, update)
