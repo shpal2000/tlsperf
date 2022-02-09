@@ -264,8 +264,8 @@ def start (group, name):
         
         container = kubernetes.client.V1Container(name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
         container.image = 'tlspack/tlsperf:latest'
-        container.command = ["ping"]
-        container.args = ["www.google.com"]
+        container.command = ["tlsclient.exe"]
+        container.args = []
         container.env = [
           kubernetes.client.V1EnvVar(
             name='MY_POD_IP',
