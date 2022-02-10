@@ -459,7 +459,7 @@
       <li class="is-active" ><a>{Profile.Type} : {Profile.Name}</a></li>
 
       <!-- svelte-ignore a11y-missing-attribute -->
-      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] [ <strong class="{markUnsaved ? 'errmsg' : ''}">{markUnsaved ? "Missing/Unsaved Fields" : ""}</strong> ] </a></li>
+      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] [<strong class="{markUnsaved ? 'errmsg' : ''}">{markUnsaved ? " Missing/Unsaved Fields " : ""}</strong> ] </a></li>
   </ul>
 </nav>
 
@@ -745,14 +745,7 @@
                 </div>
                 <div class="column is-half">
                   <div class="field is-grouped">
-                    <div class="control">
-                      <button class="button is-small is-info">Save</button>
-                    </div>
-                    <div class="control">
-                      <button class="button is-small is-light">Cancel</button>
-                    </div>
                   </div>
-                  <br>
                 </div>
               </div>
             </div>

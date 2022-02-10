@@ -1,4 +1,6 @@
 import os
+from pickle import FALSE
+import signal
 import aiohttp
 from aiohttp import web
 import asyncio
@@ -331,14 +333,18 @@ async def task_start_profile_run(group, name):
                                                     '--group', group,
                                                     '--name', name)
 
-    await proc.wait()
-
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
 
     query = {'Group': group, 'Name': name}
-    task_col = db[TASK_LISTS]
 
+    task_col = db[TASK_LISTS]
+    update = {'$set': {'Pid': proc.pid}}
+    task_col.update_one(query, update)
+
+    await proc.wait()
+
+    task_col = db[TASK_LISTS]
     update = {'$set': {'Status': 'done'}}
     task_col.update_one(query, update)
 
@@ -398,6 +404,7 @@ async def api_stop_profile_run(request):
         r_json = json.loads(r_text)
         group = r_json['Group']
         name = r_json['Name']
+        force = r_json.get('Force', False)
 
         query = {'Group': group, 'Name': name}
         
@@ -415,7 +422,10 @@ async def api_stop_profile_run(request):
                 return web.json_response({'status' : -1, 'message': 'not running'})
 
             if task['Status'] == 'progress':
-                return web.json_response({'status' : -1, 'message': '{} already in porgress'.format(task['Type'])})
+                if task['Type'] == 'start_run' and force:
+                    os.kill(task['Pid'], signal.SIGKILL)
+                else:
+                    return web.json_response({'status' : -1, 'message': '{} already in porgress'.format(task['Type'])})
 
             update = { '$set': {'Type': 'stop_run', 'Status': 'progress', 'Events': []}}
             task_col.update_one(query, update)
