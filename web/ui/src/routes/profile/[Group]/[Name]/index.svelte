@@ -29,11 +29,11 @@
 
     // let ClientPort;
     let clientPortSelectHelp;
-    let clientPortSelectError;
+    let clientPortError;
 
     // let ServerPort;
     let serverPortSelectHelp;
-    let serverPortSelectError;
+    let serverPortError;
 
     function setState() {
 
@@ -45,8 +45,8 @@
 
       maxPipelineError = false;
   
-      clientPortSelectError = false;
-      serverPortSelectError = false;
+      clientPortError = false;
+      serverPortError = false;
     }
 
     import { createEventDispatcher, onMount, beforeUpdate } from "svelte";
@@ -130,37 +130,39 @@
       checkUnsaved();
     }
 
-    function validateClientServerPorts () {
-      clientPortSelectError = false;
-      serverPortSelectError = false;
+    function validateClientPort () {
+      let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
 
-      if (Profile.ClientPort == '') {
-        clientPortSelectError = true;
+      if (Profile.ClientPort.trim() == ''){
         clientPortSelectHelp = 'required';
+        clientPortError = true;
+      } else if (!numRegex.test(Profile.ClientPort)){
+        clientPortSelectHelp = 'invalid - node:port';
+        clientPortError = true;
+      } else if (Profile.ClientPort != SavedProfile.ClientPort){
+        clientPortError = true;
+        clientPortSelectHelp = "modified"
+      } else {
+        clientPortError = false;
       }
 
-      if (Profile.ServerPort == '') {
-        serverPortSelectError = true;
+      checkUnsaved();
+    }
+
+    function validateServerPort () {
+      let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
+
+      if (Profile.ServerPort.trim() == ''){
         serverPortSelectHelp = 'required';
-      }
-
-      if (Profile.ClientPort != '' 
-        && Profile.ServerPort != ''
-        && Profile.ClientPort == Profile.ServerPort) {
-          clientPortSelectError = true;
-          serverPortSelectError = true;
-          clientPortSelectHelp = 'server port selected';
-          serverPortSelectHelp = 'client port selected';
-      }
-
-      if (!clientPortSelectError &&  Profile.ClientPort !=  SavedProfile.ClientPort) {
-        clientPortSelectError = true;
-        clientPortSelectHelp = "modified";
-      }
-
-      if (!serverPortSelectError &&  Profile.ServerPort !=  SavedProfile.ServerPort) {
-        serverPortSelectError = true;
-        serverPortSelectHelp = "modified";
+        serverPortError = true;
+      } else if (!numRegex.test(Profile.ServerPort)){
+        serverPortSelectHelp = 'invalid - node:port';
+        serverPortError = true;
+      } else if (Profile.ServerPort != SavedProfile.ServerPort){
+        serverPortError = true;
+        serverPortSelectHelp = "modified"
+      } else {
+        serverPortError = false;
       }
 
       checkUnsaved();
@@ -171,8 +173,8 @@
                     || cpsError
                     || dataLengthError
                     || maxPipelineError
-                    || clientPortSelectError
-                    || serverPortSelectError;
+                    || clientPortError
+                    || serverPortError;
     }
 
     function validateAllFields() {
@@ -180,7 +182,8 @@
       validateCps ();
       validateDataLength ();
       validateMaxPipeline ();
-      validateClientServerPorts ();
+      validateClientPort ();
+      validateServerPort ();
     }
 
     function onCommon () {
@@ -455,10 +458,8 @@
       <!-- svelte-ignore a11y-missing-attribute -->
       <li class="is-active" ><a>{Profile.Type} : {Profile.Name}</a></li>
 
-      <!-- svelte-ignore missing-declaration -->
-      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] </a></li>
-
-      <li class="is-active"><a> [ {markUnsaved}] </a></li>
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] [ <strong class="{markUnsaved ? 'errmsg' : ''}">{markUnsaved ? "Missing/Unsaved Fields" : ""}</strong> ] </a></li>
   </ul>
 </nav>
 
@@ -546,19 +547,15 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">ClientPort</label>
                     <div class="control">
-                      <div class="select is-fullwidth ">
-                        <select 
-                          bind:value={Profile.ClientPort} 
-                          on:change={validateClientServerPorts}
-                          class="input {clientPortSelectError ? 'is-danger' : ''}"
-                          >
-                            <option>Node1:ens192</option>
-                            <option>Node1:ens224</option>
-                        </select>
-                        {#if clientPortSelectError}
-                        <p class="help">{clientPortSelectHelp}</p>
-                        {/if}
-                      </div>
+                      <input class="input {clientPortError ? 'is-danger' : ''}"
+                        bind:value={Profile.ClientPort}
+                        type="text"
+                        placeholder=""
+                        on:input={validateClientPort}
+                      >
+                      {#if clientPortError}
+                      <p class="help">{clientPortSelectHelp}</p>
+                      {/if}
                     </div>
                   </div>
                 </div>
@@ -568,19 +565,15 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">ServerPort</label>
                     <div class="control">
-                      <div class="select is-fullwidth ">
-                        <select 
-                          bind:value={Profile.ServerPort} 
-                          on:change={validateClientServerPorts}
-                          class="input {serverPortSelectError ? 'is-danger' : ''}"
-                          >
-                          <option>Node1:ens192</option>
-                          <option>Node1:ens224</option>
-                        </select>
-                        {#if serverPortSelectError}
-                        <p class="help">{serverPortSelectHelp}</p>
-                        {/if}
-                      </div>
+                      <input class="input {serverPortError ? 'is-danger' : ''}"
+                        bind:value={Profile.ServerPort}
+                        type="text"
+                        placeholder=""
+                        on:input={validateServerPort}
+                      >
+                      {#if serverPortError}
+                      <p class="help">{serverPortSelectHelp}</p>
+                      {/if}
                     </div>
                   </div>
                 </div>
@@ -795,9 +788,7 @@
     }
 
     .errmsg {
-      background-color: transparent;
       color: red;
-      overflow: auto;
     }
 
 </style>
