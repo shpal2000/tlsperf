@@ -68,35 +68,35 @@ IiTeT4+t5dboeDFh3HNsLqlh9w==
 def set_profile_defaults (prof_j):
 
     cs_groups = [
-        { "client_ips" :  ["12.20.50.1/16", "12.20.50.2/16"], 
+        { "client_ips" :  ["12.20.50.1/16"], 
             "server_ip": "12.20.100.1/16"
         }
         # ,
-        # { "client_ips" :  ["12.20.51.1/16", "12.20.51.2/16"], 
+        # { "client_ips" :  ["12.20.51.1/16"], 
         #     "server_ip": "12.20.101.1/16"
         # },
-        # { "client_ips" :  ["12.20.52.1/16", "12.20.52.2/16"], 
+        # { "client_ips" :  ["12.20.52.1/16"], 
         #     "server_ip": "12.20.102.1/16"
         # },
-        # { "client_ips" :  ["12.20.53.1/16", "12.20.53.2/16"], 
+        # { "client_ips" :  ["12.20.53.1/16"], 
         #     "server_ip": "12.20.103.1/16"
         # },
-        # { "client_ips" :  ["12.20.54.1/16", "12.20.54.2/16"], 
+        # { "client_ips" :  ["12.20.54.1/16"], 
         #     "server_ip": "12.20.104.1/16"
         # },
-        # { "client_ips" :  ["12.20.55.1/16", "12.20.55.2/16"], 
+        # { "client_ips" :  ["12.20.55.1/16"], 
         #     "server_ip": "12.20.105.1/16"
         # },
-        # { "client_ips" :  ["12.20.56.1/16", "12.20.56.2/16"], 
+        # { "client_ips" :  ["12.20.56.1/16"], 
         #     "server_ip": "12.20.106.1/16"
         # },
-        # { "client_ips" :  ["12.20.57.1/16", "12.20.57.2/16"], 
+        # { "client_ips" :  ["12.20.57.1/16"], 
         #     "server_ip": "12.20.107.1/16"
         # },
-        # { "client_ips" :  ["12.20.58.1/16", "12.20.58.2/16"], 
+        # { "client_ips" :  ["12.20.58.1/16"], 
         #     "server_ip": "12.20.108.1/16"
         # },
-        # { "client_ips" :  ["12.20.59.1/16", "12.20.59.2/16"], 
+        # { "client_ips" :  ["12.20.59.1/16"], 
         #     "server_ip": "12.20.109.1/16"
         # }
     ]    
@@ -105,8 +105,8 @@ def set_profile_defaults (prof_j):
     prof_j["DataLength"] = 1
     prof_j["MaxPipeline"] = 10
     prof_j["Transactions"] = 60000
-    prof_j["ClientPort"] = ""
-    prof_j["ServerPort"] = ""
+    prof_j["ClientIface"] = ""
+    prof_j["ServerIface"] = ""
 
     prof_j['cs_groups'] = []
     csg_index = 0

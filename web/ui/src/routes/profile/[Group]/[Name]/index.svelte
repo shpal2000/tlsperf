@@ -11,63 +11,49 @@
     let Profile = null;
     let SavedProfile = null;
 
-    // let Transactions;
-    let transactionsError;
-    let transactionsHelp;
-
-    // let CPS;
-    let cpsError;
-    let cpsHelp;
-
-    // let DataLength;
-    let dataLengthError;
-    let dataLengthHelp;
-
-    // let MaxPipeline;
-    let maxPipelineError;
-    let maxPipelineHelp;
-
-    // let ClientPort;
-    let clientPortSelectHelp;
-    let clientPortError;
-
-    // let ServerPort;
-    let serverPortSelectHelp;
-    let serverPortError;
-
-    function setState() {
-
-      transactionsError = false;
-
-      cpsError = false;
-
-      dataLengthError = false;
-
-      maxPipelineError = false;
-  
-      clientPortError = false;
-      serverPortError = false;
-    }
 
     import { createEventDispatcher, onMount, beforeUpdate } from "svelte";
 
     const dispatch = createEventDispatcher ();
 
+    function validateClientIPs (Csg, savedCsg) {
+      let numRegex = new RegExp('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/[1-2][0-9]?|3[0-2]?$', );
+
+      console.log (Csg);
+      console.log (savedCsg);
+
+      console.log (numRegex.test(Csg.client_ips));
+      
+      if (Csg.client_ips.trim() == ''){
+        Csg.client_ipsHelp = 'required';
+        Csg.client_ipsError = true;
+      } else if (!numRegex.test(Csg.client_ips)){
+        Csg.client_ipsHelp = 'invalid - ip/cidr';
+        Csg.client_ipsError = true;
+      } else if (Csg.client_ips != savedCsg.client_ips){
+        Csg.client_ipsError = true;
+        Csg.client_ipsHelp = "modified"
+      } else {
+        Csg.client_ipsError = false;
+      }
+
+      checkUnsaved();
+    }
 
     function validateTransactions () {
       let numRegex = new RegExp('^[0-9]+$', 'i');
 
       if (Profile.Transactions.trim() == ''){
-        transactionsHelp = 'required';
-        transactionsError = true;
+        Profile.transactionsHelp = 'required';
+        Profile.transactionsError = true;
       } else if (!numRegex.test(Profile.Transactions)){
-        transactionsHelp = 'invalid - number only';
-        transactionsError = true;
+        Profile.transactionsHelp = 'invalid - number only';
+        Profile.transactionsError = true;
       } else if (Profile.Transactions != SavedProfile.Transactions){
-        transactionsError = true;
-        transactionsHelp = "modified"
+        Profile.transactionsError = true;
+        Profile.transactionsHelp = "modified"
       } else {
-        transactionsError = false;
+        Profile.transactionsError = false;
       }
 
       checkUnsaved();
@@ -77,16 +63,16 @@
       let numRegex = new RegExp('^[0-9]+$', 'i');
 
       if (Profile.CPS.trim() == ''){
-        cpsHelp = 'required';
-        cpsError = true;
+        Profile.cpsHelp = 'required';
+        Profile.cpsError = true;
       } else if (!numRegex.test(Profile.CPS)){
-        cpsHelp = 'invalid - number only';
-        cpsError = true;
+        Profile.cpsHelp = 'invalid - number only';
+        Profile.cpsError = true;
       } else if (Profile.CPS != SavedProfile.CPS){
-        cpsError = true;
-        cpsHelp = "modified"
+        Profile.cpsError = true;
+        Profile.cpsHelp = "modified"
       } else {
-        cpsError = false;
+        Profile.cpsError = false;
       }
 
       checkUnsaved();
@@ -96,16 +82,16 @@
       let numRegex = new RegExp('^[0-9]+$', 'i');
 
       if (Profile.DataLength.trim() == ''){
-        dataLengthHelp = 'required';
-        dataLengthError = true;
+        Profile.dataLengthHelp = 'required';
+        Profile.dataLengthError = true;
       } else if (!numRegex.test(Profile.DataLength)){
-        dataLengthHelp = 'invalid - number only';
-        dataLengthError = true;
+        Profile.dataLengthHelp = 'invalid - number only';
+        Profile.dataLengthError = true;
       } else if (Profile.DataLength != SavedProfile.DataLength){
-        dataLengthError = true;
-        dataLengthHelp = "modified"
+        Profile.dataLengthError = true;
+        Profile.dataLengthHelp = "modified"
       } else {
-        dataLengthError = false;
+        Profile.dataLengthError = false;
       }
 
       checkUnsaved();
@@ -115,66 +101,75 @@
       let numRegex = new RegExp('^[0-9]+$', 'i');
 
       if (Profile.MaxPipeline.trim() == ''){
-        maxPipelineHelp = 'required';
-        maxPipelineError = true;
+        Profile.maxPipelineHelp = 'required';
+        Profile.maxPipelineError = true;
       } else if (!numRegex.test(Profile.MaxPipeline)){
-        maxPipelineHelp = 'invalid - number only';
-        maxPipelineError = true;
+        Profile.maxPipelineHelp = 'invalid - number only';
+        Profile.maxPipelineError = true;
       } else if (Profile.MaxPipeline != SavedProfile.MaxPipeline){
-        maxPipelineError = true;
-        maxPipelineHelp = "modified"
+        Profile.maxPipelineError = true;
+        Profile.maxPipelineHelp = "modified"
       } else {
-        maxPipelineError = false;
+        Profile.maxPipelineError = false;
       }
 
       checkUnsaved();
     }
 
-    function validateClientPort () {
+    function validateClientIface () {
       let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
 
-      if (Profile.ClientPort.trim() == ''){
-        clientPortSelectHelp = 'required';
-        clientPortError = true;
-      } else if (!numRegex.test(Profile.ClientPort)){
-        clientPortSelectHelp = 'invalid - node:port';
-        clientPortError = true;
-      } else if (Profile.ClientPort != SavedProfile.ClientPort){
-        clientPortError = true;
-        clientPortSelectHelp = "modified"
+      if (Profile.ClientIface.trim() == ''){
+        Profile.clientIfaceHelp = 'required';
+        Profile.clientIfaceError = true;
+      } else if (!numRegex.test(Profile.ClientIface)){
+        Profile.clientIfaceHelp = 'invalid - node:port';
+        Profile.clientIfaceError = true;
+      } else if (Profile.ClientIface != SavedProfile.ClientIface){
+        Profile.clientIfaceError = true;
+        Profile.clientIfaceHelp = "modified"
       } else {
-        clientPortError = false;
+        Profile.clientIfaceError = false;
       }
 
       checkUnsaved();
     }
 
-    function validateServerPort () {
+    function validateServerIface () {
       let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
 
-      if (Profile.ServerPort.trim() == ''){
-        serverPortSelectHelp = 'required';
-        serverPortError = true;
-      } else if (!numRegex.test(Profile.ServerPort)){
-        serverPortSelectHelp = 'invalid - node:port';
-        serverPortError = true;
-      } else if (Profile.ServerPort != SavedProfile.ServerPort){
-        serverPortError = true;
-        serverPortSelectHelp = "modified"
+      if (Profile.ServerIface.trim() == ''){
+        Profile.serverIfaceHelp = 'required';
+        Profile.serverIfaceError = true;
+      } else if (!numRegex.test(Profile.ServerIface)){
+        Profile.serverIfaceHelp = 'invalid - node:port';
+        Profile.serverIfaceError = true;
+      } else if (Profile.ServerIface != SavedProfile.ServerIface){
+        Profile.serverIfaceError = true;
+        Profile.serverIfaceHelp = "modified"
       } else {
-        serverPortError = false;
+        Profile.serverIfaceError = false;
       }
 
       checkUnsaved();
     }
 
     function checkUnsaved() {
-      markUnsaved = transactionsError 
-                    || cpsError
-                    || dataLengthError
-                    || maxPipelineError
-                    || clientPortError
-                    || serverPortError;
+      markUnsaved = Profile.transactionsError 
+                    || Profile.cpsError
+                    || Profile.dataLengthError
+                    || Profile.maxPipelineError
+                    || Profile.clientIfaceError
+                    || Profile.serverIfaceError;
+
+      for (const csg of Profile.cs_groups) {
+        csg.fieldError = false;
+        if (csg.client_ipsError) {
+          markUnsaved = true;
+          csg.fieldError = true;
+          break;
+        }
+      }
     }
 
     function validateAllFields() {
@@ -182,8 +177,12 @@
       validateCps ();
       validateDataLength ();
       validateMaxPipeline ();
-      validateClientPort ();
-      validateServerPort ();
+      validateClientIface ();
+      validateServerIface ();
+
+      for (let i=0; i < Profile.cs_groups.length; i++) {
+        validateClientIPs (Profile.cs_groups[i], SavedProfile.cs_groups[i])
+      }
     }
 
     function onCommon () {
@@ -306,6 +305,10 @@
         Profile.CPS = Profile.CPS.toString();
         Profile.DataLength = Profile.DataLength.toString();
         Profile.MaxPipeline = Profile.MaxPipeline.toString();
+
+        for (const csg of Profile.cs_groups) {
+          csg.client_ips = csg.client_ips.join(',')
+        }
 
         SavedProfile = JSON.parse(JSON.stringify(Profile));
 
@@ -431,14 +434,14 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Transactions</label>
                     <div class="control">
-                      <input class="input {transactionsError ? 'is-danger' : ''}" 
+                      <input class="input {Profile.transactionsError ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.Transactions}
                         on:input={validateTransactions}
                       >
-                      {#if transactionsError}
-                        <p class="help">{transactionsHelp}</p>
+                      {#if Profile.transactionsError}
+                        <p class="help">{Profile.transactionsHelp}</p>
                       {/if}
                     </div>
                   </div>
@@ -449,14 +452,14 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">CPS</label>
                     <div class="control">
-                      <input class="input {cpsError ? 'is-danger' : ''}" 
+                      <input class="input {Profile.cpsError ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.CPS}
                         on:input={validateCps}
                       >
-                      {#if cpsError}
-                        <p class="help">{cpsHelp}</p>
+                      {#if Profile.cpsError}
+                        <p class="help">{Profile.cpsHelp}</p>
                       {/if}
                     </div>
                   </div>
@@ -467,14 +470,14 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">DataLength</label>
                     <div class="control">
-                      <input class="input {dataLengthError ? 'is-danger' : ''}" 
+                      <input class="input {Profile.dataLengthError ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.DataLength}
                         on:input={validateDataLength}
                       >
-                      {#if dataLengthError}
-                        <p class="help">{dataLengthHelp}</p>
+                      {#if Profile.dataLengthError}
+                        <p class="help">{Profile.dataLengthHelp}</p>
                       {/if}
                     </div>
                   </div>
@@ -485,14 +488,14 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">MaxPipeline</label>
                     <div class="control">
-                      <input class="input {maxPipelineError ? 'is-danger' : ''}" 
+                      <input class="input {Profile.maxPipelineError ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.MaxPipeline}
                         on:input={validateMaxPipeline}
                       >
-                      {#if maxPipelineError}
-                        <p class="help">{maxPipelineHelp}</p>
+                      {#if Profile.maxPipelineError}
+                        <p class="help">{Profile.maxPipelineHelp}</p>
                       {/if}
                     </div>
                   </div>
@@ -501,16 +504,16 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">ClientPort</label>
+                    <label class="label ">ClientIface</label>
                     <div class="control">
-                      <input class="input {clientPortError ? 'is-danger' : ''}"
-                        bind:value={Profile.ClientPort}
+                      <input class="input {Profile.clientIfaceError ? 'is-danger' : ''}"
+                        bind:value={Profile.ClientIface}
                         type="text"
                         placeholder=""
-                        on:input={validateClientPort}
+                        on:input={validateClientIface}
                       >
-                      {#if clientPortError}
-                      <p class="help">{clientPortSelectHelp}</p>
+                      {#if Profile.clientIfaceError}
+                      <p class="help">{Profile.clientIfaceHelp}</p>
                       {/if}
                     </div>
                   </div>
@@ -519,16 +522,16 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">ServerPort</label>
+                    <label class="label ">ServerIface</label>
                     <div class="control">
-                      <input class="input {serverPortError ? 'is-danger' : ''}"
-                        bind:value={Profile.ServerPort}
+                      <input class="input {Profile.serverIfaceError ? 'is-danger' : ''}"
+                        bind:value={Profile.ServerIface}
                         type="text"
                         placeholder=""
-                        on:input={validateServerPort}
+                        on:input={validateServerIface}
                       >
-                      {#if serverPortError}
-                      <p class="help">{serverPortSelectHelp}</p>
+                      {#if Profile.serverIfaceError}
+                      <p class="help">{Profile.serverIfaceHelp}</p>
                       {/if}
                     </div>
                   </div>
@@ -564,11 +567,13 @@
       <div class="tile is-ancestor is-mobile">
         <div class="tile is-6 is-parent">
           <div class="tile is-child">
+            <!-- svelte-ignore a11y-label-has-associated-control -->
             <label class="label ">CPS:</label>
           </div>
         </div>
         <div class="tile is-6 is-parent">
           <div class="tile is-child">
+            <!-- svelte-ignore a11y-label-has-associated-control -->
             <label class="label ">Throughput:</label>
           </div>
         </div>
@@ -612,10 +617,15 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Client IPs</label>
                     <div class="control">
-                      <input class="input " 
+                      <input class="input {Profile.cs_groups[row.index].client_ipsError ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
-                        bind:value={Profile.cs_groups[row.index].client_ips}>
+                        bind:value={Profile.cs_groups[row.index].client_ips}
+                        on:input={() => validateClientIPs(Profile.cs_groups[row.index], SavedProfile.cs_groups[row.index])}
+                      >
+                      {#if Profile.cs_groups[row.index].client_ipsError}
+                        <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
+                      {/if}
                     </div>
                   </div>
 
@@ -680,8 +690,8 @@
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Server Cert</label>
-                    <div class="control cert-key-height">
-                      <textarea class="textarea cert-key-height " 
+                    <div class="control">
+                      <textarea class="textarea cert-margin" rows="4"
                       placeholder=""
                       bind:value={Profile.cs_groups[row.index].server_cert}
                       />
@@ -692,8 +702,8 @@
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Server Key</label>
-                    <div class="control cert-key-height">
-                      <textarea class="textarea cert-key-height " 
+                    <div class="control">
+                      <textarea class="textarea cert-margin" rows="4"
                       placeholder=""
                       bind:value={Profile.cs_groups[row.index].server_key}
                       />
@@ -739,6 +749,11 @@
 
     .errmsg {
       color: red;
+    }
+
+    .cert-margin {
+      padding-top: 0;
+      padding-bottom: 0;
     }
 
 </style>
