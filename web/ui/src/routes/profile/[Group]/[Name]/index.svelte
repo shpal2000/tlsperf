@@ -236,55 +236,11 @@
     let chartLatency;
 
     const csGroupHeaders = [
-      {key: 'Group', value: 'Group'},
-      {key: 'Client', value: 'Client'},
-      {key: 'Server', value: 'Server'},
-      {key: 'Protocol', value: 'Protocol'},
-      {key: 'Port', value: 'Port'},
-    ];
-
-    const csGroupsData = [
-      {id: 1,
-        Group: 'Group1',
-        Client: '12.51.0.0/16',
-        Server: '12.61.0.0/16',
-        Protocol: 'SSL',
-        Port: 443},
-
-        {id: 2,
-        Group: 'Group2',
-        Client: '12.52.0.0/16',
-        Server: '12.62.0.0/16',
-        Protocol: 'SSL',
-        Port: 443},
-
-        {id: 3,
-        Group: 'Group3',
-        Client: '12.53.0.0/16',
-        Server: '12.63.0.0/16',
-        Protocol: 'SSL',
-        Port: 443},
-
-        {id: 4,
-        Group: 'Group4',
-        Client: '12.54.0.0/16',
-        Server: '12.64.0.0/16',
-        Protocol: 'SSL',
-        Port: 443},
-
-        {id: 5,
-        Group: 'Group5',
-        Client: '12.55.0.0/16',
-        Server: '12.65.0.0/16',
-        Protocol: 'SSL',
-        Port: 443},
-
-        {id: 6,
-        Group: 'Group6',
-        Client: '12.56.0.0/16',
-        Server: '12.66.0.0/16',
-        Protocol: 'SSL',
-        Port: 443}
+      {key: 'app_id', value: 'Group'},
+      {key: 'client_ips', value: 'Client'},
+      {key: 'server_ip', value: 'Server'},
+      {key: 'server_ssl', value: 'Protocol'},
+      {key: 'server_port', value: 'Port'},
     ];
 
     const statsHeaders = [
@@ -580,7 +536,7 @@
               </div>
               <div class="field is-grouped">
                 <div class="control">
-                  <button class="button  is-info" on:click={onSaveAndRun} >Save & Run</button>
+                  <button class="button  is-info" on:click={onSaveAndRun} >Run</button>
                 </div>
                 <div class="control">
                   <button class="button  is-info is-outlined" on:click={onSave} >Save</button>
@@ -640,7 +596,7 @@
       <DataTable
         expandable
         headers={csGroupHeaders}
-        rows={csGroupsData}
+        rows={Profile.cs_groups}
         size="medium"
         >
         <div slot="expanded-row" let:row>
@@ -651,38 +607,33 @@
             <div class="column is-8">
               <div class="columns is-multiline is-mobile">
                 <div class="column is-half">
-                  <br>
+
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Client Subnet</label>
+                    <label class="label ">Client IPs</label>
                     <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
+                      <input class="input " 
+                        type="text" 
+                        placeholder=""
+                        bind:value={Profile.cs_groups[row.index].client_ips}>
                     </div>
                   </div>
-                  <br>
+
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Client IPs</label>
-                    <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
-                    </div>
-                  </div>
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Protocol</label>
-                    <div class="select is-fullwidth is-small">
+                    <label class="label ">Protocol</label>
+                    <div class="select is-fullwidth ">
                       <select class="">
                         <option>TLS</option>
                         <option>TCP</option>
                       </select>
                     </div>
                   </div>
-                  <br>
+
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">TLS Version</label>
-                    <div class="select is-fullwidth is-small">
+                    <label class="label ">TLS Version</label>
+                    <div class="select is-fullwidth ">
                       <select class="">
                         <option>All</option>
                       </select>
@@ -690,35 +641,35 @@
                   </div>
                 </div>
                 <div class="column is-half">
-                  <br>
+
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server Subnet</label>
+                    <label class="label ">Server IP</label>
                     <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
+                      <input class="input " 
+                      type="text" 
+                      placeholder=""
+                      bind:value={Profile.cs_groups[row.index].server_ip}
+                      >
                     </div>
                   </div>
-                  <br>
+
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server IP</label>
+                    <label class="label ">Server Port</label>
                     <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
+                      <input class="input " 
+                      type="text" 
+                      placeholder=""
+                      bind:value={Profile.cs_groups[row.index].server_port}
+                      >
                     </div>
                   </div>
-                  <br>
+
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server Port</label>
-                    <div class="control">
-                      <input class="input is-small" type="text" placeholder="Text input">
-                    </div>
-                  </div>
-                  <br>
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Ciphers</label>
-                    <div class="select is-fullwidth is-small">
+                    <label class="label ">Ciphers</label>
+                    <div class="select is-fullwidth ">
                       <select class="">
                         <option>All</option>
                       </select>
@@ -728,18 +679,24 @@
                 <div class="column is-full">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server Cert</label>
+                    <label class="label ">Server Cert</label>
                     <div class="control cert-key-height">
-                      <textarea class="textarea cert-key-height" placeholder="input"></textarea>
+                      <textarea class="textarea cert-key-height " 
+                      placeholder=""
+                      bind:value={Profile.cs_groups[row.index].server_cert}
+                      />
                     </div>
                   </div>
                 </div>
                 <div class="column is-full">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label is-small">Server Key</label>
+                    <label class="label ">Server Key</label>
                     <div class="control cert-key-height">
-                      <textarea class="textarea cert-key-height" placeholder="input"></textarea>
+                      <textarea class="textarea cert-key-height " 
+                      placeholder=""
+                      bind:value={Profile.cs_groups[row.index].server_key}
+                      />
                     </div>
                   </div>
                 </div>

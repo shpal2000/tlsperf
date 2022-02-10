@@ -112,6 +112,7 @@ def set_profile_defaults (prof_j):
     csg_index = 0
     for csg in cs_groups:
 
+        csg["index"] = csg_index
         csg_index += 1
         csg["app_id"] = "CSG" + str(csg_index)
         
