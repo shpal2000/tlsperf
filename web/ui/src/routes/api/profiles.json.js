@@ -19,6 +19,16 @@ export async function post ( {params, request} ) {
     }    
 }
 
+export async function put ( {params, request} ) {
+    const body = await request.json()
+    
+    const res = await apiClient.put('/profiles', body)
+
+    return {
+        body: res.data
+    }    
+}
+
 export async function del ( {params, request} ) {
     const body = await request.json()
     

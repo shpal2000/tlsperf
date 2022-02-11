@@ -1,4 +1,6 @@
 import os
+from pickle import FALSE
+import signal
 import aiohttp
 from aiohttp import web
 import asyncio
@@ -223,6 +225,36 @@ async def api_add_profile(request):
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 
+async def api_save_profile(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_col = db[PROFILE_LISTS]
+        task_col = db[TASK_LISTS]
+
+        query = {'Group': group, 'Name': name}
+
+        profile = profile_col.find_one(query)
+        if not profile:
+            return web.json_response({'status' : -1, 'message': 'does not exist'})
+
+        task = task_col.find_one(query, {'_id' : False})
+        if task['State'] != 'view':
+            return web.json_response({'status' : -1, 'message': 'is busy'})
+
+        profile_col.delete_one(query)
+
+        profile_col.insert_one(r_json)
+
+        return web.json_response({'status' : 0})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
+
 async def api_delete_profile(request):
     try:
         r_text = await request.text()
@@ -331,14 +363,18 @@ async def task_start_profile_run(group, name):
                                                     '--group', group,
                                                     '--name', name)
 
-    await proc.wait()
-
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
 
     query = {'Group': group, 'Name': name}
-    task_col = db[TASK_LISTS]
 
+    task_col = db[TASK_LISTS]
+    update = {'$set': {'Pid': proc.pid}}
+    task_col.update_one(query, update)
+
+    await proc.wait()
+
+    task_col = db[TASK_LISTS]
     update = {'$set': {'Status': 'done'}}
     task_col.update_one(query, update)
 
@@ -398,6 +434,7 @@ async def api_stop_profile_run(request):
         r_json = json.loads(r_text)
         group = r_json['Group']
         name = r_json['Name']
+        force = r_json.get('Force', False)
 
         query = {'Group': group, 'Name': name}
         
@@ -415,7 +452,10 @@ async def api_stop_profile_run(request):
                 return web.json_response({'status' : -1, 'message': 'not running'})
 
             if task['Status'] == 'progress':
-                return web.json_response({'status' : -1, 'message': '{} already in porgress'.format(task['Type'])})
+                if task['Type'] == 'start_run' and force:
+                    os.kill(task['Pid'], signal.SIGKILL)
+                else:
+                    return web.json_response({'status' : -1, 'message': '{} already in porgress'.format(task['Type'])})
 
             update = { '$set': {'Type': 'stop_run', 'Status': 'progress', 'Events': []}}
             task_col.update_one(query, update)
@@ -479,6 +519,10 @@ app.add_routes([web.route('get'
 app.add_routes([web.route('post'
                             , '/api/profiles'
                             , api_add_profile)])
+
+app.add_routes([web.route('put'
+                            , '/api/profiles'
+                            , api_save_profile)])
 
 app.add_routes([web.route('delete'
                             , '/api/profiles'
