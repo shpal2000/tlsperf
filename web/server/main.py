@@ -225,6 +225,36 @@ async def api_add_profile(request):
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 
+async def api_save_profile(request):
+    try:
+        r_text = await request.text()
+        r_json = json.loads(r_text)
+        group = r_json['Group']
+        name = r_json['Name']
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_col = db[PROFILE_LISTS]
+        task_col = db[TASK_LISTS]
+
+        query = {'Group': group, 'Name': name}
+
+        profile = profile_col.find_one(query)
+        if not profile:
+            return web.json_response({'status' : -1, 'message': 'does not exist'})
+
+        task = task_col.find_one(query, {'_id' : False})
+        if task['State'] != 'view':
+            return web.json_response({'status' : -1, 'message': 'is busy'})
+
+        profile_col.delete_one(query)
+
+        profile_col.insert_one(r_json)
+
+        return web.json_response({'status' : 0})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
+
 async def api_delete_profile(request):
     try:
         r_text = await request.text()
@@ -489,6 +519,10 @@ app.add_routes([web.route('get'
 app.add_routes([web.route('post'
                             , '/api/profiles'
                             , api_add_profile)])
+
+app.add_routes([web.route('put'
+                            , '/api/profiles'
+                            , api_save_profile)])
 
 app.add_routes([web.route('delete'
                             , '/api/profiles'

@@ -1,7 +1,7 @@
 <script>
     import { page } from '$app/stores'
     import { routeViewState } from '$lib/store';
-
+    import {goto} from "$app/navigation";
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
     import { ProgressBar } from "carbon-components-svelte";
@@ -185,31 +185,66 @@
       }
     }
 
-    function onCommon () {
-
-      validateAllFields ();
-
-      checkUnsaved ();
-
-      return !markUnsaved;
-    }
-
     async function onSave () {
       const p = profileNormalize (Profile);
 
-      console.log(p);
+      const controller = new AbortController();
+      const signal = controller.signal;
 
-      if (onCommon()){
-        // controller = new AbortController();
-        // signal = controller.signal;
+      try {
+        // errorMsg = '';
+        // isError = false;
+        // isProgress = true;
+        const res = await fetch ('/api/profiles.json', {
+          signal,
+          method: 'PUT',
+          body: JSON.stringify(p)
+        });
+        // isProgress = false;
+
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
+
+          if (isJson) {
+            if (json.status == 0){
+
+              const routeViewKey = 'profile/'+$page.stuff.Profile.Group + '/' + $page.stuff.Profile.Name;
+              delete $routeViewState[routeViewKey];
+
+              Profile = profileCanonical(p);
+              SavedProfile = profileCanonical(p);
+              $routeViewState[routeViewKey] = {Profile, SavedProfile};
+              validateAllFields ();
+
+              // dispatch ('addProfileSuccess', {Name: Name});
+              // resetState();
+            } else {
+              console.log(json);
+              // setErrorMsg (json.message);
+            }
+          } else {
+            // isProgress = false;
+            // setErrorMsg (text); 
+          }
+        } else {
+          console.log(res);
+          // setErrorMsg (JSON.stringify(res));
+        }
+      } catch (e) {
+        // isProgress = false;
+        // setErrorMsg (e.toString()); 
       }
     }
 
     async function onRun () {
-      if (onCommon()){
-        // controller = new AbortController();
-        // signal = controller.signal;
-      }
+
     }
 
 
@@ -307,6 +342,11 @@
 
   function profileNormalize (p) {
     const p2 = {};
+
+    p2.Group = p.Group;
+    p2.Name = p.Name;
+    p2.Type = p.Type;
+
 
     p2.Transactions = parseInt(p.Transactions);
     p2.CPS = parseInt(p.CPS);
