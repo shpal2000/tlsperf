@@ -70,11 +70,10 @@ def set_profile_defaults (prof_j):
     cs_groups = [
         { "client_ips" :  ["12.20.50.1/16"], 
             "server_ip": "12.20.100.1/16"
+        },
+        { "client_ips" :  ["12.20.51.1/16"], 
+            "server_ip": "12.20.101.1/16"
         }
-        # ,
-        # { "client_ips" :  ["12.20.51.1/16"], 
-        #     "server_ip": "12.20.101.1/16"
-        # },
         # { "client_ips" :  ["12.20.52.1/16"], 
         #     "server_ip": "12.20.102.1/16"
         # },

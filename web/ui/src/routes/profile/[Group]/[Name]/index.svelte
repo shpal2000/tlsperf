@@ -240,6 +240,7 @@
       {key: 'server_ip', value: 'Server'},
       {key: 'server_ssl', value: 'Protocol'},
       {key: 'server_port', value: 'Port'},
+      {key: 'fieldError', value: ''}
     ];
 
     const statsHeaders = [
@@ -307,6 +308,8 @@
         Profile.MaxPipeline = Profile.MaxPipeline.toString();
 
         for (const csg of Profile.cs_groups) {
+          csg.id = csg.app_id;
+          csg.err_status = false;
           csg.client_ips = csg.client_ips.join(',')
         }
 
@@ -504,7 +507,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">ClientIface</label>
+                    <label class="label ">ClientPort</label>
                     <div class="control">
                       <input class="input {Profile.clientIfaceError ? 'is-danger' : ''}"
                         bind:value={Profile.ClientIface}
@@ -522,7 +525,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">ServerIface</label>
+                    <label class="label ">ServerPort</label>
                     <div class="control">
                       <input class="input {Profile.serverIfaceError ? 'is-danger' : ''}"
                         bind:value={Profile.ServerIface}
@@ -721,6 +724,19 @@
             </div>
           </div>
         </div>
+
+        <div slot="cell" let:row let:cell>
+          {#if cell.key == 'fieldError'}
+            {#if cell.value}
+              <p><strong class="errmsg">!</strong></p>
+            {:else}
+              <p><strong class="okmsg">&#10003;</strong></p>
+            {/if}
+          {:else}
+            {cell.value}
+          {/if}
+        </div>
+
       </DataTable>
     </div>
     
@@ -749,6 +765,10 @@
 
     .errmsg {
       color: red;
+    }
+
+    .okmsg {
+      color: green;
     }
 
     .cert-margin {
