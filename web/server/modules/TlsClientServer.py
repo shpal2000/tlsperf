@@ -100,10 +100,10 @@ def set_profile_defaults (prof_j):
         # }
     ]    
     
+    prof_j["Transactions"] = 60000
     prof_j["CPS"] = 100
     prof_j["DataLength"] = 1
     prof_j["MaxPipeline"] = 10
-    prof_j["Transactions"] = 60000
     prof_j["ClientIface"] = ""
     prof_j["ServerIface"] = ""
 

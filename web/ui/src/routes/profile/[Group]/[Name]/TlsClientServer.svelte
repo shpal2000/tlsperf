@@ -195,7 +195,7 @@
     }
 
     async function onSave () {
-      const p = profileStore (Profile);
+      const p = profileNormalize (Profile);
 
       console.log(p);
 
@@ -285,7 +285,7 @@
         Server: 1}
     ];
 
-  function profileLoad (p) {
+  function profileCanonical (p) {
 
     const p2 = JSON.parse(JSON.stringify(p));
 
@@ -305,20 +305,40 @@
     return p2;
   }
 
-  function profileStore (p) {
+  function profileNormalize (p) {
     const p2 = {};
 
     p2.Transactions = parseInt(p.Transactions);
     p2.CPS = parseInt(p.CPS);
     p2.DataLength = parseInt(p.DataLength);
     p2.MaxPipeline = parseInt(p.MaxPipeline);
+    p2.ClientIface = p.ClientIface;
+    p2.ServerIface = p.ServerIface;
+
 
     p2.cs_groups = [];
+    let csg_index = 0;
     for (const csg of p.cs_groups) {
       const csg2 = {};
 
+      csg2.index = csg_index;
+      csg_index += 1;
+
       csg2.client_ips = csg.client_ips.split(',');
       csg2.server_ip = csg.server_ip;
+
+      csg2.app_id = csg.app_id;
+        
+      csg2.app_gid = csg.app_gid;
+
+      csg2.server_port = csg.server_port;
+      csg2.server_ssl = csg.server_ssl;
+      csg2.send_recv_len = csg.send_recv_len;
+      csg2.cps = Math.floor (p2.CPS / p.cs_groups.length); 
+      csg2.max_active_conn_count = Math.floor (p2.MaxPipeline / p.cs_groups.length);
+      csg2.total_conn_count = Math.floor (p2.Transactions / p.cs_groups.length);
+      csg2.server_key = csg.server_key
+      csg2.server_cert = csg.server_cert
 
       p2.cs_groups.push (csg2);
     }
@@ -344,8 +364,8 @@
 
       } else {
 
-        Profile = profileLoad ($page.stuff.Profile);
-        SavedProfile = profileLoad ($page.stuff.Profile);
+        Profile = profileCanonical ($page.stuff.Profile);
+        SavedProfile = profileCanonical ($page.stuff.Profile);
 
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
       }
