@@ -16,28 +16,28 @@
 
     const dispatch = createEventDispatcher ();
 
-    function validateClientIPs (Csg, savedCsg) {
-      let numRegex = new RegExp('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/[1-2][0-9]?|3[0-2]?$', );
-
-      console.log (Csg);
-      console.log (savedCsg);
-
-      console.log (numRegex.test(Csg.client_ips));
+    function validateClientIPs (csg_index) {
+      let numRegex = new RegExp('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/([1-2][0-9]?|3[0-2]?|[4-9])$', );
       
-      if (Csg.client_ips.trim() == ''){
-        Csg.client_ipsHelp = 'required';
-        Csg.client_ipsError = true;
-      } else if (!numRegex.test(Csg.client_ips)){
-        Csg.client_ipsHelp = 'invalid - ip/cidr';
-        Csg.client_ipsError = true;
-      } else if (Csg.client_ips != savedCsg.client_ips){
-        Csg.client_ipsError = true;
-        Csg.client_ipsHelp = "modified"
-      } else {
-        Csg.client_ipsError = false;
-      }
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
 
+      if (csg.client_ips.trim() == ''){
+        csg.client_ipsHelp = 'required';
+        csg.client_ipsError = true;
+      } else if (!(csg.client_ips.match(numRegex) && csg.client_ips.match(numRegex)[0] === csg.client_ips)) {
+        csg.client_ipsHelp = 'invalid - ip/cidr';
+        csg.client_ipsError = true;
+      } else if (csg.client_ips != savedCsg.client_ips) {
+        csg.client_ipsError = true;
+        csg.client_ipsHelp = "modified"
+      } else {
+        csg.client_ipsError = false;
+      }
+      
       checkUnsaved();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
     }
 
     function validateTransactions () {
@@ -46,7 +46,7 @@
       if (Profile.Transactions.trim() == ''){
         Profile.transactionsHelp = 'required';
         Profile.transactionsError = true;
-      } else if (!numRegex.test(Profile.Transactions)){
+      } else if (!(Profile.Transactions.match(numRegex) && Profile.Transactions.match(numRegex)[0] === Profile.Transactions)){
         Profile.transactionsHelp = 'invalid - number only';
         Profile.transactionsError = true;
       } else if (Profile.Transactions != SavedProfile.Transactions){
@@ -65,7 +65,7 @@
       if (Profile.CPS.trim() == ''){
         Profile.cpsHelp = 'required';
         Profile.cpsError = true;
-      } else if (!numRegex.test(Profile.CPS)){
+      } else if (!(Profile.CPS.match(numRegex) && Profile.CPS.match(numRegex)[0] === Profile.CPS)){
         Profile.cpsHelp = 'invalid - number only';
         Profile.cpsError = true;
       } else if (Profile.CPS != SavedProfile.CPS){
@@ -84,7 +84,7 @@
       if (Profile.DataLength.trim() == ''){
         Profile.dataLengthHelp = 'required';
         Profile.dataLengthError = true;
-      } else if (!numRegex.test(Profile.DataLength)){
+      } else if (!(Profile.DataLength.match(numRegex) && Profile.DataLength.match(numRegex)[0] === Profile.DataLength)){
         Profile.dataLengthHelp = 'invalid - number only';
         Profile.dataLengthError = true;
       } else if (Profile.DataLength != SavedProfile.DataLength){
@@ -103,7 +103,7 @@
       if (Profile.MaxPipeline.trim() == ''){
         Profile.maxPipelineHelp = 'required';
         Profile.maxPipelineError = true;
-      } else if (!numRegex.test(Profile.MaxPipeline)){
+      } else if (!(Profile.MaxPipeline.match(numRegex) && Profile.MaxPipeline.match(numRegex)[0] === Profile.MaxPipeline)){
         Profile.maxPipelineHelp = 'invalid - number only';
         Profile.maxPipelineError = true;
       } else if (Profile.MaxPipeline != SavedProfile.MaxPipeline){
@@ -122,7 +122,7 @@
       if (Profile.ClientIface.trim() == ''){
         Profile.clientIfaceHelp = 'required';
         Profile.clientIfaceError = true;
-      } else if (!numRegex.test(Profile.ClientIface)){
+      } else if (!(Profile.ClientIface.match(numRegex) && Profile.ClientIface.match(numRegex)[0] === Profile.ClientIface)){
         Profile.clientIfaceHelp = 'invalid - node:port';
         Profile.clientIfaceError = true;
       } else if (Profile.ClientIface != SavedProfile.ClientIface){
@@ -141,7 +141,7 @@
       if (Profile.ServerIface.trim() == ''){
         Profile.serverIfaceHelp = 'required';
         Profile.serverIfaceError = true;
-      } else if (!numRegex.test(Profile.ServerIface)){
+      } else if (!(Profile.ServerIface.match(numRegex) && Profile.ServerIface.match(numRegex)[0] === Profile.ServerIface)){
         Profile.serverIfaceHelp = 'invalid - node:port';
         Profile.serverIfaceError = true;
       } else if (Profile.ServerIface != SavedProfile.ServerIface){
@@ -181,7 +181,7 @@
       validateServerIface ();
 
       for (let i=0; i < Profile.cs_groups.length; i++) {
-        validateClientIPs (Profile.cs_groups[i], SavedProfile.cs_groups[i])
+        validateClientIPs (i)
       }
     }
 
@@ -621,7 +621,7 @@
                         type="text" 
                         placeholder=""
                         bind:value={Profile.cs_groups[row.index].client_ips}
-                        on:input={() => validateClientIPs(Profile.cs_groups[row.index], SavedProfile.cs_groups[row.index])}
+                        on:input={() => validateClientIPs(row.index)}
                       >
                       {#if Profile.cs_groups[row.index].client_ipsError}
                         <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
