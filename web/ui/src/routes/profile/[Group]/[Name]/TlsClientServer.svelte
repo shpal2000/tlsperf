@@ -195,13 +195,17 @@
     }
 
     async function onSave () {
+      const p = profileStore (Profile);
+
+      console.log(p);
+
       if (onCommon()){
         // controller = new AbortController();
         // signal = controller.signal;
       }
     }
 
-    async function onSaveAndRun () {
+    async function onRun () {
       if (onCommon()){
         // controller = new AbortController();
         // signal = controller.signal;
@@ -281,7 +285,47 @@
         Server: 1}
     ];
 
+  function profileLoad (p) {
 
+    const p2 = JSON.parse(JSON.stringify(p));
+
+    //all number field to string
+    p2.Transactions = p2.Transactions.toString();
+    p2.CPS = p2.CPS.toString();
+    p2.DataLength = p2.DataLength.toString();
+    p2.MaxPipeline = p2.MaxPipeline.toString();
+
+    //for table header and row
+    for (const csg of p2.cs_groups) {
+      csg.id = csg.app_id;
+      csg.err_status = false;
+      csg.client_ips = csg.client_ips.join(',')
+    }
+
+    return p2;
+  }
+
+  function profileStore (p) {
+    const p2 = {};
+
+    p2.Transactions = parseInt(p.Transactions);
+    p2.CPS = parseInt(p.CPS);
+    p2.DataLength = parseInt(p.DataLength);
+    p2.MaxPipeline = parseInt(p.MaxPipeline);
+
+    p2.cs_groups = [];
+    for (const csg of p.cs_groups) {
+      const csg2 = {};
+
+      csg2.client_ips = csg.client_ips.split(',');
+      csg2.server_ip = csg.server_ip;
+
+      p2.cs_groups.push (csg2);
+    }
+
+    return p2;
+  }
+  
   beforeUpdate ( () => {
 
     const routeViewKey = 'profile/'+$page.stuff.Profile.Group + '/' + $page.stuff.Profile.Name;
@@ -299,21 +343,9 @@
         SavedProfile = $routeViewState[routeViewKey].SavedProfile;
 
       } else {
-        Profile = JSON.parse(JSON.stringify($page.stuff.Profile));
-        
-        //all number field to string
-        Profile.Transactions = Profile.Transactions.toString();
-        Profile.CPS = Profile.CPS.toString();
-        Profile.DataLength = Profile.DataLength.toString();
-        Profile.MaxPipeline = Profile.MaxPipeline.toString();
 
-        for (const csg of Profile.cs_groups) {
-          csg.id = csg.app_id;
-          csg.err_status = false;
-          csg.client_ips = csg.client_ips.join(',')
-        }
-
-        SavedProfile = JSON.parse(JSON.stringify(Profile));
+        Profile = profileLoad ($page.stuff.Profile);
+        SavedProfile = profileLoad ($page.stuff.Profile);
 
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
       }
@@ -542,7 +574,7 @@
               </div>
               <div class="field is-grouped">
                 <div class="control">
-                  <button class="button  is-info" on:click={onSaveAndRun} >Run</button>
+                  <button class="button  is-info" on:click={onRun} >Run</button>
                 </div>
                 <div class="control">
                   <button class="button  is-info is-outlined" on:click={onSave} >Save</button>
