@@ -550,15 +550,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Transactions</label>
                     <div class="control">
-                      <input class="input {Profile.transactionsError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.transactionsError || Profile.transactionsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.Transactions}
                         on:input={validateTransactions}
                       >
-                      {#if Profile.transactionsError}
-                        <p class="help">{Profile.transactionsHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.transactionsHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -568,15 +566,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">CPS</label>
                     <div class="control">
-                      <input class="input {Profile.cpsError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.cpsError || Profile.cpsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.CPS}
                         on:input={validateCps}
                       >
-                      {#if Profile.cpsError}
-                        <p class="help">{Profile.cpsHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.cpsHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -586,15 +582,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">DataLength</label>
                     <div class="control">
-                      <input class="input {Profile.dataLengthError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.dataLengthError || Profile.dataLengthUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.DataLength}
                         on:input={validateDataLength}
                       >
-                      {#if Profile.dataLengthError}
-                        <p class="help">{Profile.dataLengthHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.dataLengthHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -604,15 +598,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">MaxPipeline</label>
                     <div class="control">
-                      <input class="input {Profile.maxPipelineError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.maxPipelineError || Profile.maxPipelineUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.MaxPipeline}
                         on:input={validateMaxPipeline}
                       >
-                      {#if Profile.maxPipelineError}
-                        <p class="help">{Profile.maxPipelineHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.maxPipelineHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -622,15 +614,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">ClientPort</label>
                     <div class="control">
-                      <input class="input {Profile.clientIfaceError ? 'is-danger' : ''}"
+                      <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ClientIface}
                         type="text"
                         placeholder=""
                         on:input={validateClientIface}
                       >
-                      {#if Profile.clientIfaceError}
                       <p class="help">{Profile.clientIfaceHelp}</p>
-                      {/if}
                     </div>
                   </div>
                 </div>
@@ -640,22 +630,20 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">ServerPort</label>
                     <div class="control">
-                      <input class="input {Profile.serverIfaceError ? 'is-danger' : ''}"
+                      <input class="input {(Profile.serverIfaceError || Profile.serverIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ServerIface}
                         type="text"
                         placeholder=""
                         on:input={validateServerIface}
                       >
-                      {#if Profile.serverIfaceError}
                       <p class="help">{Profile.serverIfaceHelp}</p>
-                      {/if}
                     </div>
                   </div>
                 </div>
               </div>
               <div class="field is-grouped">
                 <div class="control" >
-                  <button class="button  is-info" disabled={markUnsavedFields} on:click={onRun} >Run</button>
+                  <button class="button  is-info" disabled={markUnsavedFields || markErrorFields} on:click={onRun} >Run</button>
                 </div>
                 <div class="control">
                   <button class="button  is-info is-outlined" disabled={!markUnsavedFields} on:click={onSave} >Save</button>
@@ -735,15 +723,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Client IPs</label>
                     <div class="control">
-                      <input class="input {Profile.cs_groups[row.index].client_ipsError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.cs_groups[row.index].client_ips}
                         on:input={() => validateClientIPs(row.index)}
                       >
-                      {#if Profile.cs_groups[row.index].client_ipsError}
-                        <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
                     </div>
                   </div>
               
