@@ -98,6 +98,10 @@ spec:
         - name: tlsperf-pv-storage2
           mountPath: "/code"
       env:
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         - name: HOST
           value: "0.0.0.0"
         - name: BPORT

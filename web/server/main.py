@@ -371,11 +371,15 @@ async def api_get_profile_runs(request):
 
 async def task_start_profile_run(group, name):
 
+    stats_addr = '{}:{}'.format(os.environ.get('MY_POD_IP')
+                                , os.environ.get('SPORT'))
+
     proc = await asyncio.create_subprocess_exec('python3',
                                                 './modules/TlsClientServer.py',
                                                     '--ops', 'start',
                                                     '--group', group,
-                                                    '--name', name)
+                                                    '--name', name,
+                                                    '--stats_addr', stats_addr)
 
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
@@ -426,11 +430,16 @@ async def api_start_profile_run(request):
         return web.json_response({'status' : -1, 'message': str(err)})
 
 async def task_stop_profile_run(group, name):
+
+    stats_addr = '{}:{}'.format(os.environ.get('MY_POD_IP')
+                                , os.environ.get('SPORT'))
+
     proc = await asyncio.create_subprocess_exec('python3',
                                                 './modules/TlsClientServer.py',
                                                     '--ops', 'stop',
                                                     '--group', group,
-                                                    '--name', name)
+                                                    '--name', name,
+                                                    '--stats_addr', stats_addr)
     await proc.wait()
 
     mongoClient = MongoClient(DB_CSTRING)
