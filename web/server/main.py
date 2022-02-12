@@ -280,8 +280,8 @@ async def api_delete_profile(request):
         task_col.delete_one(query)
 
         return web.json_response({'status' : 0})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_get_profile_groups(request):
     mongoClient = MongoClient(DB_CSTRING)
@@ -332,8 +332,8 @@ async def api_delete_profile_group(request):
 
         profile_group_col.delete_one({'Name': name})
         return web.json_response({'status' : 0})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_get_profile_run(request):
     try:
@@ -352,8 +352,8 @@ async def api_get_profile_run(request):
             return web.json_response({'status' : 0, 'info': task})
         else:
             return web.json_response({'status' : -1, 'message': 'profile not found'})
-    except:
-        return web.json_response({'status' : -1, 'message': 'tbd'})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def task_start_profile_run(group, name):
 
