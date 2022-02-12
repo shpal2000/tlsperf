@@ -171,26 +171,27 @@ async def api_delete_node_group(request):
     except Exception as e:
         return web.Response(text=str(e))
 
-async def api_get_profile(request):
-    group = request.query['group']
-    name = request.query['name']
-
-    mongoClient = MongoClient(DB_CSTRING)
-    db = mongoClient[DB_NAME]
-    profile_col = db[PROFILE_LISTS]
-    profile = profile_col.find_one({'Group': group, 'Name': name}, {'_id' : False})
-    if not profile:
-        return web.json_response({'status' : -1, 'message': 'profile not found'})
-    return web.json_response({'status': 0, 'data': profile})
-
 async def api_get_profiles(request):
-    mongoClient = MongoClient(DB_CSTRING)
-    db = mongoClient[DB_NAME]
-    profile_col = db[PROFILE_LISTS]
-    profiles = profile_col.find({}, {'_id' : False})
-    if not profiles:
-        return []
-    return web.json_response(list(profiles))
+    try:
+        group = request.query.get('group')
+        name = request.query.get('name')
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        profile_col = db[PROFILE_LISTS]
+
+        if (group and name):
+            profile = profile_col.find_one({'Group': group, 'Name': name}, {'_id' : False})
+            if not profile:
+                return web.json_response({'status' : -1, 'message': 'profile not found'})
+            return web.json_response({'status': 0, 'data': profile})
+        else:
+            profiles = profile_col.find({}, {'_id' : False})
+            if not profiles:
+                return []
+            return web.json_response(list(profiles))
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_add_profile(request):
     try:
@@ -507,10 +508,6 @@ app.add_routes([web.route('post'
 app.add_routes([web.route('delete'
                             , '/api/node_groups'
                             , api_delete_node_group)])
-
-app.add_routes([web.route('get'
-                            , '/api/profile'
-                            , api_get_profile)])
 
 app.add_routes([web.route('get'
                             , '/api/profiles'

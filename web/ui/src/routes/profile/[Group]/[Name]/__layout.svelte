@@ -5,7 +5,7 @@
         const name = params.Name;
 
         try {
-            const res = await fetch (`/api/profile.json?group=${group}&name=${name}`);
+            const res = await fetch (`/api/profiles.json?group=${group}&name=${name}`);
             if (res.ok) {
                 const text = await res.text();
                 let isJson = true;

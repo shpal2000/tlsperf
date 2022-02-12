@@ -1,8 +1,15 @@
 import apiClient from './api_client';
 
-export async function get () {
+export async function get ({url}) {
+    const group = url.searchParams.get("group");
+    const name = url.searchParams.get("name");
 
-    const res = await apiClient.get('/profiles')
+    let res;
+    if (group && name) {
+        res = await apiClient.get(`/profiles?group=${group}&name=${name}`)
+    } else {
+        res = await apiClient.get('/profiles')
+    }
 
     return {
         body: res.data
