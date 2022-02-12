@@ -5,33 +5,38 @@
         const name = params.Name;
 
         try {
-            const res = await fetch (`/api/profile.json?group=${group}&name=${name}`);
-            if (res.ok) {
+            const res = await fetch (`/api/profiles.json?group=${group}&name=${name}`);
+            const res2 = await fetch (`/api/profile_runs.json?group=${group}&name=${name}`);
+            if (res.ok && res2.ok) {
                 const text = await res.text();
+                const text2 = await res.text();
                 let isJson = true;
                 let json = {};
+                let json2 = {};
                 try {
                     json = JSON.parse (text);
+                    json2 = JSON.parse (text2);
                 } catch (e) {
                     isJson = false;
                 }
 
                 if (isJson) {
-                    if (json.status == 0) {
+                    if (json.status == 0 && json2.status == 0) {
                         return {
                             props: {
                                 Group: json.data.Group,
                                 Name: json.data.Name
                             },
                             stuff: {
-                                Profile: json.data
+                                Profile: json.data,
+                                Task: json2.data
                             }
                         }
                     } else {
-                        return {status: 404, error: new Error(`Clound not load ${url} \n ${json.message}`)};
+                        return {status: 404, error: new Error(`Clound not load ${url} \n ${json.message} \n ${json2.message}`)};
                     }
                 } else {
-                    return {status: 404, error: new Error(`Clound not load ${url} \n ${text}`)};
+                    return {status: 404, error: new Error(`Clound not load ${url} \n ${text}  \n ${text2}`)};
                 }
             }
         } catch (e) {

@@ -1,16 +1,27 @@
 <script>
     import { page } from '$app/stores'
-    import { routeViewState } from '$lib/store';
+    import { routeViewState, getProfileStateKey } from '$lib/store';
     import {goto} from "$app/navigation";
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
     import { ProgressBar } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
-    let markUnsaved
     let Profile = null;
     let SavedProfile = null;
 
+    function setErrorMsg(action, msg) {
+      let lineRegex = new RegExp('\r?\n');
+
+        Profile.errorMsg = action + ' -> '+ msg;
+        Profile.errorRows = (Profile.errorMsg.split(lineRegex)).length;
+        if (Profile.errorRows == 0){
+          Profile.errorRows = 1
+        } else if (Profile.errorRows > 4){
+          Profile.errorRows = 4;
+        }
+        Profile.isError = true;
+    }
 
     import { createEventDispatcher, onMount, beforeUpdate } from "svelte";
 
@@ -22,6 +33,10 @@
       const csg = Profile.cs_groups[csg_index];
       const savedCsg = SavedProfile.cs_groups[csg_index];
 
+      csg.client_ipsError = false;
+      csg.client_ipsUnsaved = false;
+      csg.client_ipsHelp = ''
+
       if (csg.client_ips.trim() == ''){
         csg.client_ipsHelp = 'required';
         csg.client_ipsError = true;
@@ -29,19 +44,21 @@
         csg.client_ipsHelp = 'invalid - ip/cidr';
         csg.client_ipsError = true;
       } else if (csg.client_ips != savedCsg.client_ips) {
-        csg.client_ipsError = true;
+        csg.client_ipsUnsaved = true;
         csg.client_ipsHelp = "modified"
-      } else {
-        csg.client_ipsError = false;
       }
       
-      checkUnsaved();
+      checkFields();
 
       Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
     }
 
     function validateTransactions () {
       let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      Profile.transactionsError = false;
+      Profile.transactionsUnsaved = false;
+      Profile.transactionsHelp = ''
 
       if (Profile.Transactions.trim() == ''){
         Profile.transactionsHelp = 'required';
@@ -50,17 +67,20 @@
         Profile.transactionsHelp = 'invalid - number only';
         Profile.transactionsError = true;
       } else if (Profile.Transactions != SavedProfile.Transactions){
-        Profile.transactionsError = true;
+        Profile.transactionsUnsaved = true;
         Profile.transactionsHelp = "modified"
-      } else {
-        Profile.transactionsError = false;
       }
 
-      checkUnsaved();
+      checkFields();
     }
   
     function validateCps () {
       let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      Profile.cpsError = false;
+      Profile.cpsUnsaved = false;
+      Profile.cpsHelp = ''
+      
 
       if (Profile.CPS.trim() == ''){
         Profile.cpsHelp = 'required';
@@ -69,17 +89,19 @@
         Profile.cpsHelp = 'invalid - number only';
         Profile.cpsError = true;
       } else if (Profile.CPS != SavedProfile.CPS){
-        Profile.cpsError = true;
+        Profile.cpsUnsaved = true;
         Profile.cpsHelp = "modified"
-      } else {
-        Profile.cpsError = false;
       }
 
-      checkUnsaved();
+      checkFields();
     }
 
     function validateDataLength () {
       let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      Profile.dataLengthError = false;
+      Profile.dataLengthUnsaved = false;
+      Profile.dataLengthHelp = ''
 
       if (Profile.DataLength.trim() == ''){
         Profile.dataLengthHelp = 'required';
@@ -88,17 +110,19 @@
         Profile.dataLengthHelp = 'invalid - number only';
         Profile.dataLengthError = true;
       } else if (Profile.DataLength != SavedProfile.DataLength){
-        Profile.dataLengthError = true;
+        Profile.dataLengthUnsaved = true;
         Profile.dataLengthHelp = "modified"
-      } else {
-        Profile.dataLengthError = false;
       }
 
-      checkUnsaved();
+      checkFields();
     }
 
     function validateMaxPipeline () {
       let numRegex = new RegExp('^[0-9]+$', 'i');
+
+      Profile.maxPipelineError = false;
+      Profile.maxPipelineUnsaved = false;
+      Profile.maxPipelineHelp = ''
 
       if (Profile.MaxPipeline.trim() == ''){
         Profile.maxPipelineHelp = 'required';
@@ -107,17 +131,19 @@
         Profile.maxPipelineHelp = 'invalid - number only';
         Profile.maxPipelineError = true;
       } else if (Profile.MaxPipeline != SavedProfile.MaxPipeline){
-        Profile.maxPipelineError = true;
+        Profile.maxPipelineUnsaved = true;
         Profile.maxPipelineHelp = "modified"
-      } else {
-        Profile.maxPipelineError = false;
       }
 
-      checkUnsaved();
+      checkFields();
     }
 
     function validateClientIface () {
       let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
+
+      Profile.clientIfaceError = false;
+      Profile.clientIfaceUnsaved = false;
+      Profile.clientIfaceHelp = ''
 
       if (Profile.ClientIface.trim() == ''){
         Profile.clientIfaceHelp = 'required';
@@ -126,17 +152,19 @@
         Profile.clientIfaceHelp = 'invalid - node:port';
         Profile.clientIfaceError = true;
       } else if (Profile.ClientIface != SavedProfile.ClientIface){
-        Profile.clientIfaceError = true;
+        Profile.clientIfaceUnsaved = true;
         Profile.clientIfaceHelp = "modified"
-      } else {
-        Profile.clientIfaceError = false;
       }
 
-      checkUnsaved();
+      checkFields();
     }
 
     function validateServerIface () {
       let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
+
+      Profile.serverIfaceError = false;
+      Profile.serverIfaceUnsaved = false;
+      Profile.serverIfaceHelp = ''
 
       if (Profile.ServerIface.trim() == ''){
         Profile.serverIfaceHelp = 'required';
@@ -145,17 +173,23 @@
         Profile.serverIfaceHelp = 'invalid - node:port';
         Profile.serverIfaceError = true;
       } else if (Profile.ServerIface != SavedProfile.ServerIface){
-        Profile.serverIfaceError = true;
+        Profile.serverIfaceUnsaved = true;
         Profile.serverIfaceHelp = "modified"
-      } else {
-        Profile.serverIfaceError = false;
       }
 
-      checkUnsaved();
+      checkFields();
     }
 
-    function checkUnsaved() {
-      markUnsaved = Profile.transactionsError 
+    function checkFields() {
+
+      Profile.markUnsavedFields = Profile.transactionsUnsaved 
+                    || Profile.cpsUnsaved
+                    || Profile.dataLengthUnsaved
+                    || Profile.maxPipelineUnsaved
+                    || Profile.clientIfaceUnsaved
+                    || Profile.serverIfaceUnsaved;
+
+      Profile.markErrorFields = Profile.transactionsError 
                     || Profile.cpsError
                     || Profile.dataLengthError
                     || Profile.maxPipelineError
@@ -163,11 +197,14 @@
                     || Profile.serverIfaceError;
 
       for (const csg of Profile.cs_groups) {
-        csg.fieldError = false;
+        csg.fieldAttention = false;
         if (csg.client_ipsError) {
-          markUnsaved = true;
-          csg.fieldError = true;
-          break;
+          Profile.markErrorFields = true;
+          csg.fieldAttention = true;
+        }
+        if (csg.client_ipsUnsaved) {
+          Profile.markUnsavedFields = true;
+          csg.fieldAttention = true;
         }
       }
     }
@@ -186,21 +223,21 @@
     }
 
     async function onSave () {
+      const action = 'onSave'; 
       const p = profileNormalize (Profile);
 
       const controller = new AbortController();
       const signal = controller.signal;
 
       try {
-        // errorMsg = '';
-        // isError = false;
-        // isProgress = true;
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
         const res = await fetch ('/api/profiles.json', {
           signal,
           method: 'PUT',
           body: JSON.stringify(p)
         });
-        // isProgress = false;
 
         if (res.ok) {
           const text = await res.text();
@@ -215,36 +252,78 @@
           if (isJson) {
             if (json.status == 0){
 
-              const routeViewKey = 'profile/'+$page.stuff.Profile.Group + '/' + $page.stuff.Profile.Name;
+              const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
               delete $routeViewState[routeViewKey];
 
               Profile = profileCanonical(p);
               SavedProfile = profileCanonical(p);
               $routeViewState[routeViewKey] = {Profile, SavedProfile};
               validateAllFields ();
-
-              // dispatch ('addProfileSuccess', {Name: Name});
-              // resetState();
             } else {
               console.log(json);
-              // setErrorMsg (json.message);
+              setErrorMsg (action, json.message);
             }
           } else {
-            // isProgress = false;
-            // setErrorMsg (text); 
+            setErrorMsg (action, text); 
           }
+          Profile.isProgress = false;
         } else {
           console.log(res);
-          // setErrorMsg (JSON.stringify(res));
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
         }
       } catch (e) {
-        // isProgress = false;
-        // setErrorMsg (e.toString()); 
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
       }
     }
 
     async function onRun () {
+      const action = 'onRun';
+      const controller = new AbortController();
+      const signal = controller.signal;
 
+      try {
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        const res = await fetch ('/api/profile_runs.json', {
+          signal,
+          method: 'POST',
+          body: JSON.stringify({'Group': Profile.Group,
+                                  'Name': Profile.Name})
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
+
+          if (isJson) {
+            if (json.status == 0){
+              alert ('started');
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+            }
+          } else {
+            setErrorMsg (action, text); 
+          }
+          Profile.isProgress = false;
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
     }
 
 
@@ -279,7 +358,7 @@
       {key: 'server_ip', value: 'Server'},
       {key: 'server_ssl', value: 'Protocol'},
       {key: 'server_port', value: 'Port'},
-      {key: 'fieldError', value: ''}
+      {key: 'fieldAttention', value: ''}
     ];
 
     const statsHeaders = [
@@ -388,7 +467,7 @@
   
   beforeUpdate ( () => {
 
-    const routeViewKey = 'profile/'+$page.stuff.Profile.Group + '/' + $page.stuff.Profile.Name;
+    const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
 
     if (Profile 
             && Profile.Group == $page.stuff.Profile.Group
@@ -401,21 +480,15 @@
       if ($routeViewState[routeViewKey]) {
         Profile = $routeViewState[routeViewKey].Profile;
         SavedProfile = $routeViewState[routeViewKey].SavedProfile;
-
+        validateAllFields ();
       } else {
 
         Profile = profileCanonical ($page.stuff.Profile);
         SavedProfile = profileCanonical ($page.stuff.Profile);
-
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
+        validateAllFields ();
       }
-
-      validateAllFields ();
-
     }
-
-    // markUnsaved = JSON.stringify(Profile) != JSON.stringify(SavedProfile);
-
   });
 
   onMount ( () => {
@@ -513,11 +586,32 @@
       <li class="is-active" ><a>{Profile.Type} : {Profile.Name}</a></li>
 
       <!-- svelte-ignore a11y-missing-attribute -->
-      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] [<strong class="{markUnsaved ? 'errmsg' : ''}">{markUnsaved ? " Missing/Unsaved Fields " : ""}</strong> ] </a></li>
+      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] <strong class="{Profile.markUnsavedFields || Profile.markErrorFields ? 'errmsg' : ''}">&nbsp;&nbsp;{Profile.markUnsavedFields ? "Unsaved Fields" : ""} &nbsp;&nbsp;{Profile.markErrorFields ? "Error Fields" : ""}</strong> </a></li>
   </ul>
 </nav>
 
 <div class="columns is-multiline is-mobile profile-margin">
+
+    <div class="column is-12">
+      {#if Profile.isProgress}
+        <div class="field">
+          <div class="control" >
+            <ProgressBar helperText=""/>
+          </div>
+        </div>
+      {/if}
+
+      {#if Profile.isError}
+        <div class="field">
+          <!-- svelte-ignore a11y-label-has-associated-control -->
+          <label class="label">Status</label>
+          <div class="control">
+            <textarea class="textarea errmsg" placeholder="" rows="{Profile.errorRows}" value={Profile.errorMsg} readonly/>
+          </div>
+        </div>          
+      {/if}
+    </div>  
+
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
         <div class="tile is-6 is-parent">
@@ -529,15 +623,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Transactions</label>
                     <div class="control">
-                      <input class="input {Profile.transactionsError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.transactionsError || Profile.transactionsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.Transactions}
                         on:input={validateTransactions}
                       >
-                      {#if Profile.transactionsError}
-                        <p class="help">{Profile.transactionsHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.transactionsHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -547,15 +639,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">CPS</label>
                     <div class="control">
-                      <input class="input {Profile.cpsError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.cpsError || Profile.cpsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.CPS}
                         on:input={validateCps}
                       >
-                      {#if Profile.cpsError}
-                        <p class="help">{Profile.cpsHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.cpsHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -565,15 +655,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">DataLength</label>
                     <div class="control">
-                      <input class="input {Profile.dataLengthError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.dataLengthError || Profile.dataLengthUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.DataLength}
                         on:input={validateDataLength}
                       >
-                      {#if Profile.dataLengthError}
-                        <p class="help">{Profile.dataLengthHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.dataLengthHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -583,15 +671,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">MaxPipeline</label>
                     <div class="control">
-                      <input class="input {Profile.maxPipelineError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.maxPipelineError || Profile.maxPipelineUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.MaxPipeline}
                         on:input={validateMaxPipeline}
                       >
-                      {#if Profile.maxPipelineError}
-                        <p class="help">{Profile.maxPipelineHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.maxPipelineHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -601,15 +687,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">ClientPort</label>
                     <div class="control">
-                      <input class="input {Profile.clientIfaceError ? 'is-danger' : ''}"
+                      <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ClientIface}
                         type="text"
                         placeholder=""
                         on:input={validateClientIface}
                       >
-                      {#if Profile.clientIfaceError}
                       <p class="help">{Profile.clientIfaceHelp}</p>
-                      {/if}
                     </div>
                   </div>
                 </div>
@@ -619,25 +703,24 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">ServerPort</label>
                     <div class="control">
-                      <input class="input {Profile.serverIfaceError ? 'is-danger' : ''}"
+                      <input class="input {(Profile.serverIfaceError || Profile.serverIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ServerIface}
                         type="text"
                         placeholder=""
                         on:input={validateServerIface}
                       >
-                      {#if Profile.serverIfaceError}
                       <p class="help">{Profile.serverIfaceHelp}</p>
-                      {/if}
                     </div>
                   </div>
                 </div>
               </div>
+
               <div class="field is-grouped">
-                <div class="control">
-                  <button class="button  is-info" on:click={onRun} >Run</button>
+                <div class="control" >
+                  <button class="button  is-info" disabled={Profile.markUnsavedFields || Profile.markErrorFields} on:click={onRun} >Run</button>
                 </div>
                 <div class="control">
-                  <button class="button  is-info is-outlined" on:click={onSave} >Save</button>
+                  <button class="button  is-info is-outlined" disabled={!Profile.markUnsavedFields} on:click={onSave} >Save</button>
                 </div>
               </div>
             </section> 
@@ -714,15 +797,13 @@
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Client IPs</label>
                     <div class="control">
-                      <input class="input {Profile.cs_groups[row.index].client_ipsError ? 'is-danger' : ''}" 
+                      <input class="input {(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
                         bind:value={Profile.cs_groups[row.index].client_ips}
                         on:input={() => validateClientIPs(row.index)}
                       >
-                      {#if Profile.cs_groups[row.index].client_ipsError}
-                        <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
-                      {/if}
+                      <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
                     </div>
                   </div>
               
@@ -849,7 +930,7 @@
         </div>
 
         <div slot="cell" let:row let:cell>
-          {#if cell.key == 'fieldError'}
+          {#if cell.key == 'fieldAttention'}
             {#if cell.value}
               <p><strong class="errmsg">!</strong></p>
             {:else}

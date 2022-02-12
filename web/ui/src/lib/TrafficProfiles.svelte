@@ -1,7 +1,7 @@
 <script>
   import { profileTreeRoot } from '$lib/store.js';
   import { selectedNode } from '$lib/store.js';
-  import { routeViewState } from '$lib/store';
+  import { routeViewState, getProfileStateKey } from '$lib/store';
   import {goto} from "$app/navigation";
   import Treenode from "$lib/Treenode.svelte";
   import AddProfileGroup from "$lib/AddProfileGroup.svelte";
@@ -64,11 +64,10 @@
 
   function onRemoveProfile (event) {
     
-    const routeViewKey = 'profile/'+$selectedNode.ParentName + '/' + $selectedNode.Name;
+    const routeViewKey = getProfileStateKey($selectedNode.ParentName, $selectedNode.Name);
 
     if ($routeViewState[routeViewKey]){
       delete $routeViewState[routeViewKey];
-      console.log($routeViewState[routeViewKey]);
     }
 
     let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==$selectedNode.ParentName);
@@ -81,7 +80,7 @@
 
     $profileTreeRoot.children = $profileTreeRoot.children;
 
-    goto('/');
+    goto('/deleted');
   }
 
   let showAddProfileGroup = false;

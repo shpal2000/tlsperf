@@ -29,3 +29,8 @@ export const navRoute = writable ({
 
 export const routeViewState = writable ({
 });
+
+
+export function getProfileStateKey (group, name) {
+    return '/profile/'+group+'/'+name;
+}
