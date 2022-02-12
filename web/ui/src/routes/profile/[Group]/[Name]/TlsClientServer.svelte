@@ -7,27 +7,20 @@
     import { ProgressBar } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
-    let markUnsavedFields;
-    let markErrorFields;
     let Profile = null;
     let SavedProfile = null;
 
-    let isError;
-    let errorMsg;
-    let errorRows;
-    let isProgress;
-
-    function setErrorMsg(msg) {
+    function setErrorMsg(action, msg) {
       let lineRegex = new RegExp('\r?\n');
 
-        errorMsg = msg;
-        errorRows = (errorMsg.split(lineRegex)).length;
-        if (errorRows == 0){
-          errorRows = 1
-        } else if (errorRows > 4){
-          errorRows = 4;
+        Profile.errorMsg = action + ' -> '+ msg;
+        Profile.errorRows = (Profile.errorMsg.split(lineRegex)).length;
+        if (Profile.errorRows == 0){
+          Profile.errorRows = 1
+        } else if (Profile.errorRows > 4){
+          Profile.errorRows = 4;
         }
-        isError = true;
+        Profile.isError = true;
     }
 
     import { createEventDispatcher, onMount, beforeUpdate } from "svelte";
@@ -189,14 +182,14 @@
 
     function checkFields() {
 
-      markUnsavedFields = Profile.transactionsUnsaved 
+      Profile.markUnsavedFields = Profile.transactionsUnsaved 
                     || Profile.cpsUnsaved
                     || Profile.dataLengthUnsaved
                     || Profile.maxPipelineUnsaved
                     || Profile.clientIfaceUnsaved
                     || Profile.serverIfaceUnsaved;
 
-      markErrorFields = Profile.transactionsError 
+      Profile.markErrorFields = Profile.transactionsError 
                     || Profile.cpsError
                     || Profile.dataLengthError
                     || Profile.maxPipelineError
@@ -206,11 +199,11 @@
       for (const csg of Profile.cs_groups) {
         csg.fieldAttention = false;
         if (csg.client_ipsError) {
-          markErrorFields = true;
+          Profile.markErrorFields = true;
           csg.fieldAttention = true;
         }
         if (csg.client_ipsUnsaved) {
-          markUnsavedFields = true;
+          Profile.markUnsavedFields = true;
           csg.fieldAttention = true;
         }
       }
@@ -230,15 +223,16 @@
     }
 
     async function onSave () {
+      const action = 'onSave'; 
       const p = profileNormalize (Profile);
 
       const controller = new AbortController();
       const signal = controller.signal;
 
       try {
-        errorMsg = '';
-        isError = false;
-        isProgress = true;
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
         const res = await fetch ('/api/profiles.json', {
           signal,
           method: 'PUT',
@@ -267,20 +261,20 @@
               validateAllFields ();
             } else {
               console.log(json);
-              setErrorMsg (json.message);
+              setErrorMsg (action, json.message);
             }
           } else {
-            setErrorMsg (text); 
+            setErrorMsg (action, text); 
           }
-          isProgress = false;
+          Profile.isProgress = false;
         } else {
           console.log(res);
-          setErrorMsg (res.statusText);
-          isProgress = false;
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
         }
       } catch (e) {
-        setErrorMsg (e.toString());
-        isProgress = false;
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
       }
     }
 
@@ -548,11 +542,32 @@
       <li class="is-active" ><a>{Profile.Type} : {Profile.Name}</a></li>
 
       <!-- svelte-ignore a11y-missing-attribute -->
-      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] <strong class="{markUnsavedFields || markErrorFields ? 'errmsg' : ''}">&nbsp;&nbsp;{markUnsavedFields ? "Unsaved Fields" : ""} &nbsp;&nbsp;{markErrorFields ? "Error Fields" : ""}</strong> </a></li>
+      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] <strong class="{Profile.markUnsavedFields || Profile.markErrorFields ? 'errmsg' : ''}">&nbsp;&nbsp;{Profile.markUnsavedFields ? "Unsaved Fields" : ""} &nbsp;&nbsp;{Profile.markErrorFields ? "Error Fields" : ""}</strong> </a></li>
   </ul>
 </nav>
 
 <div class="columns is-multiline is-mobile profile-margin">
+
+    <div class="column is-12">
+      {#if Profile.isProgress}
+        <div class="field">
+          <div class="control" >
+            <ProgressBar helperText=""/>
+          </div>
+        </div>
+      {/if}
+
+      {#if Profile.isError}
+        <div class="field">
+          <!-- svelte-ignore a11y-label-has-associated-control -->
+          <label class="label">Status</label>
+          <div class="control">
+            <textarea class="textarea errmsg" placeholder="" rows="{Profile.errorRows}" value={Profile.errorMsg} readonly/>
+          </div>
+        </div>          
+      {/if}
+    </div>  
+
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
         <div class="tile is-6 is-parent">
@@ -658,10 +673,10 @@
 
               <div class="field is-grouped">
                 <div class="control" >
-                  <button class="button  is-info" disabled={markUnsavedFields || markErrorFields} on:click={onRun} >Run</button>
+                  <button class="button  is-info" disabled={Profile.markUnsavedFields || Profile.markErrorFields} on:click={onRun} >Run</button>
                 </div>
                 <div class="control">
-                  <button class="button  is-info is-outlined" disabled={!markUnsavedFields} on:click={onSave} >Save</button>
+                  <button class="button  is-info is-outlined" disabled={!Profile.markUnsavedFields} on:click={onSave} >Save</button>
                 </div>
               </div>
             </section> 
@@ -680,26 +695,6 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="column is-12">
-      {#if isProgress}
-        <div class="field">
-          <div class="control" >
-            <ProgressBar helperText=""/>
-          </div>
-        </div>
-      {/if}
-
-      {#if isError}
-        <div class="field">
-          <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Status</label>
-          <div class="control">
-            <textarea class="textarea errmsg" placeholder="" rows="{errorRows}" value={errorMsg} readonly/>
-          </div>
-        </div>          
-      {/if}
     </div>
 
     <div class="column is-12">
