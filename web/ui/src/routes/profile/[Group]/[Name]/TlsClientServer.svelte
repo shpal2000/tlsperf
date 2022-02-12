@@ -12,6 +12,23 @@
     let Profile = null;
     let SavedProfile = null;
 
+    let isError;
+    let errorMsg;
+    let errorRows;
+    let isProgress;
+
+    function setErrorMsg(msg) {
+      let lineRegex = new RegExp('\r?\n');
+
+        errorMsg = msg;
+        errorRows = (errorMsg.split(lineRegex)).length;
+        if (errorRows == 0){
+          errorRows = 1
+        } else if (errorRows > 4){
+          errorRows = 4;
+        }
+        isError = true;
+    }
 
     import { createEventDispatcher, onMount, beforeUpdate } from "svelte";
 
@@ -219,15 +236,14 @@
       const signal = controller.signal;
 
       try {
-        // errorMsg = '';
-        // isError = false;
-        // isProgress = true;
+        errorMsg = '';
+        isError = false;
+        isProgress = true;
         const res = await fetch ('/api/profiles.json', {
           signal,
           method: 'PUT',
           body: JSON.stringify(p)
         });
-        // isProgress = false;
 
         if (res.ok) {
           const text = await res.text();
@@ -249,24 +265,22 @@
               SavedProfile = profileCanonical(p);
               $routeViewState[routeViewKey] = {Profile, SavedProfile};
               validateAllFields ();
-
-              // dispatch ('addProfileSuccess', {Name: Name});
-              // resetState();
             } else {
               console.log(json);
-              // setErrorMsg (json.message);
+              setErrorMsg (json.message);
             }
           } else {
-            // isProgress = false;
-            // setErrorMsg (text); 
+            setErrorMsg (text); 
           }
+          isProgress = false;
         } else {
           console.log(res);
-          // setErrorMsg (JSON.stringify(res));
+          setErrorMsg (res.statusText);
+          isProgress = false;
         }
       } catch (e) {
-        // isProgress = false;
-        // setErrorMsg (e.toString()); 
+        setErrorMsg (e.toString());
+        isProgress = false;
       }
     }
 
@@ -641,6 +655,7 @@
                   </div>
                 </div>
               </div>
+
               <div class="field is-grouped">
                 <div class="control" >
                   <button class="button  is-info" disabled={markUnsavedFields || markErrorFields} on:click={onRun} >Run</button>
@@ -665,6 +680,26 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="column is-12">
+      {#if isProgress}
+        <div class="field">
+          <div class="control" >
+            <ProgressBar helperText=""/>
+          </div>
+        </div>
+      {/if}
+
+      {#if isError}
+        <div class="field">
+          <!-- svelte-ignore a11y-label-has-associated-control -->
+          <label class="label">Status</label>
+          <div class="control">
+            <textarea class="textarea errmsg" placeholder="" rows="{errorRows}" value={errorMsg} readonly/>
+          </div>
+        </div>          
+      {/if}
     </div>
 
     <div class="column is-12">
