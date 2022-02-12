@@ -181,15 +181,16 @@ async def api_get_profiles(request):
         profile_col = db[PROFILE_LISTS]
 
         if (group and name):
-            profile = profile_col.find_one({'Group': group, 'Name': name}, {'_id' : False})
+            query = {'Group': group, 'Name': name}
+            profile = profile_col.find_one(query, {'_id' : False})
             if not profile:
                 return web.json_response({'status' : -1, 'message': 'profile not found'})
             return web.json_response({'status': 0, 'data': profile})
         else:
             profiles = profile_col.find({}, {'_id' : False})
             if not profiles:
-                return []
-            return web.json_response(list(profiles))
+                return web.json_response({'status': 0, 'data': []})
+            return web.json_response({'status': 0, 'data': list(profiles)})
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 
@@ -336,18 +337,30 @@ async def api_delete_profile_group(request):
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 
-async def api_get_profile_run(request):
+async def api_get_profile_runs(request):
     try:
         group = request.query['group']
         name = request.query['name']
 
-        query = {'Group': group, 'Name': name}
-        
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
-
         task_col = db[TASK_LISTS]
-        task = task_col.find_one(query, {'_id' : False})
+
+        if (group and name):
+            query = {'Group': group, 'Name': name}
+            task = task_col.find_one(query, {'_id' : False})
+            if not task:
+                return web.json_response({'status' : -1, 'message': 'profile run not found'})
+            return web.json_response({'status': 0, 'data': task})
+        else:
+            tasks = task_col.find({}, {'_id' : False})
+            if not tasks:
+                return web.json_response({'status': 0, 'data': []})
+            return web.json_response({'status': 0, 'data': list(tasks)})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
+
+        
 
         if task:
             return web.json_response({'status' : 0, 'info': task})
@@ -539,15 +552,15 @@ app.add_routes([web.route('delete'
                             , api_delete_profile_group)])
 
 app.add_routes([web.route('get'
-                            , '/api/profile_run'
-                            , api_get_profile_run)])
+                            , '/api/profile_runs'
+                            , api_get_profile_runs)])
 
 app.add_routes([web.route('post'
-                            , '/api/profile_run'
+                            , '/api/profile_runs'
                             , api_start_profile_run)])
 
 app.add_routes([web.route('delete'
-                            , '/api/profile_run'
+                            , '/api/profile_runs'
                             , api_stop_profile_run)])
 
 # app.add_routes([web.route('post'

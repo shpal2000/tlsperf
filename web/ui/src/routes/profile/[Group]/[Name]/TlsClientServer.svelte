@@ -279,7 +279,51 @@
     }
 
     async function onRun () {
+      const action = 'onRun';
+      const controller = new AbortController();
+      const signal = controller.signal;
 
+      try {
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        const res = await fetch ('/api/profile_runs.json', {
+          signal,
+          method: 'POST',
+          body: JSON.stringify({'Group': Profile.Group,
+                                  'Name': Profile.Name})
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
+
+          if (isJson) {
+            if (json.status == 0){
+              alert ('started');
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+            }
+          } else {
+            setErrorMsg (action, text); 
+          }
+          Profile.isProgress = false;
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
     }
 
 
