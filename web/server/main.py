@@ -189,8 +189,8 @@ async def api_get_profiles(request):
         else:
             profiles = profile_col.find({}, {'_id' : False})
             if not profiles:
-                return web.json_response({'status': 0, 'data': []})
-            return web.json_response({'status': 0, 'data': list(profiles)})
+                return web.json_response([])
+            return web.json_response(list(profiles))
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 
@@ -355,8 +355,8 @@ async def api_get_profile_runs(request):
         else:
             tasks = task_col.find({}, {'_id' : False})
             if not tasks:
-                return web.json_response({'status': 0, 'data': []})
-            return web.json_response({'status': 0, 'data': list(tasks)})
+                return web.json_response([])
+            return web.json_response(list(tasks))
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 

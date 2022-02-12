@@ -278,6 +278,98 @@
       }
     }
 
+    async function onStop () {
+      const action = 'onStop';
+      const controller = new AbortController();
+      const signal = controller.signal;
+
+      try {
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        Profile.progressText = 'Start ...';
+        const res = await fetch ('/api/profile_runs.json', {
+          signal,
+          method: 'DELETE',
+          body: JSON.stringify({'Group': Profile.Group,
+                                  'Name': Profile.Name})
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
+
+          if (isJson) {
+            if (json.status == 0){
+              
+              while (true) {
+                const res2 = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
+                if (res2.ok) {
+                  const text2 = await res2.text();
+                  let isJson2 = true;
+                  let json2 = {};
+                  try {
+                    json2 = JSON.parse (text2);
+                  } catch (e) {
+                    isJson2 = false;
+                  }
+
+                  if (isJson2) {
+                    if (json2.status == 0) {
+                      const task = json2.data;
+                      if (task.Status == 'done') {
+                        Profile.isProgress = false;
+                        Profile.isRunning = false;
+                        break;
+                      } else {
+                        Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
+                        continue;
+                      }
+                    } else {
+                      setErrorMsg (action, json2.message);
+                      Profile.isProgress = false;
+                      break;                      
+                    }
+                  } else {
+                    console.log(text2);
+                    setErrorMsg (action, text2);
+                    Profile.isProgress = false;
+                    break;
+                  }
+                } else {
+                  console.log(res2);
+                  setErrorMsg (action, res2.statusText);
+                  Profile.isProgress = false;
+                  break;
+                }
+              }
+              Profile.isProgress = false;
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+              Profile.isProgress = false;
+            }
+          } else {
+            setErrorMsg (action, text);
+            Profile.isProgress = false;
+          }
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
+    }
+
     async function onRun () {
       const action = 'onRun';
       const controller = new AbortController();
@@ -287,6 +379,7 @@
         Profile.errorMsg = '';
         Profile.isError = false;
         Profile.isProgress = true;
+        Profile.progressText = 'Start ...';
         const res = await fetch ('/api/profile_runs.json', {
           signal,
           method: 'POST',
@@ -306,15 +399,58 @@
 
           if (isJson) {
             if (json.status == 0){
-              alert ('started');
+              
+              while (true) {
+                const res2 = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
+                if (res2.ok) {
+                  const text2 = await res2.text();
+                  let isJson2 = true;
+                  let json2 = {};
+                  try {
+                    json2 = JSON.parse (text2);
+                  } catch (e) {
+                    isJson2 = false;
+                  }
+
+                  if (isJson2) {
+                    if (json2.status == 0) {
+                      const task = json2.data;
+                      if (task.Status == 'done') {
+                        Profile.isProgress = false;
+                        Profile.isRunning = true;
+                        break;
+                      } else {
+                        Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
+                        continue;
+                      }
+                    } else {
+                      setErrorMsg (action, json2.message);
+                      Profile.isProgress = false;
+                      break;                      
+                    }
+                  } else {
+                    console.log(text2);
+                    setErrorMsg (action, text2);
+                    Profile.isProgress = false;
+                    break;
+                  }
+                } else {
+                  console.log(res2);
+                  setErrorMsg (action, res2.statusText);
+                  Profile.isProgress = false;
+                  break;
+                }
+              }
+              Profile.isProgress = false;
             } else {
               console.log(json);
               setErrorMsg (action, json.message);
+              Profile.isProgress = false;
             }
           } else {
-            setErrorMsg (action, text); 
+            setErrorMsg (action, text);
+            Profile.isProgress = false;
           }
-          Profile.isProgress = false;
         } else {
           console.log(res);
           setErrorMsg (action, res.statusText);
@@ -486,6 +622,9 @@
         Profile = profileCanonical ($page.stuff.Profile);
         SavedProfile = profileCanonical ($page.stuff.Profile);
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
+
+        Profile.isRunning = ($page.stuff.Task.State == 'run');
+
         validateAllFields ();
       }
     }
@@ -596,7 +735,7 @@
       {#if Profile.isProgress}
         <div class="field">
           <div class="control" >
-            <ProgressBar helperText=""/>
+            <ProgressBar helperText="{Profile.progressText}"/>
           </div>
         </div>
       {/if}
@@ -717,7 +856,7 @@
 
               <div class="field is-grouped">
                 <div class="control" >
-                  <button class="button  is-info" disabled={Profile.markUnsavedFields || Profile.markErrorFields} on:click={onRun} >Run</button>
+                  <button class="button  is-info" disabled={Profile.markUnsavedFields || Profile.markErrorFields} on:click={Profile.isRunning ? onStop : onRun} > {Profile.isRunning ? 'Stop' : 'Run'} </button>
                 </div>
                 <div class="control">
                   <button class="button  is-info is-outlined" disabled={!Profile.markUnsavedFields} on:click={onSave} >Save</button>

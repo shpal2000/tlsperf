@@ -9,7 +9,7 @@
             const res2 = await fetch (`/api/profile_runs.json?group=${group}&name=${name}`);
             if (res.ok && res2.ok) {
                 const text = await res.text();
-                const text2 = await res.text();
+                const text2 = await res2.text();
                 let isJson = true;
                 let json = {};
                 let json2 = {};
@@ -33,14 +33,14 @@
                             }
                         }
                     } else {
-                        return {status: 404, error: new Error(`Clound not load ${url} \n ${json.message} \n ${json2.message}`)};
+                        return {status: 404, error: new Error(`Clound not load1 ${url} \n ${json.message} \n ${json2.message}`)};
                     }
                 } else {
-                    return {status: 404, error: new Error(`Clound not load ${url} \n ${text}  \n ${text2}`)};
+                    return {status: 404, error: new Error(`Clound not load2 ${url} \n ${text}  \n ${text2}`)};
                 }
             }
         } catch (e) {
-            return {status: 404, error: new Error(`Clound not load ${url} \n ${e}`)};
+            return {status: 404, error: new Error(`Clound not load3 ${url} \n ${e}`)};
         }
 
         return {status: 500, error: new Error(`Clound not load ${url}`)};
