@@ -127,7 +127,7 @@ spec:
         - name: PORT
           value: "8888"
   nodeSelector:
-    tgid: kube-master
+    tgid: Node0
 
 
 ---
