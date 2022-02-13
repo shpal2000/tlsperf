@@ -59,6 +59,10 @@ spec:
       command: ["python3"]
       args: ["server.py"]
       env:
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP      
         - name: HOST
           value: "0.0.0.0"
         - name: BPORT

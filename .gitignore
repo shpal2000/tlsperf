@@ -1,6 +1,13 @@
 /build/
 /subprojects/
 /Dockerbuild/web_deploy/ui/
+/Dockerbuild/web_deploy/server/
 
-web/server/__pycache__
-web/server/modules/__pycache__
+/web/server/__pycache__
+/web/server/modules/__pycache__
+
+/web/bulma/
+/web/.sass-cache/
+
+
+.DS_Store
