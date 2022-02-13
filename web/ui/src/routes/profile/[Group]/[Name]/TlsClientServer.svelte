@@ -620,7 +620,7 @@
       stopSyncInterval();
 
       Profile.isProgress = true
-      Profile.progressText = 'Loading ...';
+      Profile.progressText = 'Refreshing ...';
       startSyncInterval ();
     }
   });
