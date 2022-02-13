@@ -144,7 +144,7 @@ def get_v1_api_instance ():
   return v1_api
 
 
-def start (group, name):
+def start (group, name, stats_addr):
 
     v1Api= get_v1_api_instance ()
 
@@ -180,8 +180,8 @@ def start (group, name):
             'ServerIP': csg["server_ip"].split('/')[0],
             'ServerPort': csg["server_port"],
             'IsTls': csg["server_ssl"],
-            'WebIP': "10.32.0.4",
-            'WebPortStats': 7000,
+            'WebIP': stats_addr.split(':')[0],
+            'WebPortStats': int(stats_addr.split(':')[1]),
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
             'ClientIPsAnno': cips,
@@ -189,10 +189,10 @@ def start (group, name):
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
-            'ServerNodeLabel': 'kube-master',
-            'ClientNodeLabel': 'kube-master',
-            'ServerInterfaceName': 'eth0',
-            'ClientInterfaceName': 'eth0'
+            'ServerNodeLabel': profile["ServerIface"].split(':')[0],
+            'ClientNodeLabel': profile["ClientIface"].split(':')[0],
+            'ServerInterfaceName': profile["ServerIface"].split(':')[1],
+            'ClientInterfaceName': profile["ClientIface"].split(':')[1]
         }
 
         server_cmap = kubernetes.client.V1ConfigMap()
@@ -381,7 +381,7 @@ def start (group, name):
 
 
 
-def stop (group, name):
+def stop (group, name, stats_addr):
 
     v1Api= get_v1_api_instance ()
   
@@ -419,8 +419,8 @@ def stop (group, name):
             'ServerIP': csg["server_ip"].split('/')[0],
             'ServerPort': csg["server_port"],
             'IsTls': csg["server_ssl"],
-            'WebIP': "10.32.0.4",
-            'WebPortStats': 7000,
+            'WebIP': stats_addr.split(':')[0],
+            'WebPortStats': int(stats_addr.split(':')[1]),
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
             'ClientIPsAnno': cips,
@@ -428,10 +428,10 @@ def stop (group, name):
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
-            'ServerNodeLabel': 'kube-master',
-            'ClientNodeLabel': 'kube-master',
-            'ServerInterfaceName': 'eth0',
-            'ClientInterfaceName': 'eth0'
+            'ServerNodeLabel': profile["ServerIface"].split(':')[0],
+            'ClientNodeLabel': profile["ClientIface"].split(':')[0],
+            'ServerInterfaceName': profile["ServerIface"].split(':')[1],
+            'ClientInterfaceName': profile["ClientIface"].split(':')[1]
         }
         name = 'tlsclient-{AppGid}-{AppId}'.format(**input_map)
         try:
@@ -468,8 +468,8 @@ def stop (group, name):
             'ServerIP': csg["server_ip"].split('/')[0],
             'ServerPort': csg["server_port"],
             'IsTls': csg["server_ssl"],
-            'WebIP': "10.32.0.4",
-            'WebPortStats': 7000,
+            'WebIP': stats_addr.split(':')[0],
+            'WebPortStats': int(stats_addr.split(':')[1]),
             'ClientServerDataLen': csg["send_recv_len"],
             'CPS': csg["cps"],
             'ClientIPsAnno': cips,
@@ -477,10 +477,10 @@ def stop (group, name):
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
-            'ServerNodeLabel': 'kube-master',
-            'ClientNodeLabel': 'kube-master',
-            'ServerInterfaceName': 'eth0',
-            'ClientInterfaceName': 'eth0'
+            'ServerNodeLabel': profile["ServerIface"].split(':')[0],
+            'ClientNodeLabel': profile["ClientIface"].split(':')[0],
+            'ServerInterfaceName': profile["ServerIface"].split(':')[1],
+            'ClientInterfaceName': profile["ClientIface"].split(':')[1]
         }
         name = 'tlsserver-{AppGid}-{AppId}'.format(**input_map)
         try:
@@ -505,12 +505,14 @@ if __name__ == '__main__':
     parser.add_argument ('--ops', action='store', required=True)
     parser.add_argument ('--group', action='store', required=True)    
     parser.add_argument ('--name', action='store', required=True)
+    parser.add_argument ('--stats_addr', action='store', required=True)
+
     cmdArgs = parser.parse_args()
 
     if cmdArgs.ops == 'start':
-        start (cmdArgs.group, cmdArgs.name)
+        start (cmdArgs.group, cmdArgs.name, cmdArgs.stats_addr)
     
     elif cmdArgs.ops == 'stop':
-        stop (cmdArgs.group, cmdArgs.name)
+        stop (cmdArgs.group, cmdArgs.name, cmdArgs.stats_addr)
 
 

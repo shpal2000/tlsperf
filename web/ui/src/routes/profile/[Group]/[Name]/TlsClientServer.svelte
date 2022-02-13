@@ -1,4 +1,5 @@
 <script>
+    import { createEventDispatcher, onMount, beforeUpdate, onDestroy, tick } from "svelte";
     import { page } from '$app/stores'
     import { routeViewState, getProfileStateKey } from '$lib/store';
     import {goto} from "$app/navigation";
@@ -7,6 +8,7 @@
     import { ProgressBar } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
+    let SyncInterval = null;
     let Profile = null;
     let SavedProfile = null;
 
@@ -23,7 +25,6 @@
         Profile.isError = true;
     }
 
-    import { createEventDispatcher, onMount, beforeUpdate } from "svelte";
 
     const dispatch = createEventDispatcher ();
 
@@ -223,6 +224,9 @@
     }
 
     async function onSave () {
+      stopSyncInterval();
+      Profile.isTransient = true;
+
       const action = 'onSave'; 
       const p = profileNormalize (Profile);
 
@@ -276,10 +280,16 @@
         setErrorMsg (action, e.toString());
         Profile.isProgress = false;
       }
+
+      startSyncInterval()
     }
 
     async function onStop () {
-      const action = 'onStop';
+      stopSyncInterval();
+      Profile.isTransient = true;
+
+      let action = 'onStop';
+
       const controller = new AbortController();
       const signal = controller.signal;
 
@@ -287,7 +297,7 @@
         Profile.errorMsg = '';
         Profile.isError = false;
         Profile.isProgress = true;
-        Profile.progressText = 'Start ...';
+        Profile.progressText = 'Stop ...';
         const res = await fetch ('/api/profile_runs.json', {
           signal,
           method: 'DELETE',
@@ -307,49 +317,6 @@
 
           if (isJson) {
             if (json.status == 0){
-              
-              while (true) {
-                const res2 = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
-                if (res2.ok) {
-                  const text2 = await res2.text();
-                  let isJson2 = true;
-                  let json2 = {};
-                  try {
-                    json2 = JSON.parse (text2);
-                  } catch (e) {
-                    isJson2 = false;
-                  }
-
-                  if (isJson2) {
-                    if (json2.status == 0) {
-                      const task = json2.data;
-                      if (task.Status == 'done') {
-                        Profile.isProgress = false;
-                        Profile.isRunning = false;
-                        break;
-                      } else {
-                        Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
-                        continue;
-                      }
-                    } else {
-                      setErrorMsg (action, json2.message);
-                      Profile.isProgress = false;
-                      break;                      
-                    }
-                  } else {
-                    console.log(text2);
-                    setErrorMsg (action, text2);
-                    Profile.isProgress = false;
-                    break;
-                  }
-                } else {
-                  console.log(res2);
-                  setErrorMsg (action, res2.statusText);
-                  Profile.isProgress = false;
-                  break;
-                }
-              }
-              Profile.isProgress = false;
             } else {
               console.log(json);
               setErrorMsg (action, json.message);
@@ -368,10 +335,15 @@
         setErrorMsg (action, e.toString());
         Profile.isProgress = false;
       }
-    }
 
-    async function onRun () {
-      const action = 'onRun';
+      startSyncInterval();
+    }
+    
+    async function onStart () {
+      stopSyncInterval();
+      Profile.isTransient = true;
+
+      const action = 'onStart';
       const controller = new AbortController();
       const signal = controller.signal;
 
@@ -399,49 +371,7 @@
 
           if (isJson) {
             if (json.status == 0){
-              
-              while (true) {
-                const res2 = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
-                if (res2.ok) {
-                  const text2 = await res2.text();
-                  let isJson2 = true;
-                  let json2 = {};
-                  try {
-                    json2 = JSON.parse (text2);
-                  } catch (e) {
-                    isJson2 = false;
-                  }
-
-                  if (isJson2) {
-                    if (json2.status == 0) {
-                      const task = json2.data;
-                      if (task.Status == 'done') {
-                        Profile.isProgress = false;
-                        Profile.isRunning = true;
-                        break;
-                      } else {
-                        Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
-                        continue;
-                      }
-                    } else {
-                      setErrorMsg (action, json2.message);
-                      Profile.isProgress = false;
-                      break;                      
-                    }
-                  } else {
-                    console.log(text2);
-                    setErrorMsg (action, text2);
-                    Profile.isProgress = false;
-                    break;
-                  }
-                } else {
-                  console.log(res2);
-                  setErrorMsg (action, res2.statusText);
-                  Profile.isProgress = false;
-                  break;
-                }
-              }
-              Profile.isProgress = false;
+              Profile.isRunning = true;
             } else {
               console.log(json);
               setErrorMsg (action, json.message);
@@ -460,8 +390,21 @@
         setErrorMsg (action, e.toString());
         Profile.isProgress = false;
       }
+
+      startSyncInterval();
     }
 
+    async function onAction () {
+      if (Profile.isRunning) {
+        await onStop();
+      } else {
+        if (Profile.markUnsavedFields || Profile.markErrorFields) {
+          await onSave();
+        } else {
+          await onStart();
+        }
+      }
+    }
 
     let chartValues = [];
     let chartLabels = [];
@@ -600,8 +543,55 @@
 
     return p2;
   }
+
+  function stopSyncInterval() {
+    if (!SyncInterval) {
+        clearInterval (SyncInterval);
+        SyncInterval = null;
+      }
+  }
+
+  function startSyncInterval() {
+    SyncInterval = setInterval ( onSyncInterval, 5000);
+  }
+
+  async function onSyncInterval () {
+
+    try{
+      const res = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
+      if (res.ok) {
+        const text = await res.text();
+        let isJson = true;
+        let json = {};
+
+        try {
+            json = JSON.parse (text);
+        } catch (e) {
+            isJson = false;
+        }
+
+        if (isJson) {
+          if (json.status == 0) {
+
+            await tick ();
+
+            const task =json.data;
+            Profile.isRunning = (task.State == 'run');
+            Profile.isProgress = (task.Status == 'progress');
+            Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
+
+            Profile.isTransient = false;
+          } else {
+          }
+        } else {
+        }
+      }
+    } catch (e) {
+
+    }
+  }
   
-  beforeUpdate ( () => {
+  beforeUpdate ( async () => {
 
     const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
 
@@ -622,11 +612,16 @@
         Profile = profileCanonical ($page.stuff.Profile);
         SavedProfile = profileCanonical ($page.stuff.Profile);
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
-
-        Profile.isRunning = ($page.stuff.Task.State == 'run');
-
         validateAllFields ();
+        
       }
+
+      Profile.isTransient = true;
+      stopSyncInterval();
+
+      Profile.isProgress = true
+      Profile.progressText = 'Loading ...';
+      startSyncInterval ();
     }
   });
 
@@ -706,10 +701,14 @@
   //         }
   //       }
   //   });
-
   });
 
-
+  onDestroy ( () => {
+    if (SyncInterval) {
+      clearInterval (SyncInterval);
+      SyncInterval = null;
+    }
+  });
 
 </script>
 
@@ -765,6 +764,7 @@
                       <input class="input {(Profile.transactionsError || Profile.transactionsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.Transactions}
                         on:input={validateTransactions}
                       >
@@ -781,6 +781,7 @@
                       <input class="input {(Profile.cpsError || Profile.cpsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.CPS}
                         on:input={validateCps}
                       >
@@ -797,6 +798,7 @@
                       <input class="input {(Profile.dataLengthError || Profile.dataLengthUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.DataLength}
                         on:input={validateDataLength}
                       >
@@ -813,6 +815,7 @@
                       <input class="input {(Profile.maxPipelineError || Profile.maxPipelineUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.MaxPipeline}
                         on:input={validateMaxPipeline}
                       >
@@ -828,8 +831,9 @@
                     <div class="control">
                       <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ClientIface}
-                        type="text"
+                        type=""
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateClientIface}
                       >
                       <p class="help">{Profile.clientIfaceHelp}</p>
@@ -844,8 +848,9 @@
                     <div class="control">
                       <input class="input {(Profile.serverIfaceError || Profile.serverIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ServerIface}
-                        type="text"
+                        type=""
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateServerIface}
                       >
                       <p class="help">{Profile.serverIfaceHelp}</p>
@@ -856,10 +861,19 @@
 
               <div class="field is-grouped">
                 <div class="control" >
-                  <button class="button  is-info" disabled={Profile.markUnsavedFields || Profile.markErrorFields} on:click={Profile.isRunning ? onStop : onRun} > {Profile.isRunning ? 'Stop' : 'Run'} </button>
-                </div>
-                <div class="control">
-                  <button class="button  is-info is-outlined" disabled={!Profile.markUnsavedFields} on:click={onSave} >Save</button>
+                  <button class="button  is-info" 
+                    disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
+                    on:click={onAction} > 
+                      {#if Profile.isRunning}
+                        Stop
+                      {:else}
+                        {#if Profile.markUnsavedFields || Profile.markErrorFields}
+                          Save
+                        {:else}
+                          Start
+                        {/if} 
+                      {/if}
+                  </button>
                 </div>
               </div>
             </section> 
@@ -939,6 +953,7 @@
                       <input class="input {(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.cs_groups[row.index].client_ips}
                         on:input={() => validateClientIPs(row.index)}
                       >

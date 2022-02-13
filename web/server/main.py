@@ -8,6 +8,7 @@ import json
 from pymongo import MongoClient
 import yaml
 import asyncssh
+import time
 
 from config import *
 
@@ -371,11 +372,15 @@ async def api_get_profile_runs(request):
 
 async def task_start_profile_run(group, name):
 
+    stats_addr = '{}:{}'.format(os.environ.get('MY_POD_IP')
+                                , os.environ.get('SPORT'))
+
     proc = await asyncio.create_subprocess_exec('python3',
                                                 './modules/TlsClientServer.py',
                                                     '--ops', 'start',
                                                     '--group', group,
-                                                    '--name', name)
+                                                    '--name', name,
+                                                    '--stats_addr', stats_addr)
 
     mongoClient = MongoClient(DB_CSTRING)
     db = mongoClient[DB_NAME]
@@ -426,11 +431,16 @@ async def api_start_profile_run(request):
         return web.json_response({'status' : -1, 'message': str(err)})
 
 async def task_stop_profile_run(group, name):
+
+    stats_addr = '{}:{}'.format(os.environ.get('MY_POD_IP')
+                                , os.environ.get('SPORT'))
+
     proc = await asyncio.create_subprocess_exec('python3',
                                                 './modules/TlsClientServer.py',
                                                     '--ops', 'stop',
                                                     '--group', group,
-                                                    '--name', name)
+                                                    '--name', name,
+                                                    '--stats_addr', stats_addr)
     await proc.wait()
 
     mongoClient = MongoClient(DB_CSTRING)
@@ -448,7 +458,6 @@ async def api_stop_profile_run(request):
         r_json = json.loads(r_text)
         group = r_json['Group']
         name = r_json['Name']
-        force = r_json.get('Force', False)
 
         query = {'Group': group, 'Name': name}
         
@@ -466,8 +475,11 @@ async def api_stop_profile_run(request):
                 return web.json_response({'status' : -1, 'message': 'not running'})
 
             if task['Status'] == 'progress':
-                if task['Type'] == 'start_run' and force:
-                    os.kill(task['Pid'], signal.SIGKILL)
+                if task['Type'] == 'start_run':
+                    try:
+                        os.kill(task['Pid'], signal.SIGKILL)
+                    except:
+                        pass
                 else:
                     return web.json_response({'status' : -1, 'message': '{} already in porgress'.format(task['Type'])})
 
