@@ -55,9 +55,9 @@ spec:
     - name: tlsperf-backend
       image: tlspack/tlsperf:latest
       imagePullPolicy: Always
-      workingDir: /tlsperf_web/
+      workingDir: /tlsperf_web/server/
       command: ["python3"]
-      args: ["server.py"]
+      args: ["main.py"]
       env:
         - name: MY_POD_IP
           valueFrom:
@@ -85,7 +85,7 @@ spec:
         - name: PORT
           value: "8888"
   nodeSelector:
-    tgid: kube-master
+    tgid: Node0
 
 
 ---
