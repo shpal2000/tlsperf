@@ -658,6 +658,10 @@
             Profile.isTransient = false;
             Profile.isRunning = (task.State == 'run');
             Profile.isTaskInProgress = (task.Status == 'progress');
+
+            Profile.isProgress = (task.Status == 'progress');
+            Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
+
           } else {
           }
         } else {
