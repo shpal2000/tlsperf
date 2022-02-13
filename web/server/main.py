@@ -495,14 +495,23 @@ async def api_stop_profile_run(request):
         return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_get_stats(request):
-    mongoClient = MongoClient(DB_CSTRING)
-    db = mongoClient[DB_NAME]
-    stats_col = db[REALTIME_STATS]
-    appGId = request.match_info['appGId']
-    gstats = stats_col.find_one ({'appGId' : appGId}, {'_id' : False})
-    if not gstats:
-        gstats = {}
-    return web.json_response(gstats)
+    try:
+        group = request.query['group']
+        name = request.query['name']
+
+        query = {'Group': group, 'Name': name}
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        stats_col = db[REALTIME_STATS]
+
+        gstats = stats_col.find_one (query, {'_id' : False})
+
+        if not gstats:
+            gstats = {}
+        return web.json_response(gstats)
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 app = web.Application()
 
@@ -575,16 +584,9 @@ app.add_routes([web.route('delete'
                             , '/api/profile_runs'
                             , api_stop_profile_run)])
 
-# app.add_routes([web.route('post'
-#                             , '/api/stop_run'
-#                             , stop_run)])
-
-# app.add_routes([web.route('get'
-#                             , '/api/run'
-#                             , get_run)])
 
 app.add_routes([web.route('get'
-                            , '/api/stats/{appGId:.*}'
+                            , '/api/stats'
                             , api_get_stats)])
 
 
@@ -601,13 +603,16 @@ class StatsListener:
         del stats['appId']
         del stats['appGId']
 
+        group, name = appGId.split('-')
+        query = {'Group': group, 'Name': name}
+
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         stats_col = db[REALTIME_STATS]
 
-        gstats = stats_col.find_one ({'appGId' : appGId})
+        gstats = stats_col.find_one (query , {'_id' : False})
         if not gstats:
-            gstats = {'appGId' : appGId,
+            gstats = {'Group': group, 'Name': name,
                         'stats' : {'sum' : [stats], appId : [stats]}}
             stats_col.insert_one(gstats)
         else:
@@ -632,7 +637,7 @@ class StatsListener:
                                 sum_stats[k] = sum_stats[k]+ app_stats[k]
                 sum_stats_list.append(sum_stats)
             gstats['stats']['sum'] = sum_stats_list
-            stats_col.find_one_and_replace({'appGId' : appGId}, gstats)
+            stats_col.find_one_and_replace(query, gstats)
 
 
 def main ():
