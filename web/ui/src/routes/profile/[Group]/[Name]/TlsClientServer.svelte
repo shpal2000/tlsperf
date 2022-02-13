@@ -764,6 +764,7 @@
                       <input class="input {(Profile.transactionsError || Profile.transactionsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.Transactions}
                         on:input={validateTransactions}
                       >
@@ -780,6 +781,7 @@
                       <input class="input {(Profile.cpsError || Profile.cpsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.CPS}
                         on:input={validateCps}
                       >
@@ -796,6 +798,7 @@
                       <input class="input {(Profile.dataLengthError || Profile.dataLengthUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.DataLength}
                         on:input={validateDataLength}
                       >
@@ -812,6 +815,7 @@
                       <input class="input {(Profile.maxPipelineError || Profile.maxPipelineUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.MaxPipeline}
                         on:input={validateMaxPipeline}
                       >
@@ -827,8 +831,9 @@
                     <div class="control">
                       <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ClientIface}
-                        type="text"
+                        type=""
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateClientIface}
                       >
                       <p class="help">{Profile.clientIfaceHelp}</p>
@@ -843,8 +848,9 @@
                     <div class="control">
                       <input class="input {(Profile.serverIfaceError || Profile.serverIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ServerIface}
-                        type="text"
+                        type=""
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateServerIface}
                       >
                       <p class="help">{Profile.serverIfaceHelp}</p>
@@ -947,6 +953,7 @@
                       <input class="input {(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
                         placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
                         bind:value={Profile.cs_groups[row.index].client_ips}
                         on:input={() => validateClientIPs(row.index)}
                       >
