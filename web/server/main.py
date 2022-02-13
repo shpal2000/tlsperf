@@ -457,7 +457,7 @@ async def api_stop_profile_run(request):
         r_json = json.loads(r_text)
         group = r_json['Group']
         name = r_json['Name']
-        force = r_json.get('Force', False)
+        force = r_json.get('Force', 0)
 
         query = {'Group': group, 'Name': name}
         
@@ -475,7 +475,7 @@ async def api_stop_profile_run(request):
                 return web.json_response({'status' : -1, 'message': 'not running'})
 
             if task['Status'] == 'progress':
-                if task['Type'] == 'start_run' and force:
+                if task['Type'] == 'start_run' and force != 0:
                     os.kill(task['Pid'], signal.SIGKILL)
                 else:
                     return web.json_response({'status' : -1, 'message': '{} already in porgress'.format(task['Type'])})

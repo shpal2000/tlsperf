@@ -278,8 +278,11 @@
       }
     }
 
-    async function onStop () {
-      const action = 'onStop';
+    async function onStop (is_abort) {
+      let action = 'onStop';
+      if (is_abort) {
+        action = 'onAbort';
+      }
       const controller = new AbortController();
       const signal = controller.signal;
 
@@ -292,7 +295,8 @@
           signal,
           method: 'DELETE',
           body: JSON.stringify({'Group': Profile.Group,
-                                  'Name': Profile.Name})
+                                  'Name': Profile.Name,
+                                  'Force': is_abort})
         });
 
         if (res.ok) {
@@ -369,7 +373,7 @@
         Profile.isProgress = false;
       }
     }
-
+    
     async function onRun () {
       const action = 'onRun';
       const controller = new AbortController();
@@ -462,6 +466,21 @@
       }
     }
 
+    async function onAction () {
+      if (Profile.isRunning) {
+        if (Profile.isTaskInProgress) {
+          await onStop(1);
+        } else {
+          await onStop(0);
+        }
+      } else {
+        if (Profile.markUnsavedFields || Profile.markErrorFields) {
+          await onSave();
+        } else {
+          await onRun();
+        }
+      }
+    }
 
     let chartValues = [];
     let chartLabels = [];
@@ -624,6 +643,7 @@
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
 
         Profile.isRunning = ($page.stuff.Task.State == 'run');
+        Profile.isTaskInProgress = ($page.stuff.Task.Status == 'progress');
 
         validateAllFields ();
       }
@@ -856,10 +876,23 @@
 
               <div class="field is-grouped">
                 <div class="control" >
-                  <button class="button  is-info" disabled={Profile.markUnsavedFields || Profile.markErrorFields} on:click={Profile.isRunning ? onStop : onRun} > {Profile.isRunning ? 'Stop' : 'Run'} </button>
-                </div>
-                <div class="control">
-                  <button class="button  is-info is-outlined" disabled={!Profile.markUnsavedFields} on:click={onSave} >Save</button>
+                  <button class="button  is-info" 
+                    disabled={!Profile.isRunning && Profile.markErrorFields}
+                    on:click={onAction} > 
+                      {#if Profile.isRunning}
+                        {#if Profile.isTaskInProgress}
+                          Abort
+                        {:else}
+                          Stop
+                        {/if}
+                      {:else}
+                        {#if Profile.markUnsavedFields || Profile.markErrorFields}
+                          Save
+                        {:else}
+                          Run
+                        {/if} 
+                      {/if}
+                  </button>
                 </div>
               </div>
             </section> 
