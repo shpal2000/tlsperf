@@ -1,4 +1,5 @@
 <script>
+    import { createEventDispatcher, onMount, beforeUpdate, onDestroy } from "svelte";
     import { page } from '$app/stores'
     import { routeViewState, getProfileStateKey } from '$lib/store';
     import {goto} from "$app/navigation";
@@ -7,6 +8,7 @@
     import { ProgressBar } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
+    let SyncInterval = null;
     let Profile = null;
     let SavedProfile = null;
 
@@ -23,7 +25,6 @@
         Profile.isError = true;
     }
 
-    import { createEventDispatcher, onMount, beforeUpdate } from "svelte";
 
     const dispatch = createEventDispatcher ();
 
@@ -635,8 +636,39 @@
 
     return p2;
   }
+
+  async function onSyncInterval () {
+
+    try{
+      const res = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
+      if (res.ok) {
+        const text = await res.text();
+        let isJson = true;
+        let json = {};
+
+        try {
+            json = JSON.parse (text);
+        } catch (e) {
+            isJson = false;
+        }
+
+        if (isJson) {
+          if (json.status == 0) {
+            const task =json.data;
+            Profile.isTransient = false;
+            Profile.isRunning = (task.State == 'run');
+            Profile.isTaskInProgress = (task.Status == 'progress');
+          } else {
+          }
+        } else {
+        }
+      }
+    } catch (e) {
+
+    }
+  }
   
-  beforeUpdate ( () => {
+  beforeUpdate ( async () => {
 
     const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
 
@@ -657,13 +689,20 @@
         Profile = profileCanonical ($page.stuff.Profile);
         SavedProfile = profileCanonical ($page.stuff.Profile);
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
-
-        Profile.isTransient = true;
-        Profile.isRunning = ($page.stuff.Task.State == 'run');
-        Profile.isTaskInProgress = ($page.stuff.Task.Status == 'progress');
-
         validateAllFields ();
+        
       }
+
+      Profile.isTransient = true;
+
+      if (!SyncInterval) {
+        clearInterval (SyncInterval);
+        SyncInterval = null;
+      }
+
+      await onSyncInterval ();
+
+      SyncInterval = setInterval ( onSyncInterval, 5000);
     }
   });
 
@@ -743,10 +782,14 @@
   //         }
   //       }
   //   });
-
   });
 
-
+  onDestroy ( () => {
+    if (SyncInterval) {
+      clearInterval (SyncInterval);
+      SyncInterval = null;
+    }
+  });
 
 </script>
 
