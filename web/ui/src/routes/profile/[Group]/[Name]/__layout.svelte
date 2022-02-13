@@ -6,22 +6,18 @@
 
         try {
             const res = await fetch (`/api/profiles.json?group=${group}&name=${name}`);
-            const res2 = await fetch (`/api/profile_runs.json?group=${group}&name=${name}`);
-            if (res.ok && res2.ok) {
+            if (res.ok) {
                 const text = await res.text();
-                const text2 = await res2.text();
                 let isJson = true;
                 let json = {};
-                let json2 = {};
                 try {
                     json = JSON.parse (text);
-                    json2 = JSON.parse (text2);
                 } catch (e) {
                     isJson = false;
                 }
 
                 if (isJson) {
-                    if (json.status == 0 && json2.status == 0) {
+                    if (json.status == 0) {
                         return {
                             props: {
                                 Group: json.data.Group,
@@ -29,14 +25,13 @@
                             },
                             stuff: {
                                 Profile: json.data,
-                                Task: json2.data
                             }
                         }
                     } else {
-                        return {status: 404, error: new Error(`Clound not load1 ${url} \n ${json.message} \n ${json2.message}`)};
+                        return {status: 404, error: new Error(`Clound not load1 ${url} \n ${json.message}`)};
                     }
                 } else {
-                    return {status: 404, error: new Error(`Clound not load2 ${url} \n ${text}  \n ${text2}`)};
+                    return {status: 404, error: new Error(`Clound not load2 ${url} \n ${text}`)};
                 }
             }
         } catch (e) {

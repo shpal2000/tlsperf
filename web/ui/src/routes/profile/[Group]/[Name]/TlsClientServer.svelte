@@ -1,5 +1,5 @@
 <script>
-    import { createEventDispatcher, onMount, beforeUpdate, onDestroy } from "svelte";
+    import { createEventDispatcher, onMount, beforeUpdate, onDestroy, tick } from "svelte";
     import { page } from '$app/stores'
     import { routeViewState, getProfileStateKey } from '$lib/store';
     import {goto} from "$app/navigation";
@@ -224,6 +224,7 @@
     }
 
     async function onSave () {
+      stopSyncInterval();
       Profile.isTransient = true;
 
       const action = 'onSave'; 
@@ -280,16 +281,15 @@
         Profile.isProgress = false;
       }
 
-      Profile.isTransient = false;
+      startSyncInterval()
     }
 
-    async function onStop (is_abort) {
+    async function onStop () {
+      stopSyncInterval();
       Profile.isTransient = true;
 
       let action = 'onStop';
-      if (is_abort) {
-        action = 'onAbort';
-      }
+
       const controller = new AbortController();
       const signal = controller.signal;
 
@@ -297,13 +297,12 @@
         Profile.errorMsg = '';
         Profile.isError = false;
         Profile.isProgress = true;
-        Profile.progressText = 'Start ...';
+        Profile.progressText = 'Stop ...';
         const res = await fetch ('/api/profile_runs.json', {
           signal,
           method: 'DELETE',
           body: JSON.stringify({'Group': Profile.Group,
-                                  'Name': Profile.Name,
-                                  'Force': is_abort})
+                                  'Name': Profile.Name})
         });
 
         if (res.ok) {
@@ -318,49 +317,6 @@
 
           if (isJson) {
             if (json.status == 0){
-              
-              while (true) {
-                const res2 = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
-                if (res2.ok) {
-                  const text2 = await res2.text();
-                  let isJson2 = true;
-                  let json2 = {};
-                  try {
-                    json2 = JSON.parse (text2);
-                  } catch (e) {
-                    isJson2 = false;
-                  }
-
-                  if (isJson2) {
-                    if (json2.status == 0) {
-                      const task = json2.data;
-                      if (task.Status == 'done') {
-                        Profile.isProgress = false;
-                        Profile.isRunning = false;
-                        break;
-                      } else {
-                        Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
-                        continue;
-                      }
-                    } else {
-                      setErrorMsg (action, json2.message);
-                      Profile.isProgress = false;
-                      break;                      
-                    }
-                  } else {
-                    console.log(text2);
-                    setErrorMsg (action, text2);
-                    Profile.isProgress = false;
-                    break;
-                  }
-                } else {
-                  console.log(res2);
-                  setErrorMsg (action, res2.statusText);
-                  Profile.isProgress = false;
-                  break;
-                }
-              }
-              Profile.isProgress = false;
             } else {
               console.log(json);
               setErrorMsg (action, json.message);
@@ -380,13 +336,14 @@
         Profile.isProgress = false;
       }
 
-      Profile.isTransient = false;
+      startSyncInterval();
     }
     
-    async function onRun () {
+    async function onStart () {
+      stopSyncInterval();
       Profile.isTransient = true;
 
-      const action = 'onRun';
+      const action = 'onStart';
       const controller = new AbortController();
       const signal = controller.signal;
 
@@ -414,53 +371,7 @@
 
           if (isJson) {
             if (json.status == 0){
-
               Profile.isRunning = true;
-              Profile.isTaskInProgress = true;
-              Profile.isTransient = false;        
-
-              while (true) {
-                const res2 = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
-                if (res2.ok) {
-                  const text2 = await res2.text();
-                  let isJson2 = true;
-                  let json2 = {};
-                  try {
-                    json2 = JSON.parse (text2);
-                  } catch (e) {
-                    isJson2 = false;
-                  }
-
-                  if (isJson2) {
-                    if (json2.status == 0) {
-                      const task = json2.data;
-                      if (task.Status == 'done') {
-                        Profile.isProgress = false;
-                        Profile.isTaskInProgress = false;
-                        break;
-                      } else {
-                        Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
-                        continue;
-                      }
-                    } else {
-                      setErrorMsg (action, json2.message);
-                      Profile.isProgress = false;
-                      break;                      
-                    }
-                  } else {
-                    console.log(text2);
-                    setErrorMsg (action, text2);
-                    Profile.isProgress = false;
-                    break;
-                  }
-                } else {
-                  console.log(res2);
-                  setErrorMsg (action, res2.statusText);
-                  Profile.isProgress = false;
-                  break;
-                }
-              }
-              Profile.isProgress = false;
             } else {
               console.log(json);
               setErrorMsg (action, json.message);
@@ -480,21 +391,17 @@
         Profile.isProgress = false;
       }
 
-      Profile.isTransient = false;
+      startSyncInterval();
     }
 
     async function onAction () {
       if (Profile.isRunning) {
-        if (Profile.isTaskInProgress) {
-          await onStop(1);
-        } else {
-          await onStop(0);
-        }
+        await onStop();
       } else {
         if (Profile.markUnsavedFields || Profile.markErrorFields) {
           await onSave();
         } else {
-          await onRun();
+          await onStart();
         }
       }
     }
@@ -637,6 +544,17 @@
     return p2;
   }
 
+  function stopSyncInterval() {
+    if (!SyncInterval) {
+        clearInterval (SyncInterval);
+        SyncInterval = null;
+      }
+  }
+
+  function startSyncInterval() {
+    SyncInterval = setInterval ( onSyncInterval, 5000);
+  }
+
   async function onSyncInterval () {
 
     try{
@@ -654,14 +572,15 @@
 
         if (isJson) {
           if (json.status == 0) {
-            const task =json.data;
-            Profile.isTransient = false;
-            Profile.isRunning = (task.State == 'run');
-            Profile.isTaskInProgress = (task.Status == 'progress');
 
+            await tick ();
+
+            const task =json.data;
+            Profile.isRunning = (task.State == 'run');
             Profile.isProgress = (task.Status == 'progress');
             Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
 
+            Profile.isTransient = false;
           } else {
           }
         } else {
@@ -698,15 +617,11 @@
       }
 
       Profile.isTransient = true;
+      stopSyncInterval();
 
-      if (!SyncInterval) {
-        clearInterval (SyncInterval);
-        SyncInterval = null;
-      }
-
-      await onSyncInterval ();
-
-      SyncInterval = setInterval ( onSyncInterval, 5000);
+      Profile.isProgress = true
+      Profile.progressText = 'Loading ...';
+      startSyncInterval ();
     }
   });
 
@@ -944,16 +859,12 @@
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onAction} > 
                       {#if Profile.isRunning}
-                        {#if Profile.isTaskInProgress}
-                          Abort
-                        {:else}
-                          Stop
-                        {/if}
+                        Stop
                       {:else}
                         {#if Profile.markUnsavedFields || Profile.markErrorFields}
                           Save
                         {:else}
-                          Run
+                          Start
                         {/if} 
                       {/if}
                   </button>
