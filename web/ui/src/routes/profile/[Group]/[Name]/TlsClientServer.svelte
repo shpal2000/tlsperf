@@ -223,6 +223,8 @@
     }
 
     async function onSave () {
+      Profile.isTransient = true;
+
       const action = 'onSave'; 
       const p = profileNormalize (Profile);
 
@@ -276,9 +278,13 @@
         setErrorMsg (action, e.toString());
         Profile.isProgress = false;
       }
+
+      Profile.isTransient = false;
     }
 
     async function onStop (is_abort) {
+      Profile.isTransient = true;
+
       let action = 'onStop';
       if (is_abort) {
         action = 'onAbort';
@@ -372,9 +378,13 @@
         setErrorMsg (action, e.toString());
         Profile.isProgress = false;
       }
+
+      Profile.isTransient = false;
     }
     
     async function onRun () {
+      Profile.isTransient = true;
+
       const action = 'onRun';
       const controller = new AbortController();
       const signal = controller.signal;
@@ -403,7 +413,11 @@
 
           if (isJson) {
             if (json.status == 0){
-              
+
+              Profile.isRunning = true;
+              Profile.isTaskInProgress = true;
+              Profile.isTransient = false;        
+
               while (true) {
                 const res2 = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
                 if (res2.ok) {
@@ -421,7 +435,7 @@
                       const task = json2.data;
                       if (task.Status == 'done') {
                         Profile.isProgress = false;
-                        Profile.isRunning = true;
+                        Profile.isTaskInProgress = false;
                         break;
                       } else {
                         Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
@@ -464,6 +478,8 @@
         setErrorMsg (action, e.toString());
         Profile.isProgress = false;
       }
+
+      Profile.isTransient = false;
     }
 
     async function onAction () {
@@ -642,6 +658,7 @@
         SavedProfile = profileCanonical ($page.stuff.Profile);
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
 
+        Profile.isTransient = true;
         Profile.isRunning = ($page.stuff.Task.State == 'run');
         Profile.isTaskInProgress = ($page.stuff.Task.Status == 'progress');
 
@@ -877,7 +894,7 @@
               <div class="field is-grouped">
                 <div class="control" >
                   <button class="button  is-info" 
-                    disabled={!Profile.isRunning && Profile.markErrorFields}
+                    disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onAction} > 
                       {#if Profile.isRunning}
                         {#if Profile.isTaskInProgress}

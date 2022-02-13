@@ -8,6 +8,7 @@ import json
 from pymongo import MongoClient
 import yaml
 import asyncssh
+import time
 
 from config import *
 
@@ -476,7 +477,10 @@ async def api_stop_profile_run(request):
 
             if task['Status'] == 'progress':
                 if task['Type'] == 'start_run' and force != 0:
-                    os.kill(task['Pid'], signal.SIGKILL)
+                    try:
+                        os.kill(task['Pid'], signal.SIGKILL)
+                    except:
+                        pass
                 else:
                     return web.json_response({'status' : -1, 'message': '{} already in porgress'.format(task['Type'])})
 
