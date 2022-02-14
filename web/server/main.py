@@ -643,9 +643,8 @@ class StatsListener:
                 for _csg_name, _csg_stats in gstats[csg_app].items():
                     pass
             gstats['ticks'][csg_app].append(gstats[csg_app])
-
-            if len(gstats['ticks']) > stats_ticks:
-                gstats['ticks'].pop(0)
+            if len(gstats['ticks'][csg_app]) > stats_ticks:
+                gstats['ticks'][csg_app].pop(0)
 
 
 
