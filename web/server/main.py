@@ -640,38 +640,20 @@ class StatsListener:
             else:
                 # compute gstats[csg_app]['sum']
                 del gstats[csg_app]['sum']
+                _sum_stats = {}
                 for _csg_name, _csg_stats in gstats[csg_app].items():
-                    pass
+                    for _stats_name, _stats_value in _csg_stats.items():
+                        if not _sum_stats.get(_stats_name):
+                            _sum_stats[_stats_name] = _stats_value
+                        else:
+                            _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
+                gstats[csg_app]['sum'] = _sum_stats
+
             gstats['ticks'][csg_app].append(gstats[csg_app])
             if len(gstats['ticks'][csg_app]) > stats_ticks:
                 gstats['ticks'][csg_app].pop(0)
 
-
-
-
-
-            # if not gstats.get(csg_app):
-            #     gstats[csg_app] = {stats
-            # else:
-            #     gstats['stats'][appId].append(stats)
-            #     if len(gstats['stats'][appId]) > stats_ticks:
-            #         gstats['stats'][appId].pop(0)
-
-            # del gstats['stats']['sum']
-            # sum_stats_list = []
-            # for i in range (stats_ticks):
-            #     sum_stats = {}
-            #     for app_id, app_stats_list in gstats['stats'].items():
-            #         if i < len(app_stats_list):
-            #             app_stats = app_stats_list[i]
-            #             for k in app_stats.keys():
-            #                 if not sum_stats.get(k):
-            #                     sum_stats[k] = app_stats[k]
-            #                 else:
-            #                     sum_stats[k] = sum_stats[k]+ app_stats[k]
-            #     sum_stats_list.append(sum_stats)
-            # gstats['stats']['sum'] = sum_stats_list
-            # stats_col.find_one_and_replace(query, gstats)
+            stats_col.find_one_and_replace(query, gstats)
 
 
 def main ():
