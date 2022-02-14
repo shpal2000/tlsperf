@@ -172,8 +172,9 @@ def start (group, name, stats_addr):
         _cips = _cips.rstrip(',')
         
         input_map = {
-            'AppGid': csg["app_gid"].lower(),
-            'AppId': csg["app_id"].lower(),
+            'AppGid': csg["app_gid"],
+            'AppId': csg["app_id"],
+            'AppMetaId': csg["app_gid"].lower() + '-' + csg["app_id"].lower(),
             'ServerKey': csg["server_key"],
             'ServerCert': csg["server_cert"],
             'ServerIPAnno': csg["server_ip"],
@@ -196,11 +197,11 @@ def start (group, name, stats_addr):
         }
 
         server_cmap = kubernetes.client.V1ConfigMap()
-        server_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
+        server_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver-{AppMetaId}'.format(**input_map))
         server_cmap.data = {}
         server_cmap.data['config.json'] = '''{{
-          "app_id" : "tlsserver-{AppGid}-{AppId}",
-          "app_gid" : "tlsserver-{AppGid}",
+          "app_id" : "TlsServer-{AppId}",
+          "app_gid" : "TlsClientServer-{AppGid}",
 
           "server_ip"   : "{ServerIP}",
           "server_port" : {ServerPort},
@@ -216,11 +217,11 @@ def start (group, name, stats_addr):
 
 
         client_cmap = kubernetes.client.V1ConfigMap()
-        client_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
+        client_cmap.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient-{AppMetaId}'.format(**input_map))
         client_cmap.data = {}
         client_cmap.data['config.json'] = '''{{
-          "app_id" : "tlsclient-{AppGid}-{AppId}",
-          "app_gid" : "tlsclient-{AppGid}",
+          "app_id" : "TlsClient-{AppId}",
+          "app_gid" : "TlsClientServer-{AppGid}",
 
           "server_ip"   : "{ServerIP}",
           "server_port" : {ServerPort},
@@ -239,10 +240,10 @@ def start (group, name, stats_addr):
 
         server_pod = kubernetes.client.V1Pod()
 
-        server_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
+        server_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsserver-{AppMetaId}'.format(**input_map))
         server_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ServerInterfaceName}", "ips": ["{ServerIPAnno}"]}}]'.format(**input_map)}
         
-        container = kubernetes.client.V1Container(name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
+        container = kubernetes.client.V1Container(name='tlsserver-{AppMetaId}'.format(**input_map))
         container.image = 'tlspack/tlsperf:latest'
         container.command = ["tlsserver.exe"]
         container.args = []
@@ -258,7 +259,7 @@ def start (group, name, stats_addr):
           )
         ]
         volume = kubernetes.client.V1Volume(name='config-volume'
-                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsserver-{AppGid}-{AppId}'.format(**input_map)))
+                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsserver-{AppMetaId}'.format(**input_map)))
 
         server_pod.spec = kubernetes.client.V1PodSpec(containers=[container], 
                                                       volumes=[volume],
@@ -266,10 +267,10 @@ def start (group, name, stats_addr):
 
         client_pod = kubernetes.client.V1Pod()
 
-        client_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
+        client_pod.metadata = kubernetes.client.V1ObjectMeta(name='tlsclient-{AppMetaId}'.format(**input_map))
         client_pod.metadata.annotations = {'k8s.v1.cni.cncf.io/networks' : '[{{ "name": "{ClientInterfaceName}", "ips": [{ClientIPsAnno}]}}]'.format(**input_map)}
         
-        container = kubernetes.client.V1Container(name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
+        container = kubernetes.client.V1Container(name='tlsclient-{AppMetaId}'.format(**input_map))
         container.image = 'tlspack/tlsperf:latest'
         container.command = ["tlsclient.exe"]
         container.args = []
@@ -285,7 +286,7 @@ def start (group, name, stats_addr):
           )
         ]
         volume = kubernetes.client.V1Volume(name='config-volume'
-                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsclient-{AppGid}-{AppId}'.format(**input_map)))
+                      , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsclient-{AppMetaId}'.format(**input_map)))
 
         client_pod.spec = kubernetes.client.V1PodSpec(containers=[container], 
                                                       volumes=[volume],
@@ -304,7 +305,7 @@ def start (group, name, stats_addr):
     for start_json in start_pod_info:
         try:
           resp = v1Api.delete_namespaced_config_map(namespace='default',
-                                          name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
+                                          name='tlsserver-{AppMetaId}'.format(**input_map))
           events.append('timestamp: stale server config map removed')
         except kubernetes.client.rest.ApiException as err:
           events.append('timestamp: stale server config map not found')
@@ -315,7 +316,7 @@ def start (group, name, stats_addr):
 
         try:
           resp = v1Api.delete_namespaced_pod(namespace='default',
-                                          name='tlsserver-{AppGid}-{AppId}'.format(**input_map))
+                                          name='tlsserver-{AppMetaId}'.format(**input_map))
           events.append('timestamp: stale server pod removed')
         except kubernetes.client.rest.ApiException as err:
           events.append('timestamp: stale server pod not found')
@@ -344,7 +345,7 @@ def start (group, name, stats_addr):
     for start_json in start_pod_info:
         try:
           resp = v1Api.delete_namespaced_config_map(namespace='default',
-                                          name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
+                                          name='tlsclient-{AppMetaId}'.format(**input_map))
           events.append('timestamp: stale client config map removed')
         except kubernetes.client.rest.ApiException as err:
           events.append('timestamp: stale client config map not found')
@@ -354,7 +355,7 @@ def start (group, name, stats_addr):
 
         try:
           resp = v1Api.delete_namespaced_pod(namespace='default',
-                                          name='tlsclient-{AppGid}-{AppId}'.format(**input_map))
+                                          name='tlsclient-{AppMetaId}'.format(**input_map))
           events.append('timestamp: stale client pod removed')
         except kubernetes.client.rest.ApiException as err:
           events.append('timestamp: stale client pod not found')
@@ -411,8 +412,9 @@ def stop (group, name, stats_addr):
         _cips = _cips.rstrip(',')
           
         input_map = {
-            'AppGid': csg["app_gid"].lower(),
-            'AppId': csg["app_id"].lower(),
+            'AppGid': csg["app_gid"],
+            'AppId': csg["app_id"],
+            'AppMetaId': csg["app_gid"].lower() + '-' + csg["app_id"].lower(),
             'ServerKey': csg["server_key"],
             'ServerCert': csg["server_cert"],
             'ServerIPAnno': csg["server_ip"],
@@ -433,7 +435,7 @@ def stop (group, name, stats_addr):
             'ServerInterfaceName': profile["ServerIface"].split(':')[1],
             'ClientInterfaceName': profile["ClientIface"].split(':')[1]
         }
-        name = 'tlsclient-{AppGid}-{AppId}'.format(**input_map)
+        name = 'tlsclient-{AppMetaId}'.format(**input_map)
         try:
           resp = v1Api.delete_namespaced_pod (namespace='default',
                                               name=name)
@@ -460,8 +462,9 @@ def stop (group, name, stats_addr):
         _cips = _cips.rstrip(',')
           
         input_map = {
-            'AppGid': csg["app_gid"].lower(),
-            'AppId': csg["app_id"].lower(),
+            'AppGid': csg["app_gid"],
+            'AppId': csg["app_id"],
+            'AppMetaId': csg["app_gid"].lower() + '-' + csg["app_id"].lower(),
             'ServerKey': csg["server_key"],
             'ServerCert': csg["server_cert"],
             'ServerIPAnno': csg["server_ip"],
@@ -482,7 +485,7 @@ def stop (group, name, stats_addr):
             'ServerInterfaceName': profile["ServerIface"].split(':')[1],
             'ClientInterfaceName': profile["ClientIface"].split(':')[1]
         }
-        name = 'tlsserver-{AppGid}-{AppId}'.format(**input_map)
+        name = 'tlsserver-{AppMetaId}'.format(**input_map)
         try:
           resp = v1Api.delete_namespaced_pod (namespace='default',
                                               name=name)

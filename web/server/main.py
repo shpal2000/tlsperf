@@ -603,7 +603,10 @@ class StatsListener:
         del stats['appId']
         del stats['appGId']
 
-        group, name = appGId.split('-')
+        app, group, name = appGId.split('-')
+
+        csg_app, csg_name = appId.split('-')
+
         query = {'Group': group, 'Name': name}
 
         mongoClient = MongoClient(DB_CSTRING)
@@ -611,33 +614,65 @@ class StatsListener:
         stats_col = db[REALTIME_STATS]
 
         gstats = stats_col.find_one (query , {'_id' : False})
+
         if not gstats:
+            tlsClientStats = {'sum' : {}}
+            tlsServerStats = {'sum' : {}}
+
+            if csg_app == 'TlsClient':
+                tlsClientStats['sum'] = stats
+                tlsClientStats[csg_name] = stats
+
+            if csg_app == 'TlsServer':
+                tlsServerStats['sum'] = stats
+                tlsServerStats[csg_name] = stats
+                
             gstats = {'Group': group, 'Name': name,
-                        'stats' : {'sum' : [stats], appId : [stats]}}
+                        'TlsClient' : tlsClientStats,
+                        'TlsServer': tlsServerStats,
+                        'ticks': {'TlsClient' : [tlsClientStats], 'TlsServer': [tlsServerStats]}}
+
             stats_col.insert_one(gstats)
         else:
-            if not gstats['stats'].get(appId):
-                gstats['stats'][appId] = [stats]
+            gstats[csg_app][csg_name] = stats
+            if not gstats[csg_app]['sum']: #empty
+                gstats[csg_app]['sum'] = stats
             else:
-                gstats['stats'][appId].append(stats)
-                if len(gstats['stats'][appId]) > stats_ticks:
-                    gstats['stats'][appId].pop(0)
+                # compute gstats[csg_app]['sum']
+                del gstats[csg_app]['sum']
+                for _csg_name, _csg_stats in gstats[csg_app].items():
+                    pass
+            gstats['ticks'][csg_app].append(gstats[csg_app])
 
-            del gstats['stats']['sum']
-            sum_stats_list = []
-            for i in range (stats_ticks):
-                sum_stats = {}
-                for app_id, app_stats_list in gstats['stats'].items():
-                    if i < len(app_stats_list):
-                        app_stats = app_stats_list[i]
-                        for k in app_stats.keys():
-                            if not sum_stats.get(k):
-                                sum_stats[k] = app_stats[k]
-                            else:
-                                sum_stats[k] = sum_stats[k]+ app_stats[k]
-                sum_stats_list.append(sum_stats)
-            gstats['stats']['sum'] = sum_stats_list
-            stats_col.find_one_and_replace(query, gstats)
+            if len(gstats['ticks']) > stats_ticks:
+                gstats['ticks'].pop(0)
+
+
+
+
+
+            # if not gstats.get(csg_app):
+            #     gstats[csg_app] = {stats
+            # else:
+            #     gstats['stats'][appId].append(stats)
+            #     if len(gstats['stats'][appId]) > stats_ticks:
+            #         gstats['stats'][appId].pop(0)
+
+            # del gstats['stats']['sum']
+            # sum_stats_list = []
+            # for i in range (stats_ticks):
+            #     sum_stats = {}
+            #     for app_id, app_stats_list in gstats['stats'].items():
+            #         if i < len(app_stats_list):
+            #             app_stats = app_stats_list[i]
+            #             for k in app_stats.keys():
+            #                 if not sum_stats.get(k):
+            #                     sum_stats[k] = app_stats[k]
+            #                 else:
+            #                     sum_stats[k] = sum_stats[k]+ app_stats[k]
+            #     sum_stats_list.append(sum_stats)
+            # gstats['stats']['sum'] = sum_stats_list
+            # stats_col.find_one_and_replace(query, gstats)
 
 
 def main ():
