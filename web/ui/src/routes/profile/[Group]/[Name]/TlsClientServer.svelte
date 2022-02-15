@@ -8,11 +8,6 @@
     import { ProgressBar } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
-    let SyncInterval = null;
-    let StatsInterval = null;
-    let Profile = null;
-    let SavedProfile = null;
-
     function setErrorMsg(action, msg) {
       let lineRegex = new RegExp('\r?\n');
 
@@ -225,69 +220,70 @@
     }
 
     async function onSave () {
-      stopSyncInterval();
       Profile.isTransient = true;
+      stopTimerTick();
 
-      const action = 'onSave'; 
-      const p = profileNormalize (Profile);
+      // const action = 'onSave'; 
+      // const p = profileNormalize (Profile);
 
-      const controller = new AbortController();
-      const signal = controller.signal;
+      // const controller = new AbortController();
+      // const signal = controller.signal;
 
-      try {
-        Profile.errorMsg = '';
-        Profile.isError = false;
-        Profile.isProgress = true;
-        const res = await fetch ('/api/profiles.json', {
-          signal,
-          method: 'PUT',
-          body: JSON.stringify(p)
-        });
+      // try {
+      //   Profile.errorMsg = '';
+      //   Profile.isError = false;
+      //   Profile.isProgress = true;
+      //   const res = await fetch ('/api/profiles.json', {
+      //     signal,
+      //     method: 'PUT',
+      //     body: JSON.stringify(p)
+      //   });
 
-        if (res.ok) {
-          const text = await res.text();
-          let isJson = true;
-          let json = {};
-          try {
-            json = JSON.parse (text);
-          } catch (e) {
-            isJson = false;
-          }
+      //   if (res.ok) {
+      //     const text = await res.text();
+      //     let isJson = true;
+      //     let json = {};
+      //     try {
+      //       json = JSON.parse (text);
+      //     } catch (e) {
+      //       isJson = false;
+      //     }
 
-          if (isJson) {
-            if (json.status == 0){
+      //     if (isJson) {
+      //       if (json.status == 0){
 
-              const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
-              delete $routeViewState[routeViewKey];
+      //         const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
+      //         delete $routeViewState[routeViewKey];
 
-              Profile = profileCanonical(p);
-              SavedProfile = profileCanonical(p);
-              $routeViewState[routeViewKey] = {Profile, SavedProfile};
-              validateAllFields ();
-            } else {
-              console.log(json);
-              setErrorMsg (action, json.message);
-            }
-          } else {
-            setErrorMsg (action, text); 
-          }
-          Profile.isProgress = false;
-        } else {
-          console.log(res);
-          setErrorMsg (action, res.statusText);
-          Profile.isProgress = false;
-        }
-      } catch (e) {
-        setErrorMsg (action, e.toString());
-        Profile.isProgress = false;
-      }
+      //         Profile = profileCanonical(p);
+      //         SavedProfile = profileCanonical(p);
+      //         $routeViewState[routeViewKey] = {Profile, SavedProfile};
+      //         validateAllFields ();
+      //       } else {
+      //         console.log(json);
+      //         setErrorMsg (action, json.message);
+      //       }
+      //     } else {
+      //       setErrorMsg (action, text); 
+      //     }
+      //     Profile.isProgress = false;
+      //   } else {
+      //     console.log(res);
+      //     setErrorMsg (action, res.statusText);
+      //     Profile.isProgress = false;
+      //   }
+      // } catch (e) {
+      //   setErrorMsg (action, e.toString());
+      //   Profile.isProgress = false;
+      // }
 
-      startSyncInterval();
+      startTimerTick();
     }
 
     async function onStop () {
-      stopSyncInterval();
       Profile.isTransient = true;
+      stopTimerTick();
+
 
       let action = 'onStop';
 
@@ -337,31 +333,53 @@
         Profile.isProgress = false;
       }
 
-      startSyncInterval();
+      startTimerTick();
     }
     
+    function getTopStats () {
+      return JSON.parse (JSON.stringify ([
+        {id: 1,
+          Name: 'TcpConnInit',
+          Client: 0,
+          Server: 0},
+
+          {id: 2,
+          Name: 'TcpEstablished',
+          Client: 0,
+          Server: 0},
+
+          {id: 3,
+          Name: 'SslConnInit',
+          Client: 0,
+          Server: 0},
+
+          {id: 4,
+          Name: 'SslEstablished',
+          Client: 0,
+          Server: 0},
+
+          {id: 5,
+          Name: 'ActiveConn',
+          Client: 0,
+          Server: 0},
+
+          {id: 6,
+          Name: 'Tcp/SslConnInitFail',
+          Client: 0,
+          Server: 0}
+        ]));
+    }
+
+    function clearTopStats () {
+      Profile.topStats = getTopStats();
+      SavedProfile.topStats = getTopStats();
+    }
+
     async function onStart () {
-
-      statsData[0].Client = 0;
-      statsData[0].Server = 0;
-
-      statsData[1].Client = 0;
-      statsData[1].Server = 0;
-
-      statsData[2].Client = 0;
-      statsData[2].Server = 0;
-
-      statsData[3].Client = 0;
-      statsData[3].Server = 0;
-
-      statsData[4].Client = 0;
-      statsData[4].Server = 0;
-
-      statsData[5].Client = 0;
-      statsData[5].Server = 0;
-
-      stopSyncInterval();
       Profile.isTransient = true;
+      stopTimerTick();
+
+      clearTopStats ();
 
       const action = 'onStart';
       const controller = new AbortController();
@@ -411,7 +429,7 @@
         Profile.isProgress = false;
       }
 
-      startSyncInterval();
+      startTimerTick();
     }
 
     async function onAction () {
@@ -460,42 +478,10 @@
       {key: 'fieldAttention', value: ''}
     ];
 
-    const statsHeaders = [
+    const topStatsHeaders = [
       {key: 'Name', value: 'Name'},
       {key: 'Client', value: 'Client'},
       {key: 'Server', value: 'Server'},
-    ];
-
-    let statsData = [
-      {id: 1,
-        Name: 'TcpConnInit',
-        Client: 0,
-        Server: 0},
-
-        {id: 2,
-        Name: 'TcpEstablished',
-        Client: 0,
-        Server: 0},
-
-        {id: 3,
-        Name: 'SslConnInit',
-        Client: 0,
-        Server: 0},
-
-        {id: 4,
-        Name: 'SslEstablished',
-        Client: 0,
-        Server: 0},
-
-        {id: 5,
-        Name: 'ActiveConn',
-        Client: 0,
-        Server: 0},
-
-        {id: 6,
-        Name: 'Tcp/SslConnInitFail',
-        Client: 0,
-        Server: 0}
     ];
 
   function profileCanonical (p) {
@@ -564,20 +550,49 @@
     return p2;
   }
 
-  function stopStatsInterval () {
-    if (!StatsInterval) {
-        clearTimeout (StatsInterval);
-        StatsInterval = null;
-    }
-  }
+    let Profile = null;
+    let SavedProfile = null;
 
-  function startStatsInterval(timeout=1000) {
-    StatsInterval = setTimeout ( onStatsInterval, timeout);
-  }  
+    const SyncTick = 5;
+    let SyncTickCount = 0;
+    const StatsTick = 2;
+    let StatsTickCount = 0;
+
+    let TimerTick = null;
+
+    function stopTimerTick () {
+      if (!TimerTick) {
+          clearTimeout (TimerTick);
+          TimerTick = null;
+      }
+    }
+
+    function startTimerTick() {
+      TimerTick = setTimeout ( onTimerTick, 1000);
+    }
+
+    function onTimerTick() {
+      stopTimerTick ();
+
+      SyncTickCount += 1;
+      StatsTickCount += 1;
+
+      if (SyncTickCount == SyncTick) {
+        SyncTickCount = 0;
+
+        onSyncInterval ();
+      } 
+      
+      if (StatsTickCount == StatsTick) {
+        StatsTickCount = 0;
+
+        onStatsInterval ();
+      }
+
+      startTimerTick();
+    }
 
   async function onStatsInterval () {
-
-    stopStatsInterval ();
 
     try{
       const res = await fetch (`/api/stats.json?group=${Profile.Group}&name=${Profile.Name}`);
@@ -600,19 +615,19 @@
             if (Profile.Stats.TlsClient.sum.tcpConnInit >=0 
                 && Profile.Stats.TlsServer.sum.tcpConnInit >= 0) {
               
-              statsData[0].Server = 0;
-              statsData[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
-              statsData[2].Server = 0;
-              statsData[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
-              statsData[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
-              statsData[5].Server = 0;
+              Profile.topStats[0].Server = 0;
+              Profile.topStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
+              Profile.topStats[2].Server = 0;
+              Profile.topStats[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
+              Profile.topStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
+              Profile.topStats[5].Server = 0;
 
-              statsData[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
-              statsData[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
-              statsData[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
-              statsData[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
-              statsData[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
-              statsData[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
+              Profile.topStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
+              Profile.topStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
+              Profile.topStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
+              Profile.topStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
+              Profile.topStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
+              Profile.topStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
             
             }
           } else {
@@ -622,25 +637,9 @@
       }
     } catch (e) {
     }
-
-    startStatsInterval ();
   }
  
-  
-  function stopSyncInterval() {
-    if (!SyncInterval) {
-        clearTimeout (SyncInterval);
-        SyncInterval = null;
-    }
-  }
-
-  function startSyncInterval(timeout=5000) {
-    SyncInterval = setTimeout ( onSyncInterval, timeout);
-  }
-
   async function onSyncInterval () {
-
-    stopSyncInterval ();
 
     try{
       const res = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
@@ -674,7 +673,6 @@
     } catch (e) {
     }
 
-    startSyncInterval ();
   }
   
   beforeUpdate ( async () => {
@@ -688,32 +686,35 @@
       //skip updating Profile; as this is case of field update
 
     } else {
+      stopTimerTick();
 
       if ($routeViewState[routeViewKey]) {
         Profile = $routeViewState[routeViewKey].Profile;
         SavedProfile = $routeViewState[routeViewKey].SavedProfile;
+
+        clearTopStats ();
         validateAllFields ();
       } else {
 
         Profile = profileCanonical ($page.stuff.Profile);
         SavedProfile = profileCanonical ($page.stuff.Profile);
+
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
+
+        clearTopStats ();
         validateAllFields ();
         
       }
 
       Profile.isTransient = true;
-      stopSyncInterval();
-
       Profile.isProgress = true
       Profile.progressText = 'Sync ...';
-      startSyncInterval (1500);
+
+      startTimerTick ();
     }
   });
 
   onMount ( () => {
-
-    startStatsInterval ();
     
     chartCtxCps = chartCanvasCps.getContext('2d');
     chartCps = new Chart(chartCtxCps, {
@@ -792,8 +793,7 @@
   });
 
   onDestroy ( () => {
-    stopStatsInterval ();
-    stopSyncInterval ();
+    stopTimerTick ();
   });
 
 </script>
@@ -971,8 +971,8 @@
           <div class="tile is-child my-border">
             <DataTable
             size="short"
-            headers={statsHeaders}
-            rows={statsData}
+            headers={topStatsHeaders}
+            rows={Profile.topStats}
             zebra
             />
           </div>
