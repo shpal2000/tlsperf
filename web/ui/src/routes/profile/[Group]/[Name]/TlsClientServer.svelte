@@ -223,59 +223,66 @@
       Profile.isTransient = true;
       stopTimerTick();
 
-      // const action = 'onSave'; 
-      // const p = profileNormalize (Profile);
+      const action = 'onSave'; 
+      const p = profileNormalize (Profile);
 
-      // const controller = new AbortController();
-      // const signal = controller.signal;
+      const controller = new AbortController();
+      const signal = controller.signal;
 
-      // try {
-      //   Profile.errorMsg = '';
-      //   Profile.isError = false;
-      //   Profile.isProgress = true;
-      //   const res = await fetch ('/api/profiles.json', {
-      //     signal,
-      //     method: 'PUT',
-      //     body: JSON.stringify(p)
-      //   });
+      try {
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        const res = await fetch ('/api/profiles.json', {
+          signal,
+          method: 'PUT',
+          body: JSON.stringify(p)
+        });
 
-      //   if (res.ok) {
-      //     const text = await res.text();
-      //     let isJson = true;
-      //     let json = {};
-      //     try {
-      //       json = JSON.parse (text);
-      //     } catch (e) {
-      //       isJson = false;
-      //     }
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
 
-      //     if (isJson) {
-      //       if (json.status == 0){
+          if (isJson) {
+            if (json.status == 0){
 
-      //         const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
-      //         delete $routeViewState[routeViewKey];
+              const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
+              delete $routeViewState[routeViewKey];
 
-      //         Profile = profileCanonical(p);
-      //         SavedProfile = profileCanonical(p);
-      //         $routeViewState[routeViewKey] = {Profile, SavedProfile};
-      //         validateAllFields ();
-      //       } else {
-      //         console.log(json);
-      //         setErrorMsg (action, json.message);
-      //       }
-      //     } else {
-      //       setErrorMsg (action, text); 
-      //     }
-      //     Profile.isProgress = false;
-      //   } else {
-      //     console.log(res);
-      //     setErrorMsg (action, res.statusText);
-      //     Profile.isProgress = false;
-      //   }
-      // } catch (e) {
-      //   setErrorMsg (action, e.toString());
-      //   Profile.isProgress = false;
-      // }
+              const topStats = Profile.topStats;
+              const topStatsSaved = SavedProfile.topStats;
+
+              Profile = profileCanonical(p);
+              SavedProfile = profileCanonical(p);
+
+              Profile.topStats = topStats;
+              SavedProfile.topStats = topStatsSaved;
+
+              $routeViewState[routeViewKey] = {Profile, SavedProfile};
+              validateAllFields ();
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+            }
+          } else {
+            setErrorMsg (action, text); 
+          }
+          Profile.isProgress = false;
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
 
       startTimerTick();
     }
@@ -553,7 +560,7 @@
     let Profile = null;
     let SavedProfile = null;
 
-    const SyncTick = 5;
+    const SyncTick = 6;
     let SyncTickCount = 0;
     const StatsTick = 2;
     let StatsTickCount = 0;
