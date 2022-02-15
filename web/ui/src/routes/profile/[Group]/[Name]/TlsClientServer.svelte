@@ -1,12 +1,19 @@
 <script>
-    import { createEventDispatcher, onMount, beforeUpdate, onDestroy, tick } from "svelte";
+    import { createEventDispatcher,
+     onMount,
+     afterUpdate,
+     beforeUpdate, 
+     onDestroy, 
+     tick } from "svelte";
     import { page } from '$app/stores'
     import { routeViewState, getProfileStateKey } from '$lib/store';
     import {goto} from "$app/navigation";
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
-    import { ProgressBar } from "carbon-components-svelte";
+    import { ProgressBar, Loading } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
+
+    let isLoading = false;
 
     function setErrorMsg(action, msg) {
       let lineRegex = new RegExp('\r?\n');
@@ -560,10 +567,26 @@
     let Profile = null;
     let SavedProfile = null;
 
-    const SyncTick = 10;
-    let SyncTickCount = 0;
-    const StatsTick = 4;
-    let StatsTickCount = 0;
+    let NextSyncTick;
+    let SyncTickCount;
+    let NextStatsTick;
+    let StatsTickCount;
+
+    function initTimerTicks() {
+      if (isLoading) {
+        NextSyncTick = 3;
+        SyncTickCount = 0;
+        NextStatsTick = 3;
+        StatsTickCount = 0;
+      } else {
+        NextSyncTick = 10;
+        SyncTickCount = 0;
+        NextStatsTick = 4;
+        StatsTickCount = 0;
+      }
+    }
+
+    initTimerTicks();
 
     let TimerTick = null;
 
@@ -578,22 +601,34 @@
       TimerTick = setTimeout ( onTimerTick, 1000);
     }
 
-    function onTimerTick() {
+    async function onTimerTick() {
       stopTimerTick ();
 
       SyncTickCount += 1;
       StatsTickCount += 1;
 
-      if (SyncTickCount == SyncTick) {
+      if (SyncTickCount == NextSyncTick) {
         SyncTickCount = 0;
 
         onSyncInterval ();
       } 
       
-      if (StatsTickCount == StatsTick) {
+      if (StatsTickCount == NextStatsTick) {
         StatsTickCount = 0;
 
         onStatsInterval ();
+      }
+
+
+
+      if (isLoading 
+          && (SyncTickCount == 0) 
+          && (StatsTickCount == 0) ) {
+
+        await tick();
+
+        isLoading = false;
+        initTimerTicks ();
       }
 
       startTimerTick();
@@ -679,7 +714,6 @@
       }
     } catch (e) {
     }
-
   }
   
   beforeUpdate ( async () => {
@@ -693,6 +727,9 @@
       //skip updating Profile; as this is case of field update
 
     } else {
+      isLoading = true;
+      initTimerTicks ();
+
       stopTimerTick();
 
       if ($routeViewState[routeViewKey]) {
@@ -713,13 +750,13 @@
         
       }
 
-      Profile.isTransient = true;
-      Profile.isProgress = true
-      Profile.progressText = 'Sync ...';
-
-      onSyncInterval ();
+      startTimerTick();
     }
   });
+
+  // afterUpdate ( async () => {
+    
+  // })
 
   onMount ( () => {
     
@@ -804,6 +841,11 @@
   });
 
 </script>
+
+{#if isLoading}
+  <Loading withOverlay={true} small/>  
+{/if}
+
 
 <nav class="breadcrumb is-left breadcrumb-margin" aria-label="breadcrumbs">
   <ul>
