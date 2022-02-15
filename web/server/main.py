@@ -269,7 +269,8 @@ async def api_delete_profile(request):
         db = mongoClient[DB_NAME]
         profile_col = db[PROFILE_LISTS]
         task_col = db[TASK_LISTS]
-
+        stats_col = db[REALTIME_STATS]
+        
         query = {'Group': group, 'Name': name}
         task = task_col.find_one(query, {'_id' : False})
 
@@ -279,8 +280,13 @@ async def api_delete_profile(request):
         if task['Status'] == 'progress':
             return web.json_response({'status' : -1, 'message': '{} in porgress'.format(task['Type'])})
 
+
         profile_col.delete_one(query)
         task_col.delete_one(query)
+
+        stats = stats_col.find_one(query)
+        if stats:
+            stats_col.find_one(query)
 
         return web.json_response({'status' : 0})
     except Exception as err:
@@ -415,9 +421,15 @@ async def api_start_profile_run(request):
         task_col = db[TASK_LISTS]
         task = task_col.find_one(query)
 
+        stats_col = db[REALTIME_STATS]
+        stats = stats_col.find_one(query)
+
         if profile:
             if task['State'] == 'run':
                 return web.json_response({'status' : -1, 'message': 'is already running'})
+
+            if stats:
+                stats_col.delete_one (query)
 
             update = { '$set': {'Type': 'start_run', 'Status': 'progress', 'State': 'run', 'Events': []}}
             task_col.update_one(query, update)
@@ -508,8 +520,8 @@ async def api_get_stats(request):
         gstats = stats_col.find_one (query, {'_id' : False})
 
         if not gstats:
-            gstats = {}
-        return web.json_response(gstats)
+            return web.json_response({'status': -1, 'message': 'stats not found'})
+        return web.json_response({'status': 0, 'data': gstats})
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 

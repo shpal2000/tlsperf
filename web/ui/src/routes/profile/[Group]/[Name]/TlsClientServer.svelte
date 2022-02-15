@@ -9,6 +9,7 @@
     import Chart from 'chart.js/auto';
 
     let SyncInterval = null;
+    let StatsInterval = null;
     let Profile = null;
     let SavedProfile = null;
 
@@ -281,7 +282,7 @@
         Profile.isProgress = false;
       }
 
-      startSyncInterval()
+      startSyncInterval();
     }
 
     async function onStop () {
@@ -340,6 +341,25 @@
     }
     
     async function onStart () {
+
+      statsData[0].Client = 0;
+      statsData[0].Server = 0;
+
+      statsData[1].Client = 0;
+      statsData[1].Server = 0;
+
+      statsData[2].Client = 0;
+      statsData[2].Server = 0;
+
+      statsData[3].Client = 0;
+      statsData[3].Server = 0;
+
+      statsData[4].Client = 0;
+      statsData[4].Server = 0;
+
+      statsData[5].Client = 0;
+      statsData[5].Server = 0;
+
       stopSyncInterval();
       Profile.isTransient = true;
 
@@ -446,36 +466,36 @@
       {key: 'Server', value: 'Server'},
     ];
 
-    const statsData = [
+    let statsData = [
       {id: 1,
         Name: 'TcpConnInit',
-        Client: 100,
+        Client: 0,
         Server: 0},
 
         {id: 2,
         Name: 'TcpEstablished',
-        Client: 100,
-        Server: 100},
+        Client: 0,
+        Server: 0},
 
         {id: 3,
         Name: 'SslConnInit',
-        Client: 100,
+        Client: 0,
         Server: 0},
 
         {id: 4,
         Name: 'SslEstablished',
-        Client: 100,
-        Server: 100},
+        Client: 0,
+        Server: 0},
 
         {id: 5,
         Name: 'ActiveConn',
-        Client: 1,
-        Server: 1},
+        Client: 0,
+        Server: 0},
 
         {id: 6,
-        Name: 'ResetRcvd',
-        Client: 1,
-        Server: 1}
+        Name: 'Tcp/SslConnInitFail',
+        Client: 0,
+        Server: 0}
     ];
 
   function profileCanonical (p) {
@@ -544,18 +564,83 @@
     return p2;
   }
 
-  function stopSyncInterval() {
-    if (!SyncInterval) {
-        clearInterval (SyncInterval);
-        SyncInterval = null;
-      }
+  function stopStatsInterval () {
+    if (!StatsInterval) {
+        clearTimeout (StatsInterval);
+        StatsInterval = null;
+    }
   }
 
-  function startSyncInterval() {
-    SyncInterval = setInterval ( onSyncInterval, 5000);
+  function startStatsInterval(timeout=1000) {
+    StatsInterval = setTimeout ( onStatsInterval, timeout);
+  }  
+
+  async function onStatsInterval () {
+
+    stopStatsInterval ();
+
+    try{
+      const res = await fetch (`/api/stats.json?group=${Profile.Group}&name=${Profile.Name}`);
+      if (res.ok) {
+        const text = await res.text();
+        let isJson = true;
+        let json = {};
+
+        try {
+            json = JSON.parse (text);
+        } catch (e) {
+            isJson = false;
+        }
+
+        if (isJson) {
+          if (json.status == 0) {
+
+            Profile.Stats =json.data;
+
+            if (Profile.Stats.TlsClient.sum.tcpConnInit >=0 
+                && Profile.Stats.TlsServer.sum.tcpConnInit >= 0) {
+              
+              statsData[0].Server = 0;
+              statsData[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
+              statsData[2].Server = 0;
+              statsData[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
+              statsData[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
+              statsData[5].Server = 0;
+
+              statsData[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
+              statsData[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
+              statsData[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
+              statsData[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
+              statsData[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
+              statsData[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
+            
+            }
+          } else {
+          }
+        } else {
+        }
+      }
+    } catch (e) {
+    }
+
+    startStatsInterval ();
+  }
+ 
+  
+  function stopSyncInterval() {
+    if (!SyncInterval) {
+        clearTimeout (SyncInterval);
+        SyncInterval = null;
+    }
+  }
+
+  function startSyncInterval(timeout=5000) {
+    SyncInterval = setTimeout ( onSyncInterval, timeout);
   }
 
   async function onSyncInterval () {
+
+    stopSyncInterval ();
 
     try{
       const res = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
@@ -587,8 +672,9 @@
         }
       }
     } catch (e) {
-
     }
+
+    startSyncInterval ();
   }
   
   beforeUpdate ( async () => {
@@ -620,12 +706,14 @@
       stopSyncInterval();
 
       Profile.isProgress = true
-      Profile.progressText = 'Refreshing ...';
-      startSyncInterval ();
+      Profile.progressText = 'Sync ...';
+      startSyncInterval (1500);
     }
   });
 
   onMount ( () => {
+
+    startStatsInterval ();
     
     chartCtxCps = chartCanvasCps.getContext('2d');
     chartCps = new Chart(chartCtxCps, {
@@ -704,10 +792,8 @@
   });
 
   onDestroy ( () => {
-    if (SyncInterval) {
-      clearInterval (SyncInterval);
-      SyncInterval = null;
-    }
+    stopStatsInterval ();
+    stopSyncInterval ();
   });
 
 </script>
