@@ -269,7 +269,8 @@ async def api_delete_profile(request):
         db = mongoClient[DB_NAME]
         profile_col = db[PROFILE_LISTS]
         task_col = db[TASK_LISTS]
-
+        stats_col = db[REALTIME_STATS]
+        
         query = {'Group': group, 'Name': name}
         task = task_col.find_one(query, {'_id' : False})
 
@@ -279,8 +280,13 @@ async def api_delete_profile(request):
         if task['Status'] == 'progress':
             return web.json_response({'status' : -1, 'message': '{} in porgress'.format(task['Type'])})
 
+
         profile_col.delete_one(query)
         task_col.delete_one(query)
+
+        stats = stats_col.find_one(query)
+        if stats:
+            stats_col.find_one(query)
 
         return web.json_response({'status' : 0})
     except Exception as err:
@@ -415,9 +421,15 @@ async def api_start_profile_run(request):
         task_col = db[TASK_LISTS]
         task = task_col.find_one(query)
 
+        stats_col = db[REALTIME_STATS]
+        stats = stats_col.find_one(query)
+
         if profile:
             if task['State'] == 'run':
                 return web.json_response({'status' : -1, 'message': 'is already running'})
+
+            if stats:
+                stats_col.delete_one (query)
 
             update = { '$set': {'Type': 'start_run', 'Status': 'progress', 'State': 'run', 'Events': []}}
             task_col.update_one(query, update)
@@ -495,14 +507,23 @@ async def api_stop_profile_run(request):
         return web.json_response({'status' : -1, 'message': str(err)})
 
 async def api_get_stats(request):
-    mongoClient = MongoClient(DB_CSTRING)
-    db = mongoClient[DB_NAME]
-    stats_col = db[REALTIME_STATS]
-    appGId = request.match_info['appGId']
-    gstats = stats_col.find_one ({'appGId' : appGId}, {'_id' : False})
-    if not gstats:
-        gstats = {}
-    return web.json_response(gstats)
+    try:
+        group = request.query['group']
+        name = request.query['name']
+
+        query = {'Group': group, 'Name': name}
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+        stats_col = db[REALTIME_STATS]
+
+        gstats = stats_col.find_one (query, {'_id' : False})
+
+        if not gstats:
+            return web.json_response({'status': -1, 'message': 'stats not found'})
+        return web.json_response({'status': 0, 'data': gstats})
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 app = web.Application()
 
@@ -575,16 +596,9 @@ app.add_routes([web.route('delete'
                             , '/api/profile_runs'
                             , api_stop_profile_run)])
 
-# app.add_routes([web.route('post'
-#                             , '/api/stop_run'
-#                             , stop_run)])
-
-# app.add_routes([web.route('get'
-#                             , '/api/run'
-#                             , get_run)])
 
 app.add_routes([web.route('get'
-                            , '/api/stats/{appGId:.*}'
+                            , '/api/stats'
                             , api_get_stats)])
 
 
@@ -601,38 +615,62 @@ class StatsListener:
         del stats['appId']
         del stats['appGId']
 
+        app, group, name = appGId.split('-')
+
+        csg_app, csg_name = appId.split('-')
+
+        query = {'Group': group, 'Name': name}
+
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
         stats_col = db[REALTIME_STATS]
 
-        gstats = stats_col.find_one ({'appGId' : appGId})
+        gstats = stats_col.find_one (query , {'_id' : False})
+
         if not gstats:
-            gstats = {'appGId' : appGId,
-                        'stats' : {'sum' : [stats], appId : [stats]}}
+            tlsClientStats = {'sum' : {}}
+            tlsServerStats = {'sum' : {}}
+
+            if csg_app == 'TlsClient':
+                tlsClientStats['sum'] = stats
+                tlsClientStats[csg_name] = stats
+
+            if csg_app == 'TlsServer':
+                tlsServerStats['sum'] = stats
+                tlsServerStats[csg_name] = stats
+                
+            gstats = {'Group': group, 'Name': name,
+                        'TlsClient' : tlsClientStats,
+                        'TlsServer': tlsServerStats,
+                        'tickStats': {'TlsClient' : [tlsClientStats],
+                                        'TlsServer': [tlsServerStats]},
+                        'ticks': {'TlsClient' : time.time(),
+                                    'TlsServer' : time.time()}}
+
             stats_col.insert_one(gstats)
         else:
-            if not gstats['stats'].get(appId):
-                gstats['stats'][appId] = [stats]
+            gstats[csg_app][csg_name] = stats
+            if not gstats[csg_app]['sum']: #empty
+                gstats[csg_app]['sum'] = stats
             else:
-                gstats['stats'][appId].append(stats)
-                if len(gstats['stats'][appId]) > stats_ticks:
-                    gstats['stats'][appId].pop(0)
+                # compute gstats[csg_app]['sum']
+                del gstats[csg_app]['sum']
+                _sum_stats = {}
+                for _csg_name, _csg_stats in gstats[csg_app].items():
+                    for _stats_name, _stats_value in _csg_stats.items():
+                        if not _sum_stats.get(_stats_name):
+                            _sum_stats[_stats_name] = _stats_value
+                        else:
+                            _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
+                gstats[csg_app]['sum'] = _sum_stats
 
-            del gstats['stats']['sum']
-            sum_stats_list = []
-            for i in range (stats_ticks):
-                sum_stats = {}
-                for app_id, app_stats_list in gstats['stats'].items():
-                    if i < len(app_stats_list):
-                        app_stats = app_stats_list[i]
-                        for k in app_stats.keys():
-                            if not sum_stats.get(k):
-                                sum_stats[k] = app_stats[k]
-                            else:
-                                sum_stats[k] = sum_stats[k]+ app_stats[k]
-                sum_stats_list.append(sum_stats)
-            gstats['stats']['sum'] = sum_stats_list
-            stats_col.find_one_and_replace({'appGId' : appGId}, gstats)
+            if ((time.time() - gstats['ticks'][csg_app]) >= 1):
+                gstats['ticks'][csg_app] = time.time()
+                gstats['tickStats'][csg_app].append(gstats[csg_app])
+                if len(gstats['tickStats'][csg_app]) > stats_ticks:
+                    gstats['tickStats'][csg_app].pop(0)
+
+            stats_col.find_one_and_replace(query, gstats)
 
 
 def main ():
