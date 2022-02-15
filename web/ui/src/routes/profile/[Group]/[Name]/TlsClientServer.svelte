@@ -560,9 +560,9 @@
     let Profile = null;
     let SavedProfile = null;
 
-    const SyncTick = 6;
+    const SyncTick = 10;
     let SyncTickCount = 0;
-    const StatsTick = 2;
+    const StatsTick = 4;
     let StatsTickCount = 0;
 
     let TimerTick = null;
@@ -717,7 +717,7 @@
       Profile.isProgress = true
       Profile.progressText = 'Sync ...';
 
-      startTimerTick ();
+      onSyncInterval ();
     }
   });
 
