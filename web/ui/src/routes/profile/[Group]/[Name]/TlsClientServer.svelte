@@ -574,14 +574,14 @@
 
     function initTimerTicks() {
       if (isLoading) {
-        NextSyncTick = 3;
+        NextSyncTick = 5;
         SyncTickCount = 0;
-        NextStatsTick = 3;
+        NextStatsTick = 5;
         StatsTickCount = 0;
       } else {
-        NextSyncTick = 10;
+        NextSyncTick = 15;
         SyncTickCount = 0;
-        NextStatsTick = 4;
+        NextStatsTick = 5;
         StatsTickCount = 0;
       }
     }
@@ -727,10 +727,10 @@
       //skip updating Profile; as this is case of field update
 
     } else {
+      stopTimerTick();
+      
       isLoading = true;
       initTimerTicks ();
-
-      stopTimerTick();
 
       if ($routeViewState[routeViewKey]) {
         Profile = $routeViewState[routeViewKey].Profile;
