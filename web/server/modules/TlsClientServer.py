@@ -163,6 +163,7 @@ def start (group, name, stats_addr):
             'ServerKey': csg["server_key"],
             'ServerCert': csg["server_cert"],
             'ServerIPAnno': csg["server_ip"],
+            'ClientIP': csg["server_ip"].split('/')[0],
             'ServerIP': csg["server_ip"].split('/')[0],
             'ServerPort': csg["server_port"],
             'IsTls': csg["server_ssl"],
