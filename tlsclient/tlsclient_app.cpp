@@ -86,12 +86,16 @@ tlsclient_app::tlsclient_app(tlsclient_cfg* cfg
     m_curr_conn_count = 0;
 
     char next_ip[128];
-    strcpy (next_ip, cfg->client_ip.c_str());
-    ev_sockaddrx* next_addr = new ev_sockaddrx (10000, 60000);
-    ev_socket::set_sockaddr (&next_addr->m_addr, next_ip, 0);
-    m_app_ctx.m_clnt_addr_pool.push_back(next_addr);
-    m_app_ctx.m_clnt_addr_count = 1;
     m_app_ctx.m_clnt_addr_index = 0;
+    m_app_ctx.m_clnt_addr_count = 0;
+    for (auto client_ip : cfg->client_ips)
+    {
+        strcpy (next_ip, client_ip.c_str());
+        ev_sockaddrx* next_addr = new ev_sockaddrx (5001, 65000);
+        ev_socket::set_sockaddr (&next_addr->m_addr, next_ip, 0);
+        m_app_ctx.m_clnt_addr_pool.push_back(next_addr);
+        m_app_ctx.m_clnt_addr_count++;
+    }
 }
 
 

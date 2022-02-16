@@ -13,7 +13,7 @@ struct tlsclient_cfg
     u_short server_port;
     int server_ssl;
 
-    std::string client_ip;
+    std::vector<std::string> client_ips;
 
     std::string stats_ip;
     u_short stats_port;
