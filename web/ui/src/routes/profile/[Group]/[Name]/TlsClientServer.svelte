@@ -262,14 +262,20 @@
               const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
               delete $routeViewState[routeViewKey];
 
-              const topStats = Profile.topStats;
-              const topStatsSaved = SavedProfile.topStats;
+              const connStats = Profile.connStats;
+              const connStatsSaved = SavedProfile.connStats;
+
+              const errStats = Profile.errStats;
+              const errStatsSaved = SavedProfile.errStats;
 
               Profile = profileCanonical(p);
               SavedProfile = profileCanonical(p);
 
-              Profile.topStats = topStats;
-              SavedProfile.topStats = topStatsSaved;
+              Profile.connStats = connStats;
+              SavedProfile.connStats = connStatsSaved;
+
+              Profile.errStats = errStats;
+              SavedProfile.errStats = errStatsSaved;
 
               $routeViewState[routeViewKey] = {Profile, SavedProfile};
               validateAllFields ();
@@ -350,7 +356,7 @@
       startTimerTick();
     }
     
-    function getTopStats () {
+    function getConnStats () {
       return JSON.parse (JSON.stringify ([
         {id: 1,
           Name: 'TcpConnInit',
@@ -384,9 +390,46 @@
         ]));
     }
 
+    function getErrorStats () {
+      return JSON.parse (JSON.stringify ([
+        {id: 1,
+          Name: 'TcpWriteFail',
+          Client: 0,
+          Server: 0},
+
+          {id: 2,
+          Name: 'TcpReadFail',
+          Client: 0,
+          Server: 0},
+
+          {id: 3,
+          Name: 'TcpWriteZero',
+          Client: 0,
+          Server: 0},
+
+          {id: 4,
+          Name: 'SockResNotAvail',
+          Client: 0,
+          Server: 0},
+
+          {id: 5,
+          Name: 'ConnResNotAvail',
+          Client: 0,
+          Server: 0},
+
+          {id: 6,
+          Name: 'SessResNotAvail',
+          Client: 0,
+          Server: 0}
+        ]));
+    }
+
     function clearStats () {
-      Profile.topStats = getTopStats();
-      SavedProfile.topStats = getTopStats();
+      Profile.connStats = getConnStats();
+      SavedProfile.connStats = getConnStats();
+
+      Profile.errStats = getErrorStats();
+      SavedProfile.errStats = getErrorStats();
     }
 
     async function onStart () {
@@ -551,7 +594,7 @@
 
       csg2.server_port = csg.server_port;
       csg2.server_ssl = csg.server_ssl;
-      csg2.send_recv_len = csg.send_recv_len;
+      csg2.send_recv_len = p2.DataLength;
       csg2.cps = Math.floor (p2.CPS / p.cs_groups.length); 
       csg2.max_active_conn_count = Math.floor (p2.MaxPipeline / p.cs_groups.length);
       csg2.total_conn_count = Math.floor (p2.Transactions / p.cs_groups.length);
@@ -661,19 +704,19 @@
             if (Profile.Stats.TlsClient.sum.tcpConnInit >=0 
                 && Profile.Stats.TlsServer.sum.tcpConnInit >= 0) {
               
-              Profile.topStats[0].Server = 0;
-              Profile.topStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
-              Profile.topStats[2].Server = 0;
-              Profile.topStats[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
-              Profile.topStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
-              Profile.topStats[5].Server = 0;
+              Profile.connStats[0].Server = 0;
+              Profile.connStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
+              Profile.connStats[2].Server = 0;
+              Profile.connStats[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
+              Profile.connStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
+              Profile.connStats[5].Server = 0;
 
-              Profile.topStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
-              Profile.topStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
-              Profile.topStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
-              Profile.topStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
-              Profile.topStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
-              Profile.topStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
+              Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
+              Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
+              Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
+              Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
+              Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
+              Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
             
               cpsChartDataSet[0].data = [
                 Profile.Stats.TlsClient.sum.tcpConnInitRate,
@@ -685,7 +728,20 @@
               ];
 
               thptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tlsclientThroughput);
-              console.log(thptChartDataSet[0].data);
+
+              Profile.errStats[0].Server = Profile.Stats.TlsServer.sum.tcpWriteFail;
+              Profile.errStats[1].Server = Profile.Stats.TlsServer.sum.tcpReadFail;
+              Profile.errStats[2].Server = Profile.Stats.TlsServer.sum.tcpWriteReturnsZero;
+              Profile.errStats[3].Server = Profile.Stats.TlsServer.sum.socketCreateFail;
+              Profile.errStats[4].Server = Profile.Stats.TlsServer.sum.tcpConnStructNotAvail;
+              Profile.errStats[5].Server = Profile.Stats.TlsServer.sum.appSessStructNotAvail;
+
+              Profile.errStats[0].Client = Profile.Stats.TlsClient.sum.tcpWriteFail;
+              Profile.errStats[1].Client = Profile.Stats.TlsClient.sum.tcpReadFail;
+              Profile.errStats[2].Client = Profile.Stats.TlsClient.sum.tcpWriteReturnsZero;
+              Profile.errStats[3].Client = Profile.Stats.TlsClient.sum.socketCreateFail;
+              Profile.errStats[4].Client = Profile.Stats.TlsClient.sum.tcpConnStructNotAvail;
+              Profile.errStats[5].Client = Profile.Stats.TlsClient.sum.appSessStructNotAvail;
             }
           } else {
           }
@@ -830,7 +886,7 @@
             }
           },
           animation :{
-            duration: 1
+            duration: 0
           },
           interaction: {
             intersect: false
@@ -863,7 +919,7 @@
             }
           },
           animation :{
-            duration: 1
+            duration: 0
           },
           interaction: {
             intersect: false
@@ -911,26 +967,6 @@
 </nav>
 
 <div class="columns is-multiline is-mobile profile-margin">
-
-    <div class="column is-12">
-      {#if Profile.isProgress}
-        <div class="field">
-          <div class="control" >
-            <ProgressBar helperText="{Profile.progressText}"/>
-          </div>
-        </div>
-      {/if}
-
-      {#if Profile.isError}
-        <div class="field">
-          <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Status</label>
-          <div class="control">
-            <textarea class="textarea errmsg" placeholder="" rows="{Profile.errorRows}" value={Profile.errorMsg} readonly/>
-          </div>
-        </div>          
-      {/if}
-    </div>  
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
@@ -1067,7 +1103,7 @@
             <DataTable
             size="short"
             headers={topStatsHeaders}
-            rows={Profile.topStats}
+            rows={Profile.connStats}
             zebra
             />
           </div>
@@ -1077,13 +1113,33 @@
             <DataTable
             size="short"
             headers={topStatsHeaders}
-            rows={Profile.topStats}
+            rows={Profile.errStats}
             zebra
             />
           </div>
         </div>
       </div>
     </div>
+
+    <div class="column is-12">
+      {#if Profile.isProgress}
+        <div class="field">
+          <div class="control" >
+            <ProgressBar helperText="{Profile.progressText}"/>
+          </div>
+        </div>
+      {/if}
+
+      {#if Profile.isError}
+        <div class="field">
+          <!-- svelte-ignore a11y-label-has-associated-control -->
+          <label class="label">Status</label>
+          <div class="control">
+            <textarea class="textarea errmsg" placeholder="" rows="{Profile.errorRows}" value={Profile.errorMsg} readonly/>
+          </div>
+        </div>          
+      {/if}
+    </div>  
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
