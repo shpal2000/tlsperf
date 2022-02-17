@@ -115,11 +115,7 @@ void tlsclient_app::run_iter(bool tick_sec)
 
     if (tick_sec)
     {
-        if (m_curr_conn_count != m_app_ctx.m_total_conn_count 
-                                    || m_stats.tcpActiveConns != 0)
-        {
-            m_stats.tick_sec();
-        }
+        m_stats.tick_sec();
 
         json j;
         m_stats.dump_json (j);

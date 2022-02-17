@@ -141,10 +141,8 @@ void tlsserver_app::run_iter(bool tick_sec)
 
     if (tick_sec)
     {
-        if (m_stats.tcpActiveConns != 0)
-        {
-            m_stats.tick_sec();
-        }
+        m_stats.tick_sec();
+        
         json j;
         m_stats.dump_json (j);
 
