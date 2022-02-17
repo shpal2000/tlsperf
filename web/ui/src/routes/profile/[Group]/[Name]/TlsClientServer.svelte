@@ -484,9 +484,9 @@
               }]
         };
 
-    let chartCtxCps;
-    let chartCanvasCps;
-    let chartCps;
+    let cpsChartCtx;
+    let cpsChartCanvas;
+    let cpsChart;
 
     let chartCtxThpt;
     let chartCanvasThpt;
@@ -684,6 +684,16 @@
               Profile.topStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
               Profile.topStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
             
+              cpsChartDataSet.data = [
+                Profile.Stats.TlsClient.sum.tcpConnInitRate,
+                Profile.Stats.TlsClient.sum.tcpConnInitSuccessRate,
+                Profile.Stats.TlsServer.sum.tcpAcceptSuccessRate,
+                Profile.Stats.TlsClient.sum.sslConnInitRate,
+                Profile.Stats.TlsClient.sum.sslConnInitSuccessRate,
+                Profile.Stats.TlsServer.sum.sslAcceptSuccessRate
+              ];
+
+              cpsChart.update();
             }
           } else {
           }
@@ -771,27 +781,29 @@
     
   // })
 
-  let cpsChartData = [120, 100, 90, 120, 100, 90];
+
+  let cpsChartDataSet = [{
+            barPercentage: 0.6,
+            borderColor: 'rgb(8, 141, 165)',
+            backgroundColor: 'rgb(8, 141, 165)',
+            data: [120, 100, 90, 120, 100, 90]
+          }]
 
   onMount ( () => {
     
-    chartCtxCps = chartCanvasCps.getContext('2d');
-    chartCps = new Chart(chartCtxCps, {
+    cpsChartCtx = cpsChartCanvas.getContext('2d');
+    cpsChart = new Chart(cpsChartCtx, {
         type: 'bar',
         data: {
-          labels: ['TcpInit', 'TcpSucc', 'TcpAccept', 'TlsInit', 'TlsSucc', 'TlsAccept'],
-          datasets: [{
-            borderColor: 'rgb(0,99,132)',
-            backgroundColor: 'rgb(0,99,132)',
-            data: cpsChartData
-          }]
+          labels: ['tcpInit', 'tcpSucc', 'tcpAccept', 'sslInit', 'sslSucc', 'sslAccept'],
+          datasets: cpsChartDataSet
         }
         ,
         options: {
           scales: {
-            xAxes: [{
-              barPercentage: 0.4
-            }]
+            y: {
+              beginAtZero: true
+            }
           },
           plugins: {
             legend: false
@@ -1064,7 +1076,7 @@
       <div class="tile is-ancestor is-mobile">
         <div class="tile is-6 is-parent">
           <div class="tile is-child my-border">
-            <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
+            <canvas bind:this={cpsChartCanvas} id="cpsChart"></canvas>
           </div>
         </div>
         <div class="tile is-6 is-parent">
