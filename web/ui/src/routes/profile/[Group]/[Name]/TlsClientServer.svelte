@@ -479,9 +479,9 @@
     let thptChartCanvas;
     let thptChart;
 
-    let chartCtxLatency;
-    let chartCanvasLatency;
-    let chartLatency;
+    let latencyChartCtx;
+    let latencyChartCanvas;
+    let latencyChart;
 
     const csGroupHeaders = [
       {key: 'app_id', value: 'Group'},
@@ -697,6 +697,7 @@
 
     cpsChart.update();
     thptChart.update();
+    latencyChart.update();
   }
  
   async function onSyncInterval () {
@@ -785,11 +786,13 @@
 
   let thptChartDataSet = [{
     fill: true,
+    borderWidth: 1,
+    lineTension: 0.1,
     borderColor: 'rgb(89, 112, 115)',
     data: []
   }];
 
-  let thptChartLables = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
+  let thptChartLables = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'];
 
 
   onMount ( () => {
@@ -800,8 +803,7 @@
         data: {
           labels: ['tcpInit', 'tcpSucc', 'tcpAccept', 'sslInit', 'sslSucc', 'sslAccept'],
           datasets: cpsChartDataSet
-        }
-        ,
+        },
         options: {
           scales: {
             y: {
@@ -820,16 +822,15 @@
         data: {
           labels: thptChartLables,
           datasets: thptChartDataSet
-        }
-        ,
+        },
         options: {
-          scales: {
-            y: {
-              beginAtZero: true
+          elements: {
+            point: {
+              radius: 0
             }
           },
           animation :{
-            duration: 0
+            duration: 1
           },
           interaction: {
             intersect: false
@@ -840,35 +841,46 @@
           scales: {
             x: {
               type: 'linear'
+            },
+            y: {
+              beginAtZero: true
             }
           }
         }
     });
 
-  //   chartCtxLatency = chartCanvasLatency.getContext('2d');
-  //   chartLatency = new Chart(chartCtxLatency, {
-  //       type: 'line',
-  //       data: data,
-  //       options: {
-  //         animation:{
-  //           duration: 0
-  //         },
-
-  //         interaction: {
-  //           intersect: false
-  //         },
-
-  //         plugins: {
-  //           legend: false
-  //         },
-
-  //         scales: {
-  //           x: {
-  //             type: 'linear'
-  //           }
-  //         }
-  //       }
-  //   });
+    latencyChartCtx = latencyChartCanvas.getContext('2d');
+    latencyChart = new Chart(latencyChartCtx, {
+      type: 'line',
+        data: {
+          labels: thptChartLables,
+          datasets: thptChartDataSet
+        },
+        options: {
+          elements: {
+            point: {
+              radius: 0
+            }
+          },
+          animation :{
+            duration: 1
+          },
+          interaction: {
+            intersect: false
+          },
+          plugins: {
+            legend: false
+          },
+          scales: {
+            x: {
+              type: 'linear'
+            },
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+    });
   });
 
   onDestroy ( () => {
@@ -922,7 +934,7 @@
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
-        <div class="tile is-6 is-parent">
+        <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <section>
               <div class="columns is-multiline is-mobile">
@@ -1050,8 +1062,17 @@
 
           </div>
         </div>
-        <div class="tile is-6 is-parent">
-
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <DataTable
+            size="short"
+            headers={topStatsHeaders}
+            rows={Profile.topStats}
+            zebra
+            />
+          </div>
+        </div>
+        <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <DataTable
             size="short"
@@ -1066,31 +1087,19 @@
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
-        <div class="tile is-6 is-parent">
-          <div class="tile is-child">
-            <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label ">CPS:</label>
-          </div>
-        </div>
-        <div class="tile is-6 is-parent">
-          <div class="tile is-child">
-            <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label ">Throughput:</label>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="column is-12">
-      <div class="tile is-ancestor is-mobile">
-        <div class="tile is-6 is-parent">
+        <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <canvas bind:this={cpsChartCanvas} id="cpsChart"></canvas>
           </div>
         </div>
-        <div class="tile is-6 is-parent">
+        <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <canvas bind:this={thptChartCanvas} id="thptChart"></canvas>
+          </div>
+        </div>
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <canvas bind:this={latencyChartCanvas} id="latencyChart"></canvas>
           </div>
         </div>
       </div>
@@ -1274,8 +1283,8 @@
   <style>
     .profile-margin {
       margin-top: 0px;
-      margin-left: 5rem;
-      margin-right: 5rem;
+      margin-left: 1rem;
+      margin-right: 1rem;
     }
 
     .my-border {
@@ -1288,7 +1297,7 @@
 
     .breadcrumb-margin {
         margin-top: 8px;
-        margin-left: 1.25rem;
+        margin-left: 1rem;
     }
 
     .errmsg {
