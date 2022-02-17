@@ -518,13 +518,13 @@
     let cpsChartCanvas;
     let cpsChart;
 
-    let thptChartCtx;
-    let thptChartCanvas;
-    let thptChart;
+    let clntThptChartCtx;
+    let clntThptChartCanvas;
+    let clntThptChart;
 
-    let latencyChartCtx;
-    let latencyChartCanvas;
-    let latencyChart;
+    let srvrThptChartCtx;
+    let srvrThptChartCanvas;
+    let srvrThptChart;
 
     const csGroupHeaders = [
       {key: 'app_id', value: 'Group'},
@@ -681,7 +681,8 @@
 
     cpsChartDataSet[0].data = [0,0,0,0,0,0];
     
-    thptChartDataSet[0].data = [];
+    clntThptChartDataSet[0].data = [];
+    srvrThptChartDataSet[0].data = [];
 
     try{
       const res = await fetch (`/api/stats.json?group=${Profile.Group}&name=${Profile.Name}`);
@@ -727,7 +728,8 @@
                 Profile.Stats.TlsServer.sum.sslAcceptSuccessRate
               ];
 
-              thptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tlsclientThroughput);
+              clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tlsclientThroughput);
+              srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsServer.map(v => v.sum.tlsserverThroughput);
 
               Profile.errStats[0].Server = Profile.Stats.TlsServer.sum.tcpWriteFail;
               Profile.errStats[1].Server = Profile.Stats.TlsServer.sum.tcpReadFail;
@@ -752,8 +754,8 @@
     }
 
     cpsChart.update();
-    thptChart.update();
-    latencyChart.update();
+    clntThptChart.update();
+    srvrThptChart.update();
   }
  
   async function onSyncInterval () {
@@ -840,7 +842,7 @@
     data: [0, 0, 0, 0, 0, 0]
   }]
 
-  let thptChartDataSet = [{
+  let clntThptChartDataSet = [{
     fill: true,
     borderWidth: 1,
     lineTension: 0.1,
@@ -848,7 +850,16 @@
     data: []
   }];
 
-  let thptChartLables = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'];
+  let srvrThptChartDataSet = [{
+    fill: true,
+    borderWidth: 1,
+    lineTension: 0.1,
+    borderColor: 'rgb(89, 112, 115)',
+    data: []
+  }];
+  
+  
+  let clntThptChartLables = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'];
 
 
   onMount ( () => {
@@ -872,12 +883,12 @@
         }
     });
 
-    thptChartCtx = thptChartCanvas.getContext('2d');
-    thptChart = new Chart(thptChartCtx, {
+    clntThptChartCtx = clntThptChartCanvas.getContext('2d');
+    clntThptChart = new Chart(clntThptChartCtx, {
         type: 'line',
         data: {
-          labels: thptChartLables,
-          datasets: thptChartDataSet
+          labels: clntThptChartLables,
+          datasets: clntThptChartDataSet
         },
         options: {
           elements: {
@@ -905,12 +916,12 @@
         }
     });
 
-    latencyChartCtx = latencyChartCanvas.getContext('2d');
-    latencyChart = new Chart(latencyChartCtx, {
+    srvrThptChartCtx = srvrThptChartCanvas.getContext('2d');
+    srvrThptChart = new Chart(srvrThptChartCtx, {
       type: 'line',
         data: {
-          labels: thptChartLables,
-          datasets: thptChartDataSet
+          labels: clntThptChartLables,
+          datasets: srvrThptChartDataSet
         },
         options: {
           elements: {
@@ -1150,12 +1161,12 @@
         </div>
         <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
-            <canvas bind:this={thptChartCanvas} id="thptChart"></canvas>
+            <canvas bind:this={clntThptChartCanvas} id="clntThptChart"></canvas>
           </div>
         </div>
         <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
-            <canvas bind:this={latencyChartCanvas} id="latencyChart"></canvas>
+            <canvas bind:this={srvrThptChartCanvas} id="srvrThptChart"></canvas>
           </div>
         </div>
       </div>

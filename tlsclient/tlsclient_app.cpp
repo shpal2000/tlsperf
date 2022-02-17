@@ -115,25 +115,22 @@ void tlsclient_app::run_iter(bool tick_sec)
 
     if (tick_sec)
     {
-        if (m_curr_conn_count == m_app_ctx.m_total_conn_count && m_stats.tcpActiveConns == 0) 
-        {
-
-        }
-        else
+        if (m_curr_conn_count != m_app_ctx.m_total_conn_count 
+                                    || m_stats.tcpActiveConns != 0)
         {
             m_stats.tick_sec();
-
-            json j;
-            m_stats.dump_json (j);
-
-            j["appId"] = m_app_ctx.m_app_id;
-            j["appGId"] = m_app_ctx.m_app_gid;
-
-            std::string s = j.dump();
-
-            m_app_ctx.m_stats_sock->udp_write(
-                        (const char*)s.c_str(), s.length());
         }
+
+        json j;
+        m_stats.dump_json (j);
+
+        j["appId"] = m_app_ctx.m_app_id;
+        j["appGId"] = m_app_ctx.m_app_gid;
+
+        std::string s = j.dump();
+
+        m_app_ctx.m_stats_sock->udp_write(
+                    (const char*)s.c_str(), s.length());
     }
 
     if (to_new_connect())
