@@ -384,22 +384,9 @@
         ]));
     }
 
-    function getCpsChartData () {
-      return JSON.parse (JSON.stringify ([
-        {
-          "labels:" : ['CPsInit', 'CpsSucc', 'CpsAccept'],
-          "datasets" : [0, 0, 0]
-        }
-        ]));
-    }
-
-
     function clearStats () {
       Profile.topStats = getTopStats();
-      Profile.cpsChartData = getCpsChartData ();
-
       SavedProfile.topStats = getTopStats();
-      SavedProfile.cpsChartData = getCpsChartData ();
     }
 
     async function onStart () {
@@ -488,9 +475,9 @@
     let cpsChartCanvas;
     let cpsChart;
 
-    let chartCtxThpt;
-    let chartCanvasThpt;
-    let chartThpt;
+    let thptChartCtx;
+    let thptChartCanvas;
+    let thptChart;
 
     let chartCtxLatency;
     let chartCanvasLatency;
@@ -650,6 +637,8 @@
   async function onStatsInterval () {
 
     cpsChartDataSet[0].data = [0,0,0,0,0,0];
+    
+    thptChartDataSet[0].data = [];
 
     try{
       const res = await fetch (`/api/stats.json?group=${Profile.Group}&name=${Profile.Name}`);
@@ -694,6 +683,9 @@
                 Profile.Stats.TlsClient.sum.sslConnInitSuccessRate,
                 Profile.Stats.TlsServer.sum.sslAcceptSuccessRate
               ];
+
+              thptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tlsclientThroughput);
+              console.log(thptChartDataSet[0].data);
             }
           } else {
           }
@@ -704,6 +696,7 @@
     }
 
     cpsChart.update();
+    thptChart.update();
   }
  
   async function onSyncInterval () {
@@ -784,11 +777,20 @@
 
 
   let cpsChartDataSet = [{
-            barPercentage: 0.5,
-            borderColor: 'rgb(89, 112, 115)',
-            backgroundColor: 'rgb(89, 112, 115)',
-            data: [0, 0, 0, 0, 0, 0]
-          }]
+    barPercentage: 0.5,
+    borderColor: 'rgb(89, 112, 115)',
+    backgroundColor: 'rgb(89, 112, 115)',
+    data: [0, 0, 0, 0, 0, 0]
+  }]
+
+  let thptChartDataSet = [{
+    fill: true,
+    borderColor: 'rgb(89, 112, 115)',
+    data: []
+  }];
+
+  let thptChartLables = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
+
 
   onMount ( () => {
     
@@ -812,23 +814,29 @@
         }
     });
 
-    chartCtxThpt = chartCanvasThpt.getContext('2d');
-    chartThpt = new Chart(chartCtxThpt, {
+    thptChartCtx = thptChartCanvas.getContext('2d');
+    thptChart = new Chart(thptChartCtx, {
         type: 'line',
-        data: data,
+        data: {
+          labels: thptChartLables,
+          datasets: thptChartDataSet
+        }
+        ,
         options: {
-          animation:{
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          },
+          animation :{
             duration: 0
           },
-
           interaction: {
             intersect: false
           },
-
           plugins: {
             legend: false
           },
-
           scales: {
             x: {
               type: 'linear'
@@ -1082,7 +1090,7 @@
         </div>
         <div class="tile is-6 is-parent">
           <div class="tile is-child my-border">
-            <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
+            <canvas bind:this={thptChartCanvas} id="thptChart"></canvas>
           </div>
         </div>
       </div>

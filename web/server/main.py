@@ -644,7 +644,9 @@ class StatsListener:
                         'TlsServer': tlsServerStats,
                         'tickStats': {'TlsClient' : [tlsClientStats],
                                         'TlsServer': [tlsServerStats]},
-                        'ticks': {'TlsClient' : time.time(),
+                        'ticks': {'TlsClient' : ['1'],
+                                    'TlsServer': ['1']},
+                        'tick': {'TlsClient' : time.time(),
                                     'TlsServer' : time.time()}}
 
             stats_col.insert_one(gstats)
@@ -664,11 +666,14 @@ class StatsListener:
                             _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
                 gstats[csg_app]['sum'] = _sum_stats
 
-            if ((time.time() - gstats['ticks'][csg_app]) >= 1):
-                gstats['ticks'][csg_app] = time.time()
+            time_elpse = int(time.time() - gstats['tick'][csg_app])
+            if (time_elpse >= 1):
+                gstats['tick'][csg_app] = time.time()
+                gstats['ticks'][csg_app].append(str(int(time.time())))
                 gstats['tickStats'][csg_app].append(gstats[csg_app])
                 if len(gstats['tickStats'][csg_app]) > stats_ticks:
                     gstats['tickStats'][csg_app].pop(0)
+                    gstats['ticks'][csg_app].pop(0)
 
             stats_col.find_one_and_replace(query, gstats)
 
