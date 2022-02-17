@@ -649,6 +649,8 @@
 
   async function onStatsInterval () {
 
+    cpsChartDataSet[0].data = [0,0,0,0,0,0];
+
     try{
       const res = await fetch (`/api/stats.json?group=${Profile.Group}&name=${Profile.Name}`);
       if (res.ok) {
@@ -684,7 +686,7 @@
               Profile.topStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
               Profile.topStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
             
-              cpsChartDataSet.data = [
+              cpsChartDataSet[0].data = [
                 Profile.Stats.TlsClient.sum.tcpConnInitRate,
                 Profile.Stats.TlsClient.sum.tcpConnInitSuccessRate,
                 Profile.Stats.TlsServer.sum.tcpAcceptSuccessRate,
@@ -692,8 +694,6 @@
                 Profile.Stats.TlsClient.sum.sslConnInitSuccessRate,
                 Profile.Stats.TlsServer.sum.sslAcceptSuccessRate
               ];
-
-              cpsChart.update();
             }
           } else {
           }
@@ -702,6 +702,8 @@
       }
     } catch (e) {
     }
+
+    cpsChart.update();
   }
  
   async function onSyncInterval () {
@@ -770,23 +772,22 @@
 
         clearStats ();
         validateAllFields ();
-        
       }
 
       startTimerTick();
     }
   });
 
-  // afterUpdate ( async () => {
-    
-  // })
+  afterUpdate ( async () => {
+    // cpsChart.update();
+  })
 
 
   let cpsChartDataSet = [{
-            barPercentage: 0.6,
-            borderColor: 'rgb(8, 141, 165)',
-            backgroundColor: 'rgb(8, 141, 165)',
-            data: [120, 100, 90, 120, 100, 90]
+            barPercentage: 0.5,
+            borderColor: 'rgb(89, 112, 115)',
+            backgroundColor: 'rgb(89, 112, 115)',
+            data: [0, 0, 0, 0, 0, 0]
           }]
 
   onMount ( () => {
