@@ -384,16 +384,29 @@
         ]));
     }
 
-    function clearTopStats () {
+    function getCpsChartData () {
+      return JSON.parse (JSON.stringify ([
+        {
+          "labels:" : ['CPsInit', 'CpsSucc', 'CpsAccept'],
+          "datasets" : [0, 0, 0]
+        }
+        ]));
+    }
+
+
+    function clearStats () {
       Profile.topStats = getTopStats();
+      Profile.cpsChartData = getCpsChartData ();
+
       SavedProfile.topStats = getTopStats();
+      SavedProfile.cpsChartData = getCpsChartData ();
     }
 
     async function onStart () {
       Profile.isTransient = true;
       stopTimerTick();
 
-      clearTopStats ();
+      clearStats ();
 
       const action = 'onStart';
       const controller = new AbortController();
@@ -736,7 +749,7 @@
         Profile = $routeViewState[routeViewKey].Profile;
         SavedProfile = $routeViewState[routeViewKey].SavedProfile;
 
-        clearTopStats ();
+        clearStats ();
         validateAllFields ();
       } else {
 
@@ -745,7 +758,7 @@
 
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
 
-        clearTopStats ();
+        clearStats ();
         validateAllFields ();
         
       }
@@ -758,29 +771,30 @@
     
   // })
 
+  let cpsChartData = [120, 100, 90, 120, 100, 90];
+
   onMount ( () => {
     
     chartCtxCps = chartCanvasCps.getContext('2d');
     chartCps = new Chart(chartCtxCps, {
-        type: 'line',
-        data: data,
+        type: 'bar',
+        data: {
+          labels: ['TcpInit', 'TcpSucc', 'TcpAccept', 'TlsInit', 'TlsSucc', 'TlsAccept'],
+          datasets: [{
+            borderColor: 'rgb(0,99,132)',
+            backgroundColor: 'rgb(0,99,132)',
+            data: cpsChartData
+          }]
+        }
+        ,
         options: {
-          animation:{
-            duration: 0
+          scales: {
+            xAxes: [{
+              barPercentage: 0.4
+            }]
           },
-
-          interaction: {
-            intersect: false
-          },
-
           plugins: {
             legend: false
-          },
-
-          scales: {
-            x: {
-              type: 'linear'
-            }
           }
         }
     });
