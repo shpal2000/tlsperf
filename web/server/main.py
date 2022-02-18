@@ -658,12 +658,27 @@ class StatsListener:
                 # compute gstats[csg_app]['sum']
                 del gstats[csg_app]['sum']
                 _sum_stats = {}
+                _csg_tcp_latency_count = 0
+                _csg_tls_latency_count = 0
                 for _csg_name, _csg_stats in gstats[csg_app].items():
                     for _stats_name, _stats_value in _csg_stats.items():
                         if not _sum_stats.get(_stats_name):
                             _sum_stats[_stats_name] = _stats_value
                         else:
                             _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
+                        if _stats_name in ['tcpConnMinLatency']:
+                            _csg_tcp_latency_count = _csg_tcp_latency_count + 1
+                        if _stats_name in ['tlsConnMinLatency']:
+                            _csg_tls_latency_count = _csg_tls_latency_count + 1
+
+                if _csg_tcp_latency_count:
+                    for _latency_stats in ['tcpConnMinLatency', 'tcpConnMinLatency', 'tcpConnMinLatency']:
+                        _sum_stats[_latency_stats] = int (_sum_stats[_latency_stats] / _csg_tcp_latency_count)
+
+                if _csg_tls_latency_count:
+                    for _latency_stats in ['tlsConnMinLatency', 'tlsConnMinLatency', 'tlsConnMinLatency']:
+                        _sum_stats[_latency_stats] = int (_sum_stats[_latency_stats] / _csg_tls_latency_count)
+
                 gstats[csg_app]['sum'] = _sum_stats
 
             time_elpse = int(time.time() - gstats['tick'][csg_app])

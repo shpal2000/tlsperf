@@ -682,6 +682,8 @@
     cpsChartDataSet[0].data = [0,0,0,0,0,0];
     
     clntThptChartDataSet[0].data = [];
+    clntThptChartDataSet[1].data = [];
+    clntThptChartDataSet[2].data = [];
 
     srvrThptChartDataSet[0].data = [];
     srvrThptChartDataSet[1].data = [];
@@ -724,13 +726,13 @@
               cpsChartDataSet[0].data = [
                 Profile.Stats.TlsClient.sum.tcpConnInitRate,
                 Profile.Stats.TlsClient.sum.tcpConnInitSuccessRate,
-                Profile.Stats.TlsServer.sum.tcpAcceptSuccessRate,
                 Profile.Stats.TlsClient.sum.sslConnInitRate,
-                Profile.Stats.TlsClient.sum.sslConnInitSuccessRate,
-                Profile.Stats.TlsServer.sum.sslAcceptSuccessRate
+                Profile.Stats.TlsClient.sum.sslConnInitSuccessRate
               ];
 
               clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataThroughput);
+              clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
+              clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
 
               srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
               srvrThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
@@ -840,10 +842,10 @@
 
 
   let cpsChartDataSet = [{
-    barPercentage: 0.5,
+    barPercentage: 0.4,
     borderColor: 'rgb(89, 112, 115)',
     backgroundColor: 'rgb(89, 112, 115)',
-    data: [0, 0, 0, 0, 0, 0]
+    data: [0, 0, 0, 0]
   }]
 
   let clntThptChartDataSet = [{
@@ -851,6 +853,20 @@
     borderWidth: 1,
     lineTension: 0.1,
     borderColor: 'rgb(89, 112, 115)',
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.2,
+    borderColor: 'rgb(114, 137, 218)',
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.3,
+    borderColor: 'rgb(186, 225, 255)',
     data: []
   }];
 
@@ -879,7 +895,7 @@
     cpsChart = new Chart(cpsChartCtx, {
         type: 'bar',
         data: {
-          labels: ['tcpInit', 'tcpSucc', 'tcpAccept', 'sslInit', 'sslSucc', 'sslAccept'],
+          labels: ['tcpInit', 'tcpSucc', 'sslInit', 'sslSucc'],
           datasets: cpsChartDataSet
         },
         options: {

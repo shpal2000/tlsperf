@@ -144,6 +144,22 @@ struct ev_socket_opt {
     } \
 }
 
+#define set_min_max_avg_stats(__min_stat_name,__max_stat_name,__avg_stat_name,__value) \
+{ \
+    for (uint i=0; i < this->m_sockstats_arr->size(); i++) { \
+        if ( ((*(this->m_sockstats_arr))[i]->__min_stat_name == 0) ||  ((*(this->m_sockstats_arr))[i]->__max_stat_name == 0) ) { \
+            (*(this->m_sockstats_arr))[i]->__min_stat_name = __value; \
+            (*(this->m_sockstats_arr))[i]->__max_stat_name = __value; \
+            (*(this->m_sockstats_arr))[i]->__avg_stat_name = __value; \
+        } else if ( __value < (*(this->m_sockstats_arr))[i]->__min_stat_name ) { \
+            (*(this->m_sockstats_arr))[i]->__min_stat_name = __value; \
+        } else if ( __value > (*(this->m_sockstats_arr))[i]->__max_stat_name ) { \
+            (*(this->m_sockstats_arr))[i]->__max_stat_name = __value; \
+        } \
+        (*(this->m_sockstats_arr))[i]->__avg_stat_name = ( ((*(this->m_sockstats_arr))[i]->__avg_stat_name) + __value) / 2; \
+    } \
+}
+
 #define dec_stats(__stat_name) \
 { \
     for (uint i=0; i < this->m_sockstats_arr->size(); i++) { \
@@ -241,13 +257,14 @@ struct ev_sockstats_data
 
     uint64_t tcpActiveConns;
 
-    // uint64_t tcpConnMinLatency;
-    // uint64_t tcpConnMaxLatency;
-    // uint64_t tcpConnAvgLatency;
+    uint64_t tcpConnMinLatency;
+    uint64_t tcpConnMaxLatency;
+    uint64_t tcpConnAvgLatency;
 
-    // uint64_t tlsConnMinLatency;
-    // uint64_t tlsConnMaxLatency;
-    // uint64_t tlsConnAvgLatency;
+    uint64_t tlsConnMinLatency;
+    uint64_t tlsConnMaxLatency;
+    uint64_t tlsConnAvgLatency;
+
 
     uint64_t dataBytesInSec;
     uint64_t dataThroughput;
@@ -912,7 +929,16 @@ __j["tcpActiveConns"] = __stats->tcpActiveConns; \
  \
 __j["dataThroughput"] = __stats->dataThroughput; \
 __j["dataSendThroughput"] = __stats->dataSendThroughput; \
-__j["dataRcvThroughput"] = __stats->dataRcvThroughput;
+__j["dataRcvThroughput"] = __stats->dataRcvThroughput; \
+ \
+__j["tcpConnMinLatency"] = __stats->tcpConnMinLatency; \
+__j["tcpConnMaxLatency"] = __stats->tcpConnMaxLatency; \
+__j["tcpConnAvgLatency"] = __stats->tcpConnAvgLatency; \
+ \
+__j["tlsConnMinLatency"] = __stats->tlsConnMinLatency; \
+__j["tlsConnMaxLatency"] = __stats->tlsConnMaxLatency; \
+__j["tlsConnAvgLatency"] = __stats->tlsConnAvgLatency;
+
 
 
 #endif

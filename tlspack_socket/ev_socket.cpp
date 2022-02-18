@@ -268,8 +268,9 @@ int ev_socket::tcp_connect (epoll_ctx* epoll_ctxp
                             , ev_sockaddr* localAddress
                             , ev_sockaddr* remoteAddress)
 {
-    //socket stats
     m_tcp_init_time = std::chrono::system_clock::now();
+
+    //socket stats
     inc_stats (tcpConnInit); 
     inc_stats (tcpConnInitInUse);
     inc_stats (tcpConnInitInSec);
@@ -794,11 +795,16 @@ void ev_socket::tcp_verify_established ()
 
         m_tcp_est_time = std::chrono::system_clock::now();
 
-        // auto ms_elapsed 
-        //     = std::chrono::duration_cast<std::chrono::microseconds> 
-        //         (m_tcp_est_time-m_tcp_init_time);
+        uint64_t mic_elapsed 
+            = (std::chrono::duration_cast<std::chrono::microseconds> 
+                (m_tcp_est_time-m_tcp_init_time)).count();
+        
 
-        // set_stats (tcpConnAvgLatency, )
+        set_min_max_avg_stats (tcpConnMinLatency,
+                                tcpConnMaxLatency,
+                                tcpConnAvgLatency, 
+                                mic_elapsed);
+
 
         set_state (STATE_TCP_CONN_ESTABLISHED);
         inc_stats (tcpConnInitSuccess);
@@ -1159,6 +1165,8 @@ void ev_socket::handle_tcp_connect_complete ()
 void ev_socket::do_ssl_handshake() 
 {
     if (is_set_state (STATE_SSL_CONN_INIT) == 0) {
+        m_tls_init_time = std::chrono::system_clock::now();
+
         set_state (STATE_SSL_CONN_INIT);
         inc_stats (sslConnInit);
         inc_stats (sslConnInitInSec);
@@ -1181,6 +1189,18 @@ void ev_socket::do_ssl_handshake()
         int status = SSL_do_handshake(m_ssl);
         int sslErrno = SSL_get_error (m_ssl, status);
         if (status == 1) {
+            m_tls_est_time = std::chrono::system_clock::now();
+
+            uint64_t mic_elapsed 
+                = (std::chrono::duration_cast<std::chrono::microseconds> 
+                    (m_tls_est_time-m_tls_init_time)).count();
+            
+
+            set_min_max_avg_stats (tlsConnMinLatency,
+                                    tlsConnMaxLatency,
+                                    tlsConnAvgLatency, 
+                                    mic_elapsed);
+
             set_state (STATE_SSL_CONN_ESTABLISHED);
             set_status (CONNAPP_STATE_SSL_CONNECTION_ESTABLISHED);
             if (m_ssl_client) {
