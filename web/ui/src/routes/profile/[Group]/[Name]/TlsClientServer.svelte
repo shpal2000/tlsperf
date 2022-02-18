@@ -855,17 +855,17 @@
   }];
 
   let srvrThptChartDataSet = [{
-    fill: true,
+    fill: false,
     borderWidth: 1,
     lineTension: 0.1,
-    borderColor: 'rgb(89, 112, 115)',
+    borderColor: 'rgb(255, 204, 92)',
     data: []
   },
   {
-    fill: true,
+    fill: false,
     borderWidth: 1,
     lineTension: 0.1,
-    borderColor: 'rgb(184, 190, 191)',
+    borderColor: 'rgb(255, 111, 105)',
     data: []
   }];
   
