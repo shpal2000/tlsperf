@@ -382,17 +382,15 @@ private:
 
     ev_socket_opt* m_sock_opt;
 
-    std::chrono::time_point<std::chrono::system_clock> m_tcp_init_time;
-    std::chrono::time_point<std::chrono::system_clock> m_tcp_est_time;
-    std::chrono::time_point<std::chrono::system_clock> m_tls_init_time;
-    std::chrono::time_point<std::chrono::system_clock> m_tls_est_time;
-    
-
 public:
     ev_socket* m_next;
     ev_socket* m_prev;
     ev_app* m_app;
     bool m_udp;
+    std::chrono::time_point<std::chrono::system_clock> m_tcp_init_time;
+    std::chrono::time_point<std::chrono::system_clock> m_tcp_est_time;
+    std::chrono::time_point<std::chrono::system_clock> m_tls_init_time;
+    std::chrono::time_point<std::chrono::system_clock> m_tls_est_time;
 
 public:
     ev_socket(bool is_udp=false);

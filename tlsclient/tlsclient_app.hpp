@@ -82,14 +82,6 @@ public:
     } \
 }
 
-#define dec_tlsclient_stats(__stat_name) \
-{ \
-    for (uint i=0; i < this->get_sockstats_arr()->size(); i++) { \
-        ev_sockstats* __stats_ptr = (*(this->get_sockstats_arr()))[i]; \
-        ((tlsclient_stats*)(__stats_ptr))->__stat_name--; \
-    } \
-}
-
 #define add_tlsclient_stats(__stat_name,__value) \
 { \
     for (uint i=0; i < this->get_sockstats_arr()->size(); i++) { \
@@ -98,12 +90,20 @@ public:
     } \
 }
 
-#define sub_tlsclient_stats(__stat_name,__value) \
+#define set_min_max_avg_tlsclient_stats(__min_stat_name,__max_stat_name,__avg_stat_name,__value) \
 { \
     for (uint i=0; i < this->get_sockstats_arr()->size(); i++) { \
         ev_sockstats* __stats_ptr = (*(this->get_sockstats_arr()))[i]; \
-        ((tlsclient_stats*)(__stats_ptr))->__stat_name -= (__value); \
+        if ( (((tlsclient_stats*)(__stats_ptr))->__min_stat_name == 0) ||  (((tlsclient_stats*)(__stats_ptr))->__max_stat_name == 0) ) { \
+            ((tlsclient_stats*)(__stats_ptr))->__min_stat_name = __value; \
+            ((tlsclient_stats*)(__stats_ptr))->__max_stat_name = __value; \
+            ((tlsclient_stats*)(__stats_ptr))->__avg_stat_name = __value; \
+        } else if ( __value < ((tlsclient_stats*)(__stats_ptr))->__min_stat_name ) { \
+            ((tlsclient_stats*)(__stats_ptr))->__min_stat_name = __value; \
+        } else if ( __value > ((tlsclient_stats*)(__stats_ptr))->__max_stat_name ) { \
+            ((tlsclient_stats*)(__stats_ptr))->__max_stat_name = __value; \
+        } \
+        ((tlsclient_stats*)(__stats_ptr))->__avg_stat_name = ( (((tlsclient_stats*)(__stats_ptr))->__avg_stat_name) + __value) / 2; \
     } \
 }
-
 #endif

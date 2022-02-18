@@ -265,8 +265,8 @@
               const connStats = Profile.connStats;
               const connStatsSaved = SavedProfile.connStats;
 
-              const errStats = Profile.errStats;
-              const errStatsSaved = SavedProfile.errStats;
+              const latencyStats = Profile.latencyStats;
+              const errStatsSaved = SavedProfile.latencyStats;
 
               Profile = profileCanonical(p);
               SavedProfile = profileCanonical(p);
@@ -274,8 +274,8 @@
               Profile.connStats = connStats;
               SavedProfile.connStats = connStatsSaved;
 
-              Profile.errStats = errStats;
-              SavedProfile.errStats = errStatsSaved;
+              Profile.latencyStats = latencyStats;
+              SavedProfile.latencyStats = errStatsSaved;
 
               $routeViewState[routeViewKey] = {Profile, SavedProfile};
               validateAllFields ();
@@ -390,35 +390,35 @@
         ]));
     }
 
-    function getErrorStats () {
+    function getLatencyStats () {
       return JSON.parse (JSON.stringify ([
         {id: 1,
-          Name: 'tcpConnMinLatency',
+          Name: 'TcpConnMaxLatency',
           Client: 0,
           Server: 0},
 
           {id: 2,
-          Name: 'tcpConnMaxLatency',
+          Name: 'TcpConnAvgLatency',
           Client: 0,
           Server: 0},
 
           {id: 3,
-          Name: 'tcpConnAvgLatency',
+          Name: 'TlsConnMaxLatency',
           Client: 0,
           Server: 0},
 
           {id: 4,
-          Name: 'tlsConnMinLatency',
+          Name: 'TlsConnAvgLatency',
           Client: 0,
           Server: 0},
 
           {id: 5,
-          Name: 'tlsConnMaxLatency',
+          Name: 'AppMaxLatency',
           Client: 0,
           Server: 0},
 
           {id: 6,
-          Name: 'tlsConnAvgLatency',
+          Name: 'AppAvgLatency',
           Client: 0,
           Server: 0}
         ]));
@@ -428,8 +428,8 @@
       Profile.connStats = getConnStats();
       SavedProfile.connStats = getConnStats();
 
-      Profile.errStats = getErrorStats();
-      SavedProfile.errStats = getErrorStats();
+      Profile.latencyStats = getLatencyStats();
+      SavedProfile.latencyStats = getLatencyStats();
     }
 
     async function onStart () {
@@ -686,7 +686,6 @@
     clntThptChartDataSet[2].data = [];
 
     srvrThptChartDataSet[0].data = [];
-    srvrThptChartDataSet[1].data = [];
 
     try{
       const res = await fetch (`/api/stats.json?group=${Profile.Group}&name=${Profile.Name}`);
@@ -734,22 +733,14 @@
               clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
               clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
 
-              srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
-              srvrThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
+              srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.appSessAvgLatency);
 
-              Profile.errStats[0].Server = 0;
-              Profile.errStats[1].Server = 0;
-              Profile.errStats[2].Server = 0;
-              Profile.errStats[3].Server = 0;
-              Profile.errStats[4].Server = 0;
-              Profile.errStats[5].Server = 0;
-
-              Profile.errStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnMinLatency;
-              Profile.errStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
-              Profile.errStats[2].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
-              Profile.errStats[3].Client = Profile.Stats.TlsClient.sum.tlsConnMinLatency;
-              Profile.errStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
-              Profile.errStats[5].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
+              Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
+              Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
+              Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
+              Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
+              Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
+              Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
             }
           } else {
           }
@@ -875,13 +866,6 @@
     borderWidth: 1,
     lineTension: 0.1,
     borderColor: 'rgb(255, 204, 92)',
-    data: []
-  },
-  {
-    fill: false,
-    borderWidth: 1,
-    lineTension: 0.1,
-    borderColor: 'rgb(255, 111, 105)',
     data: []
   }];
   
@@ -1151,7 +1135,7 @@
             <DataTable
             size="short"
             headers={topStatsHeaders}
-            rows={Profile.errStats}
+            rows={Profile.latencyStats}
             zebra
             />
           </div>
