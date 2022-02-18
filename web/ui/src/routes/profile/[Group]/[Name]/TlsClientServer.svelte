@@ -682,7 +682,9 @@
     cpsChartDataSet[0].data = [0,0,0,0,0,0];
     
     clntThptChartDataSet[0].data = [];
+
     srvrThptChartDataSet[0].data = [];
+    srvrThptChartDataSet[1].data = [];
 
     try{
       const res = await fetch (`/api/stats.json?group=${Profile.Group}&name=${Profile.Name}`);
@@ -728,8 +730,10 @@
                 Profile.Stats.TlsServer.sum.sslAcceptSuccessRate
               ];
 
-              clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tlsclientThroughput);
-              srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsServer.map(v => v.sum.tlsserverThroughput);
+              clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataThroughput);
+
+              srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
+              srvrThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
 
               Profile.errStats[0].Server = Profile.Stats.TlsServer.sum.tcpWriteFail;
               Profile.errStats[1].Server = Profile.Stats.TlsServer.sum.tcpReadFail;
@@ -855,6 +859,13 @@
     borderWidth: 1,
     lineTension: 0.1,
     borderColor: 'rgb(89, 112, 115)',
+    data: []
+  },
+  {
+    fill: true,
+    borderWidth: 1,
+    lineTension: 0.1,
+    borderColor: 'rgb(184, 190, 191)',
     data: []
   }];
   
