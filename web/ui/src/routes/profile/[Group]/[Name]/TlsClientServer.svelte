@@ -393,32 +393,32 @@
     function getLatencyStats () {
       return JSON.parse (JSON.stringify ([
         {id: 1,
-          Name: 'TcpConnMaxLatency',
-          Client: 0,
-          Server: 0},
-
-          {id: 2,
           Name: 'TcpConnAvgLatency',
           Client: 0,
           Server: 0},
 
-          {id: 3,
-          Name: 'TlsConnMaxLatency',
-          Client: 0,
-          Server: 0},
-
-          {id: 4,
+          {id: 2,
           Name: 'TlsConnAvgLatency',
           Client: 0,
           Server: 0},
 
+          {id: 3,
+          Name: 'AppAvgLatency',
+          Client: 0,
+          Server: 0},
+
+          {id: 4,
+          Name: 'TcpConnMaxLatency',
+          Client: 0,
+          Server: 0},
+
           {id: 5,
-          Name: 'AppMaxLatency',
+          Name: 'TlsConnMaxLatency',
           Client: 0,
           Server: 0},
 
           {id: 6,
-          Name: 'AppAvgLatency',
+          Name: 'AppMaxLatency',
           Client: 0,
           Server: 0}
         ]));
@@ -501,19 +501,6 @@
       }
     }
 
-    let chartValues = [];
-    let chartLabels = [];
-
-    let data = {
-              labels: chartLabels,
-              datasets: [{
-                  label: '',
-                  backgroundColor: 'rgb(255, 99, 132)',
-                  borderColor: 'rgb(255, 99, 132)',
-                  data: chartValues
-              }]
-        };
-
     let cpsChartCtx;
     let cpsChartCanvas;
     let cpsChart;
@@ -538,7 +525,12 @@
     const topStatsHeaders = [
       {key: 'Name', value: 'Name'},
       {key: 'Client', value: 'Client'},
-      {key: 'Server', value: 'Server'},
+      {key: 'Server', value: 'Server'}
+    ];
+
+    const latencyStatsHeaders = [
+      {key: 'Name', value: 'Name'},
+      {key: 'Client', value: 'Client'}
     ];
 
   function profileCanonical (p) {
@@ -679,7 +671,12 @@
 
   async function onStatsInterval () {
 
-    cpsChartDataSet[0].data = [0,0,0,0,0,0];
+    // cpsChartDataSet[0].data = [0,0,0,0,0,0];
+
+    cpsChartDataSet[0].data = [];
+    cpsChartDataSet[1].data = [];
+    cpsChartDataSet[2].data = []; 
+    cpsChartDataSet[3].data = []; 
     
     clntThptChartDataSet[0].data = [];
     clntThptChartDataSet[1].data = [];
@@ -722,25 +719,30 @@
               Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
               Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
             
-              cpsChartDataSet[0].data = [
-                Profile.Stats.TlsClient.sum.tcpConnInitRate,
-                Profile.Stats.TlsClient.sum.tcpConnInitSuccessRate,
-                Profile.Stats.TlsClient.sum.sslConnInitRate,
-                Profile.Stats.TlsClient.sum.sslConnInitSuccessRate
-              ];
+              // cpsChartDataSet[0].data = [
+              //   Profile.Stats.TlsClient.sum.tcpConnInitRate,
+              //   Profile.Stats.TlsClient.sum.tcpConnInitSuccessRate,
+              //   Profile.Stats.TlsClient.sum.sslConnInitRate,
+              //   Profile.Stats.TlsClient.sum.sslConnInitSuccessRate
+              // ];
+
+              cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitRate);
+              cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitSuccessRate);
+              cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.sslConnInitRate);
+              cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sslConnInitSuccessRate.dataRcvThroughput);
 
               clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataThroughput);
               clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
               clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
 
-              srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.appSessAvgLatency);
+              srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.appDataAvgLatency);
 
-              Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
-              Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
-              Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
-              Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
-              Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
-              Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
+              Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
+              Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
+              Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
+              Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
+              Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
+              Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
             }
           } else {
           }
@@ -832,12 +834,42 @@
   })
 
 
+  // let cpsChartDataSet = [{
+  //   barPercentage: 0.4,
+  //   borderColor: 'rgb(89, 112, 115)',
+  //   backgroundColor: 'rgb(89, 112, 115)',
+  //   data: [0, 0, 0, 0]
+  // }]
+
   let cpsChartDataSet = [{
-    barPercentage: 0.4,
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.1,
     borderColor: 'rgb(89, 112, 115)',
-    backgroundColor: 'rgb(89, 112, 115)',
-    data: [0, 0, 0, 0]
-  }]
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.2,
+    borderColor: 'rgb(114, 137, 218)',
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.3,
+    borderColor: 'rgb(186, 225, 255)',
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.4,
+    borderColor: 'rgb(255, 204, 92)',
+    data: []
+  }];
+
 
   let clntThptChartDataSet = [{
     fill: true,
@@ -862,7 +894,7 @@
   }];
 
   let srvrThptChartDataSet = [{
-    fill: false,
+    fill: true,
     borderWidth: 1,
     lineTension: 0.1,
     borderColor: 'rgb(255, 204, 92)',
@@ -875,21 +907,54 @@
 
   onMount ( () => {
     
+    // cpsChartCtx = cpsChartCanvas.getContext('2d');
+    // cpsChart = new Chart(cpsChartCtx, {
+    //     type: 'bar',
+    //     data: {
+    //       labels: ['tcpInit', 'tcpSucc', 'sslInit', 'sslSucc'],
+    //       datasets: cpsChartDataSet
+    //     },
+    //     options: {
+    //       scales: {
+    //         y: {
+    //           beginAtZero: true
+    //         }
+    //       },
+    //       plugins: {
+    //         legend: false
+    //       }
+    //     }
+    // });
+
     cpsChartCtx = cpsChartCanvas.getContext('2d');
     cpsChart = new Chart(cpsChartCtx, {
-        type: 'bar',
+        type: 'line',
         data: {
-          labels: ['tcpInit', 'tcpSucc', 'sslInit', 'sslSucc'],
+          labels: clntThptChartLables,
           datasets: cpsChartDataSet
         },
         options: {
-          scales: {
-            y: {
-              beginAtZero: true
+          elements: {
+            point: {
+              radius: 0
             }
+          },
+          animation :{
+            duration: 0
+          },
+          interaction: {
+            intersect: false
           },
           plugins: {
             legend: false
+          },
+          scales: {
+            x: {
+              type: 'linear'
+            },
+            y: {
+              beginAtZero: true
+            }
           }
         }
     });
@@ -1134,7 +1199,7 @@
           <div class="tile is-child my-border">
             <DataTable
             size="short"
-            headers={topStatsHeaders}
+            headers={latencyStatsHeaders}
             rows={Profile.latencyStats}
             zebra
             />

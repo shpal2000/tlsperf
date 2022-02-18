@@ -68,6 +68,9 @@ void tlsclient_socket::on_write ()
             write_next_data (m_app_ctx->m_send_buff
                             , 0
                             , bytes_to_write);
+        } else if (m_bytes_written == m_app_ctx->m_send_recv_len)
+        {
+            this->write_close();
         }
     }
 }
