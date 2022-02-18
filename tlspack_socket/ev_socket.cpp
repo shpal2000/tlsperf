@@ -269,7 +269,8 @@ int ev_socket::tcp_connect (epoll_ctx* epoll_ctxp
                             , ev_sockaddr* remoteAddress)
 {
     //socket stats
-    inc_stats (tcpConnInit);
+    m_tcp_init_time = std::chrono::system_clock::now();
+    inc_stats (tcpConnInit); 
     inc_stats (tcpConnInitInUse);
     inc_stats (tcpConnInitInSec);
 
@@ -790,6 +791,15 @@ void ev_socket::tcp_verify_established ()
                                     , &socketErrBufLen);
     
     if ((retGetsockopt|socketErr) == 0){
+
+        m_tcp_est_time = std::chrono::system_clock::now();
+
+        // auto ms_elapsed 
+        //     = std::chrono::duration_cast<std::chrono::microseconds> 
+        //         (m_tcp_est_time-m_tcp_init_time);
+
+        // set_stats (tcpConnAvgLatency, )
+
         set_state (STATE_TCP_CONN_ESTABLISHED);
         inc_stats (tcpConnInitSuccess);
         inc_stats (tcpConnInitSuccessInSec);
@@ -1325,6 +1335,11 @@ bool ev_socket::do_read_next_data ()
     {
         clear_state (STATE_CONN_READ_PENDING);
         on_rstatus (bytes_received, m_read_status);
+
+        if (bytes_received > 0) {
+            add_stats (dataBytesInSec, bytes_received);
+            add_stats (dataRcvBytesInSec, bytes_received);
+        }
     }
 
     if (bytes_received == m_read_data_len)
@@ -1385,6 +1400,13 @@ void ev_socket::do_write_next_data ()
     {
         clear_state (STATE_CONN_WRITE_PENDING);
         on_wstatus (bytesSent, m_write_status);
+
+        if ((m_write_status==WRITE_STATUS_NORMAL) 
+                                    && (bytesSent > 0))
+        {
+            add_stats (dataBytesInSec, bytesSent);
+            add_stats (dataSendBytesInSec, bytesSent);
+        }
     }
 }
 
