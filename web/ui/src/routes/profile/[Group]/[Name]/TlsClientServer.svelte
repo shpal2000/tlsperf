@@ -393,32 +393,32 @@
     function getErrorStats () {
       return JSON.parse (JSON.stringify ([
         {id: 1,
-          Name: 'TcpWriteFail',
+          Name: 'tcpConnMinLatency',
           Client: 0,
           Server: 0},
 
           {id: 2,
-          Name: 'TcpReadFail',
+          Name: 'tcpConnMaxLatency',
           Client: 0,
           Server: 0},
 
           {id: 3,
-          Name: 'TcpWriteZero',
+          Name: 'tcpConnAvgLatency',
           Client: 0,
           Server: 0},
 
           {id: 4,
-          Name: 'SockResNotAvail',
+          Name: 'tlsConnMinLatency',
           Client: 0,
           Server: 0},
 
           {id: 5,
-          Name: 'ConnResNotAvail',
+          Name: 'tlsConnMaxLatency',
           Client: 0,
           Server: 0},
 
           {id: 6,
-          Name: 'SessResNotAvail',
+          Name: 'tlsConnAvgLatency',
           Client: 0,
           Server: 0}
         ]));
@@ -737,19 +737,19 @@
               srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
               srvrThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
 
-              Profile.errStats[0].Server = Profile.Stats.TlsServer.sum.tcpWriteFail;
-              Profile.errStats[1].Server = Profile.Stats.TlsServer.sum.tcpReadFail;
-              Profile.errStats[2].Server = Profile.Stats.TlsServer.sum.tcpWriteReturnsZero;
-              Profile.errStats[3].Server = Profile.Stats.TlsServer.sum.socketCreateFail;
-              Profile.errStats[4].Server = Profile.Stats.TlsServer.sum.tcpConnStructNotAvail;
-              Profile.errStats[5].Server = Profile.Stats.TlsServer.sum.appSessStructNotAvail;
+              Profile.errStats[0].Server = 0;
+              Profile.errStats[1].Server = 0;
+              Profile.errStats[2].Server = 0;
+              Profile.errStats[3].Server = 0;
+              Profile.errStats[4].Server = 0;
+              Profile.errStats[5].Server = 0;
 
-              Profile.errStats[0].Client = Profile.Stats.TlsClient.sum.tcpWriteFail;
-              Profile.errStats[1].Client = Profile.Stats.TlsClient.sum.tcpReadFail;
-              Profile.errStats[2].Client = Profile.Stats.TlsClient.sum.tcpWriteReturnsZero;
-              Profile.errStats[3].Client = Profile.Stats.TlsClient.sum.socketCreateFail;
-              Profile.errStats[4].Client = Profile.Stats.TlsClient.sum.tcpConnStructNotAvail;
-              Profile.errStats[5].Client = Profile.Stats.TlsClient.sum.appSessStructNotAvail;
+              Profile.errStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnMinLatency;
+              Profile.errStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
+              Profile.errStats[2].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
+              Profile.errStats[3].Client = Profile.Stats.TlsClient.sum.tlsConnMinLatency;
+              Profile.errStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
+              Profile.errStats[5].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
             }
           } else {
           }
