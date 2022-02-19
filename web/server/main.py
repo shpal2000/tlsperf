@@ -611,9 +611,11 @@ class StatsListener:
         stats = json.loads(message)
         appId = stats['appId']
         appGId = stats['appGId']
-
+        
         del stats['appId']
         del stats['appGId']
+
+        appIdle = stats.pop('appIdle', 0)
 
         app, group, name = appGId.split('-')
 
@@ -658,34 +660,27 @@ class StatsListener:
                 # compute gstats[csg_app]['sum']
                 del gstats[csg_app]['sum']
                 _sum_stats = {}
-                _csg_tcp_latency_count = 0
-                _csg_tls_latency_count = 0
-                _csg_app_latency_count = 0
                 for _csg_name, _csg_stats in gstats[csg_app].items():
                     for _stats_name, _stats_value in _csg_stats.items():
                         if not _sum_stats.get(_stats_name):
                             _sum_stats[_stats_name] = _stats_value
+                        elif _stats_name in ['tcpConnMinLatency', 'tlsConnMinLatency', 'appDataMinLatency']:
+                            if _sum_stats[_stats_name] == 0:
+                                _sum_stats[_stats_name] = _stats_value
+                            elif _stats_value > 0:
+                                _sum_stats[_stats_name] = min (_sum_stats[_stats_name], _stats_value)
+                            else:
+                                pass
+                        elif _stats_name in ['tcpConnMaxLatency', 'tlsConnMaxLatency', 'appDataMaxLatency']:
+                                _sum_stats[_stats_name] = max (_sum_stats[_stats_name], _stats_value)
+                        elif _stats_name in ['tcpConnAvgLatency', 'tlsConnAvgLatency', 'appDataAvgLatency']:
+                            if _stats_value > 0:
+                                _sum_stats[_stats_name] = int ((_sum_stats[_stats_name] + _stats_value) / 2)
+                            else:
+                                pass
                         else:
                             _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
-                        if _stats_name == 'tcpConnMinLatency' and _stats_value:
-                            _csg_tcp_latency_count = _csg_tcp_latency_count + 1
-                        if _stats_name == 'tlsConnMinLatency' and _stats_value:
-                            _csg_tls_latency_count = _csg_tls_latency_count + 1
-                        if _stats_name == 'appDataMinLatency' and _stats_value:
-                            _csg_app_latency_count = _csg_app_latency_count + 1
-
-                if _csg_tcp_latency_count:
-                    for _latency_stats in ['tcpConnMinLatency', 'tcpConnMinLatency', 'tcpConnMinLatency']:
-                        _sum_stats[_latency_stats] = int (_sum_stats[_latency_stats] / _csg_tcp_latency_count)
-
-                if _csg_tls_latency_count:
-                    for _latency_stats in ['tlsConnMinLatency', 'tlsConnMinLatency', 'tlsConnMinLatency']:
-                        _sum_stats[_latency_stats] = int (_sum_stats[_latency_stats] / _csg_tls_latency_count)
-
-                if _csg_app_latency_count:
-                    for _latency_stats in ['appDataMinLatency', 'appDataMinLatency', 'appDataMinLatency']:
-                        _sum_stats[_latency_stats] = int (_sum_stats[_latency_stats] / _csg_app_latency_count)
-
+                        
                 gstats[csg_app]['sum'] = _sum_stats
 
             time_elpse = int(time.time() - gstats['tick'][csg_app])
