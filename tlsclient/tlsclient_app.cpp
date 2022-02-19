@@ -117,16 +117,16 @@ void tlsclient_app::run_iter(bool tick_sec)
 
     if (tick_sec)
     {   int app_idle = 0;
-        if ( (m_curr_conn_count == m_app_ctx.m_total_conn_count) 
-                                && (m_stats.tcpActiveConns == 0) 
-                                && (m_stats.tcpConnInitInUse == 0) )
-        {
-            app_idle = 1;
-            if (m_remaining_stats_update > 0)
-            {
-                m_remaining_stats_update--;
-            }
-        }
+        // if ( (m_curr_conn_count == m_app_ctx.m_total_conn_count) 
+        //                         && (m_stats.tcpActiveConns == 0) 
+        //                         && (m_stats.tcpConnInitInUse == 0) )
+        // {
+        //     app_idle = 1;
+        //     if (m_remaining_stats_update > 0)
+        //     {
+        //         m_remaining_stats_update--;
+        //     }
+        // }
 
         if (m_remaining_stats_update > 0)
         {
