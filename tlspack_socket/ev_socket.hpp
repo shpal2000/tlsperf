@@ -137,6 +137,29 @@ struct ev_socket_opt {
     } \
 }
 
+#define add_stats(__stat_name,__value) \
+{ \
+    for (uint i=0; i < this->m_sockstats_arr->size(); i++) { \
+        (*(this->m_sockstats_arr))[i]->__stat_name += __value; \
+    } \
+}
+
+#define set_min_max_avg_stats(__min_stat_name,__max_stat_name,__avg_stat_name,__value) \
+{ \
+    for (uint i=0; i < this->m_sockstats_arr->size(); i++) { \
+        if ( ((*(this->m_sockstats_arr))[i]->__min_stat_name == 0) ||  ((*(this->m_sockstats_arr))[i]->__max_stat_name == 0) ) { \
+            (*(this->m_sockstats_arr))[i]->__min_stat_name = __value; \
+            (*(this->m_sockstats_arr))[i]->__max_stat_name = __value; \
+            (*(this->m_sockstats_arr))[i]->__avg_stat_name = __value; \
+        } else if ( __value < (*(this->m_sockstats_arr))[i]->__min_stat_name ) { \
+            (*(this->m_sockstats_arr))[i]->__min_stat_name = __value; \
+        } else if ( __value > (*(this->m_sockstats_arr))[i]->__max_stat_name ) { \
+            (*(this->m_sockstats_arr))[i]->__max_stat_name = __value; \
+        } \
+        (*(this->m_sockstats_arr))[i]->__avg_stat_name = ( ((*(this->m_sockstats_arr))[i]->__avg_stat_name) + __value) / 2; \
+    } \
+}
+
 #define dec_stats(__stat_name) \
 { \
     for (uint i=0; i < this->m_sockstats_arr->size(); i++) { \
@@ -233,6 +256,25 @@ struct ev_sockstats_data
     uint64_t tcpGetSockNameFail;
 
     uint64_t tcpActiveConns;
+
+    uint64_t tcpConnMinLatency;
+    uint64_t tcpConnMaxLatency;
+    uint64_t tcpConnAvgLatency;
+
+    uint64_t tlsConnMinLatency;
+    uint64_t tlsConnMaxLatency;
+    uint64_t tlsConnAvgLatency;
+
+
+    uint64_t dataBytesInSec;
+    uint64_t dataThroughput;
+
+    uint64_t dataSendBytesInSec;
+    uint64_t dataSendThroughput;
+
+    uint64_t dataRcvBytesInSec;
+    uint64_t dataRcvThroughput;
+
 };
 
 struct ev_sockstats : ev_sockstats_data
@@ -259,6 +301,15 @@ struct ev_sockstats : ev_sockstats_data
 
         sslAcceptSuccessRate = sslAcceptSuccessInSec;
         sslAcceptSuccessInSec = 0;
+
+        dataThroughput = dataBytesInSec * 8;
+        dataBytesInSec = 0;
+
+        dataSendThroughput = dataSendBytesInSec * 8;
+        dataSendBytesInSec = 0;
+
+        dataRcvThroughput = dataRcvBytesInSec * 8;
+        dataRcvBytesInSec = 0;
     }
 };
 
@@ -330,13 +381,16 @@ private:
     ev_socket* m_parent;
 
     ev_socket_opt* m_sock_opt;
-    
 
 public:
     ev_socket* m_next;
     ev_socket* m_prev;
     ev_app* m_app;
     bool m_udp;
+    std::chrono::time_point<std::chrono::system_clock> m_tcp_init_time;
+    std::chrono::time_point<std::chrono::system_clock> m_tcp_est_time;
+    std::chrono::time_point<std::chrono::system_clock> m_tls_init_time;
+    std::chrono::time_point<std::chrono::system_clock> m_tls_est_time;
 
 public:
     ev_socket(bool is_udp=false);
@@ -869,6 +923,20 @@ __j["appSessStructNotAvail"] = __stats->appSessStructNotAvail; \
 __j["tcpInitServerFail"] = __stats->tcpInitServerFail; \
 __j["tcpGetSockNameFail"] = __stats->tcpGetSockNameFail; \
  \
-__j["tcpActiveConns"] = __stats->tcpActiveConns;
+__j["tcpActiveConns"] = __stats->tcpActiveConns; \
+ \
+__j["dataThroughput"] = __stats->dataThroughput; \
+__j["dataSendThroughput"] = __stats->dataSendThroughput; \
+__j["dataRcvThroughput"] = __stats->dataRcvThroughput; \
+ \
+__j["tcpConnMinLatency"] = __stats->tcpConnMinLatency; \
+__j["tcpConnMaxLatency"] = __stats->tcpConnMaxLatency; \
+__j["tcpConnAvgLatency"] = __stats->tcpConnAvgLatency; \
+ \
+__j["tlsConnMinLatency"] = __stats->tlsConnMinLatency; \
+__j["tlsConnMaxLatency"] = __stats->tlsConnMaxLatency; \
+__j["tlsConnAvgLatency"] = __stats->tlsConnAvgLatency;
+
+
 
 #endif

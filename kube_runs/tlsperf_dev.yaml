@@ -28,7 +28,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/home/ubuntu/tlsperf/web"
+    path: "/home/ubuntu/tlsperf"
 
 ---
 
@@ -67,9 +67,9 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: tlsperf-web-dev
+  name: tlsperf-dev
   labels:
-    app: tlsperf-web-dev
+    app: tlsperf-dev
 spec:
   volumes:
     - name: tlsperf-pv-storage
@@ -91,7 +91,7 @@ spec:
     - name: tlsperf-backend-dev
       image: tlspack/tlsperf:latest
       imagePullPolicy: Always
-      workingDir: /code/
+      workingDir: /code/web/server
       command: ["ping"]
       args: ["1.1.1.1"]
       volumeMounts:
@@ -113,7 +113,7 @@ spec:
     - name: tlsperf-frontend-dev
       image: tlspack/tlsperf:latest
       imagePullPolicy: Always
-      workingDir: /code/ui/
+      workingDir: /code/web/ui/
       command: ["ping"]
       args: ["1.1.1.1"]
       volumeMounts:
@@ -126,6 +126,15 @@ spec:
           value: "8887"
         - name: PORT
           value: "8888"
+    - name: tlsperf-tlsbin-dev
+      image: tlspack/tlsperf:latest
+      imagePullPolicy: Always
+      workingDir: /code/
+      command: ["ping"]
+      args: ["1.1.1.1"]
+      volumeMounts:
+        - name: tlsperf-pv-storage2
+          mountPath: "/code"
   nodeSelector:
     tgid: Node0
 
@@ -136,11 +145,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: tlsperf-web-dev-service
+  name: tlsperf-dev-service
 spec:
   type: NodePort
   selector:
-    app: tlsperf-web-dev
+    app: tlsperf-dev
   ports:
     - protocol: TCP
       port: 8888

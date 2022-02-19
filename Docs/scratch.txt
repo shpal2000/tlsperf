@@ -57,3 +57,11 @@ sudo resize2fs /dev/xvda1
 lsblk
 
 df -h
+
+
+
+---
+
+git config --global user.email shpal2000@gmail.com
+
+---

@@ -26,6 +26,13 @@ int main(int /*argc*/, char ** /*argv*/)
     app_cfg.server_port = cfg_json["server_port"].get<int>();
     app_cfg.server_ssl = cfg_json["server_ssl"].get<int>();
 
+    auto cip_list = cfg_json["client_ips"];
+    for (auto it = cip_list.begin(); it != cip_list.end(); ++it)
+    {
+        auto client_ip = it.value ();
+        app_cfg.client_ips.push_back (client_ip.get<std::string>());
+    }
+
     app_cfg.stats_ip = cfg_json["stats_ip"].get<std::string>();
     app_cfg.stats_port = cfg_json["stats_port"].get<int>();
 

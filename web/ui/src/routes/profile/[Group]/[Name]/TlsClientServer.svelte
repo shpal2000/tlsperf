@@ -32,7 +32,7 @@
     const dispatch = createEventDispatcher ();
 
     function validateClientIPs (csg_index) {
-      let numRegex = new RegExp('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/([1-2][0-9]?|3[0-2]?|[4-9])$', );
+      let numRegex = new RegExp('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/([1-2][0-9]?|3[0-2]?|[4-9])(,(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/([1-2][0-9]?|3[0-2]?|[4-9]))*$', );
       
       const csg = Profile.cs_groups[csg_index];
       const savedCsg = SavedProfile.cs_groups[csg_index];
@@ -262,14 +262,20 @@
               const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
               delete $routeViewState[routeViewKey];
 
-              const topStats = Profile.topStats;
-              const topStatsSaved = SavedProfile.topStats;
+              const connStats = Profile.connStats;
+              const connStatsSaved = SavedProfile.connStats;
+
+              const latencyStats = Profile.latencyStats;
+              const errStatsSaved = SavedProfile.latencyStats;
 
               Profile = profileCanonical(p);
               SavedProfile = profileCanonical(p);
 
-              Profile.topStats = topStats;
-              SavedProfile.topStats = topStatsSaved;
+              Profile.connStats = connStats;
+              SavedProfile.connStats = connStatsSaved;
+
+              Profile.latencyStats = latencyStats;
+              SavedProfile.latencyStats = errStatsSaved;
 
               $routeViewState[routeViewKey] = {Profile, SavedProfile};
               validateAllFields ();
@@ -350,7 +356,7 @@
       startTimerTick();
     }
     
-    function getTopStats () {
+    function getConnStats () {
       return JSON.parse (JSON.stringify ([
         {id: 1,
           Name: 'TcpConnInit',
@@ -384,16 +390,53 @@
         ]));
     }
 
-    function clearTopStats () {
-      Profile.topStats = getTopStats();
-      SavedProfile.topStats = getTopStats();
+    function getLatencyStats () {
+      return JSON.parse (JSON.stringify ([
+        {id: 1,
+          Name: 'TcpConnAvgLatency',
+          Client: 0,
+          Server: 0},
+
+          {id: 2,
+          Name: 'TlsConnAvgLatency',
+          Client: 0,
+          Server: 0},
+
+          {id: 3,
+          Name: 'AppSessAvgLatency',
+          Client: 0,
+          Server: 0},
+
+          {id: 4,
+          Name: 'TcpConnMaxLatency',
+          Client: 0,
+          Server: 0},
+
+          {id: 5,
+          Name: 'TlsConnMaxLatency',
+          Client: 0,
+          Server: 0},
+
+          {id: 6,
+          Name: 'AppSessMaxLatency',
+          Client: 0,
+          Server: 0}
+        ]));
+    }
+
+    function clearStats () {
+      Profile.connStats = getConnStats();
+      SavedProfile.connStats = getConnStats();
+
+      Profile.latencyStats = getLatencyStats();
+      SavedProfile.latencyStats = getLatencyStats();
     }
 
     async function onStart () {
       Profile.isTransient = true;
       stopTimerTick();
 
-      clearTopStats ();
+      clearStats ();
 
       const action = 'onStart';
       const controller = new AbortController();
@@ -458,30 +501,17 @@
       }
     }
 
-    let chartValues = [];
-    let chartLabels = [];
+    let cpsChartCtx;
+    let cpsChartCanvas;
+    let cpsChart;
 
-    let data = {
-              labels: chartLabels,
-              datasets: [{
-                  label: '',
-                  backgroundColor: 'rgb(255, 99, 132)',
-                  borderColor: 'rgb(255, 99, 132)',
-                  data: chartValues
-              }]
-        };
+    let clntThptChartCtx;
+    let clntThptChartCanvas;
+    let clntThptChart;
 
-    let chartCtxCps;
-    let chartCanvasCps;
-    let chartCps;
-
-    let chartCtxThpt;
-    let chartCanvasThpt;
-    let chartThpt;
-
-    let chartCtxLatency;
-    let chartCanvasLatency;
-    let chartLatency;
+    let srvrThptChartCtx;
+    let srvrThptChartCanvas;
+    let srvrThptChart;
 
     const csGroupHeaders = [
       {key: 'app_id', value: 'Group'},
@@ -495,7 +525,12 @@
     const topStatsHeaders = [
       {key: 'Name', value: 'Name'},
       {key: 'Client', value: 'Client'},
-      {key: 'Server', value: 'Server'},
+      {key: 'Server', value: 'Server'}
+    ];
+
+    const latencyStatsHeaders = [
+      {key: 'Name', value: 'Name'},
+      {key: 'Client', value: 'Client'}
     ];
 
   function profileCanonical (p) {
@@ -551,7 +586,7 @@
 
       csg2.server_port = csg.server_port;
       csg2.server_ssl = csg.server_ssl;
-      csg2.send_recv_len = csg.send_recv_len;
+      csg2.send_recv_len = p2.DataLength;
       csg2.cps = Math.floor (p2.CPS / p.cs_groups.length); 
       csg2.max_active_conn_count = Math.floor (p2.MaxPipeline / p.cs_groups.length);
       csg2.total_conn_count = Math.floor (p2.Transactions / p.cs_groups.length);
@@ -636,6 +671,19 @@
 
   async function onStatsInterval () {
 
+    // cpsChartDataSet[0].data = [0,0,0,0,0,0];
+
+    cpsChartDataSet[0].data = [];
+    cpsChartDataSet[1].data = [];
+    cpsChartDataSet[2].data = []; 
+    cpsChartDataSet[3].data = []; 
+    
+    clntThptChartDataSet[0].data = [];
+    clntThptChartDataSet[1].data = [];
+    clntThptChartDataSet[2].data = [];
+
+    srvrThptChartDataSet[0].data = [];
+
     try{
       const res = await fetch (`/api/stats.json?group=${Profile.Group}&name=${Profile.Name}`);
       if (res.ok) {
@@ -657,20 +705,46 @@
             if (Profile.Stats.TlsClient.sum.tcpConnInit >=0 
                 && Profile.Stats.TlsServer.sum.tcpConnInit >= 0) {
               
-              Profile.topStats[0].Server = 0;
-              Profile.topStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
-              Profile.topStats[2].Server = 0;
-              Profile.topStats[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
-              Profile.topStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
-              Profile.topStats[5].Server = 0;
+              Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
+              Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
+              Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
+              Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
+              Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
+              Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
 
-              Profile.topStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
-              Profile.topStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
-              Profile.topStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
-              Profile.topStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
-              Profile.topStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
-              Profile.topStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
-            
+              Profile.connStats[0].Server = 0;
+              Profile.connStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
+              Profile.connStats[2].Server = 0;
+              Profile.connStats[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
+              Profile.connStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
+              Profile.connStats[5].Server = 0;
+
+              Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
+              Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
+              Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
+              Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
+              Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
+              Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
+
+
+              // cpsChartDataSet[0].data = [
+              //   Profile.Stats.TlsClient.sum.tcpConnInitRate,
+              //   Profile.Stats.TlsClient.sum.tcpConnInitSuccessRate,
+              //   Profile.Stats.TlsClient.sum.sslConnInitRate,
+              //   Profile.Stats.TlsClient.sum.sslConnInitSuccessRate
+              // ];
+
+              cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitRate);
+              cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitSuccessRate);
+              cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.sslConnInitRate);
+              cpsChartDataSet[3].data = Profile.Stats.tickStats.TlsClient.map(v => v.sslConnInitSuccessRate);
+
+              clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataThroughput);
+              clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
+              clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
+
+              srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.appDataAvgLatency);
+
             }
           } else {
           }
@@ -679,6 +753,10 @@
       }
     } catch (e) {
     }
+
+    cpsChart.update();
+    clntThptChart.update();
+    srvrThptChart.update();
   }
  
   async function onSyncInterval () {
@@ -736,7 +814,7 @@
         Profile = $routeViewState[routeViewKey].Profile;
         SavedProfile = $routeViewState[routeViewKey].SavedProfile;
 
-        clearTopStats ();
+        clearStats ();
         validateAllFields ();
       } else {
 
@@ -745,95 +823,221 @@
 
         $routeViewState[routeViewKey] = {Profile, SavedProfile};
 
-        clearTopStats ();
+        clearStats ();
         validateAllFields ();
-        
       }
 
       startTimerTick();
     }
   });
 
-  // afterUpdate ( async () => {
-    
-  // })
+  afterUpdate ( async () => {
+    // cpsChart.update();
+  })
+
+
+  // let cpsChartDataSet = [{
+  //   barPercentage: 0.4,
+  //   borderColor: 'rgb(89, 112, 115)',
+  //   backgroundColor: 'rgb(89, 112, 115)',
+  //   data: [0, 0, 0, 0]
+  // }]
+
+  let cpsChartDataSet = [{
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.1,
+    borderColor: 'rgb(89, 112, 115)',
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.2,
+    borderColor: 'rgb(114, 137, 218)',
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.3,
+    borderColor: 'rgb(186, 225, 255)',
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.4,
+    borderColor: 'rgb(255, 204, 92)',
+    data: []
+  }];
+
+
+  let clntThptChartDataSet = [{
+    fill: true,
+    borderWidth: 1,
+    lineTension: 0.1,
+    borderColor: 'rgb(89, 112, 115)',
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.2,
+    borderColor: 'rgb(114, 137, 218)',
+    data: []
+  },
+  {
+    fill: false,
+    borderWidth: 1,
+    lineTension: 0.3,
+    borderColor: 'rgb(186, 225, 255)',
+    data: []
+  }];
+
+  let srvrThptChartDataSet = [{
+    fill: true,
+    borderWidth: 1,
+    lineTension: 0.1,
+    borderColor: 'rgb(255, 204, 92)',
+    data: []
+  }];
+  
+  
+  let clntThptChartLables = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'];
+
 
   onMount ( () => {
     
-    chartCtxCps = chartCanvasCps.getContext('2d');
-    chartCps = new Chart(chartCtxCps, {
+    // cpsChartCtx = cpsChartCanvas.getContext('2d');
+    // cpsChart = new Chart(cpsChartCtx, {
+    //     type: 'bar',
+    //     data: {
+    //       labels: ['tcpInit', 'tcpSucc', 'sslInit', 'sslSucc'],
+    //       datasets: cpsChartDataSet
+    //     },
+    //     options: {
+    //       scales: {
+    //         y: {
+    //           beginAtZero: true
+    //         }
+    //       },
+    //       plugins: {
+    //         legend: false
+    //       }
+    //     }
+    // });
+
+    cpsChartCtx = cpsChartCanvas.getContext('2d');
+    cpsChart = new Chart(cpsChartCtx, {
         type: 'line',
-        data: data,
+        data: {
+          labels: clntThptChartLables,
+          datasets: cpsChartDataSet
+        },
         options: {
-          animation:{
+          elements: {
+            point: {
+              radius: 0
+            }
+          },
+          animation :{
             duration: 0
           },
-
           interaction: {
             intersect: false
           },
-
           plugins: {
-            legend: false
+            legend: false,
+            title: {
+              display: true,
+              text: 'CPS'
+            }
           },
-
           scales: {
             x: {
               type: 'linear'
+            },
+            y: {
+              beginAtZero: true
             }
           }
         }
     });
 
-    chartCtxThpt = chartCanvasThpt.getContext('2d');
-    chartThpt = new Chart(chartCtxThpt, {
+    clntThptChartCtx = clntThptChartCanvas.getContext('2d');
+    clntThptChart = new Chart(clntThptChartCtx, {
         type: 'line',
-        data: data,
+        data: {
+          labels: clntThptChartLables,
+          datasets: clntThptChartDataSet
+        },
         options: {
-          animation:{
+          elements: {
+            point: {
+              radius: 0
+            }
+          },
+          animation :{
             duration: 0
           },
-
           interaction: {
             intersect: false
           },
-
           plugins: {
-            legend: false
+            legend: false,
+            title: {
+              display: true,
+              text: 'Throughput'
+            }
           },
-
           scales: {
             x: {
               type: 'linear'
+            },
+            y: {
+              beginAtZero: true
             }
           }
         }
     });
 
-  //   chartCtxLatency = chartCanvasLatency.getContext('2d');
-  //   chartLatency = new Chart(chartCtxLatency, {
-  //       type: 'line',
-  //       data: data,
-  //       options: {
-  //         animation:{
-  //           duration: 0
-  //         },
-
-  //         interaction: {
-  //           intersect: false
-  //         },
-
-  //         plugins: {
-  //           legend: false
-  //         },
-
-  //         scales: {
-  //           x: {
-  //             type: 'linear'
-  //           }
-  //         }
-  //       }
-  //   });
+    srvrThptChartCtx = srvrThptChartCanvas.getContext('2d');
+    srvrThptChart = new Chart(srvrThptChartCtx, {
+      type: 'line',
+        data: {
+          labels: clntThptChartLables,
+          datasets: srvrThptChartDataSet
+        },
+        options: {
+          elements: {
+            point: {
+              radius: 0
+            }
+          },
+          animation :{
+            duration: 0
+          },
+          interaction: {
+            intersect: false
+          },
+          plugins: {
+            legend: false,
+            title: {
+              display: true,
+              text: 'Latency'
+            }
+          },
+          scales: {
+            x: {
+              type: 'linear'
+            },
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+    });
   });
 
   onDestroy ( () => {
@@ -866,28 +1070,8 @@
 <div class="columns is-multiline is-mobile profile-margin">
 
     <div class="column is-12">
-      {#if Profile.isProgress}
-        <div class="field">
-          <div class="control" >
-            <ProgressBar helperText="{Profile.progressText}"/>
-          </div>
-        </div>
-      {/if}
-
-      {#if Profile.isError}
-        <div class="field">
-          <!-- svelte-ignore a11y-label-has-associated-control -->
-          <label class="label">Status</label>
-          <div class="control">
-            <textarea class="textarea errmsg" placeholder="" rows="{Profile.errorRows}" value={Profile.errorMsg} readonly/>
-          </div>
-        </div>          
-      {/if}
-    </div>  
-
-    <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
-        <div class="tile is-6 is-parent">
+        <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <section>
               <div class="columns is-multiline is-mobile">
@@ -1015,13 +1199,22 @@
 
           </div>
         </div>
-        <div class="tile is-6 is-parent">
-
+        <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <DataTable
             size="short"
             headers={topStatsHeaders}
-            rows={Profile.topStats}
+            rows={Profile.connStats}
+            zebra
+            />
+          </div>
+        </div>
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <DataTable
+            size="short"
+            headers={latencyStatsHeaders}
+            rows={Profile.latencyStats}
             zebra
             />
           </div>
@@ -1030,32 +1223,40 @@
     </div>
 
     <div class="column is-12">
-      <div class="tile is-ancestor is-mobile">
-        <div class="tile is-6 is-parent">
-          <div class="tile is-child">
-            <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label ">CPS:</label>
+      {#if Profile.isProgress}
+        <div class="field">
+          <div class="control" >
+            <ProgressBar helperText="{Profile.progressText}"/>
           </div>
         </div>
-        <div class="tile is-6 is-parent">
-          <div class="tile is-child">
-            <!-- svelte-ignore a11y-label-has-associated-control -->
-            <label class="label ">Throughput:</label>
+      {/if}
+
+      {#if Profile.isError}
+        <div class="field">
+          <!-- svelte-ignore a11y-label-has-associated-control -->
+          <label class="label">Status</label>
+          <div class="control">
+            <textarea class="textarea errmsg" placeholder="" rows="{Profile.errorRows}" value={Profile.errorMsg} readonly/>
           </div>
-        </div>
-      </div>
-    </div>
+        </div>          
+      {/if}
+    </div>  
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
-        <div class="tile is-6 is-parent">
+        <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
-            <canvas bind:this={chartCanvasCps} id="cpsChart"></canvas>
+            <canvas bind:this={cpsChartCanvas} id="cpsChart"></canvas>
           </div>
         </div>
-        <div class="tile is-6 is-parent">
+        <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
-            <canvas bind:this={chartCanvasThpt} id="thptChart"></canvas>
+            <canvas bind:this={clntThptChartCanvas} id="clntThptChart"></canvas>
+          </div>
+        </div>
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <canvas bind:this={srvrThptChartCanvas} id="srvrThptChart"></canvas>
           </div>
         </div>
       </div>
@@ -1239,8 +1440,8 @@
   <style>
     .profile-margin {
       margin-top: 0px;
-      margin-left: 5rem;
-      margin-right: 5rem;
+      margin-left: 1rem;
+      margin-right: 1rem;
     }
 
     .my-border {
@@ -1253,7 +1454,7 @@
 
     .breadcrumb-margin {
         margin-top: 8px;
-        margin-left: 1.25rem;
+        margin-left: 1rem;
     }
 
     .errmsg {

@@ -7,23 +7,22 @@ class tlsclient_socket;
 
 struct tlsclient_stats_data : tlspack_app_stats
 {
-    uint64_t tlsclientThroughput;
-    uint64_t tlsclientBytesInSec;
+    uint64_t appDataMinLatency;
+    uint64_t appDataMaxLatency;
+    uint64_t appDataAvgLatency;
 
     virtual void tick_sec ()
     {
         tlspack_app_stats::tick_sec();
-
-        tlsclientThroughput = tlsclientBytesInSec * 8;
-        tlsclientBytesInSec = 0;
     }
 
     virtual void dump_json (json &j)
     {
         tlspack_app_stats::dump_json (j);
         
-        j["tlsclientThroughput"] = tlsclientThroughput;
-        j["tlsclientBytesInSec"] = tlsclientBytesInSec;
+        j["appDataMinLatency"] = appDataMinLatency;
+        j["appDataMaxLatency"] = appDataMaxLatency;
+        j["appDataAvgLatency"] = appDataAvgLatency;
     }
 
     virtual ~tlsclient_stats_data() {};

@@ -10,5 +10,5 @@ tlspack_applib = shared_library('tlspack_app'
                             , link_with : [ev_socklib]
                             , include_directories : [incdirs]
                             , install_rpath : '/tlspack/lib'
-                            , install_dir : '/workspaces/tlsperf/docker_build'
+                            , install_dir : '/code/Dockerbuild/bin'
                             , install : true)

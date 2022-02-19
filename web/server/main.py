@@ -611,9 +611,11 @@ class StatsListener:
         stats = json.loads(message)
         appId = stats['appId']
         appGId = stats['appGId']
-
+        
         del stats['appId']
         del stats['appGId']
+
+        appIdle = stats.pop('appIdle', 0)
 
         app, group, name = appGId.split('-')
 
@@ -644,7 +646,9 @@ class StatsListener:
                         'TlsServer': tlsServerStats,
                         'tickStats': {'TlsClient' : [tlsClientStats],
                                         'TlsServer': [tlsServerStats]},
-                        'ticks': {'TlsClient' : time.time(),
+                        'ticks': {'TlsClient' : ['1'],
+                                    'TlsServer': ['1']},
+                        'tick': {'TlsClient' : time.time(),
                                     'TlsServer' : time.time()}}
 
             stats_col.insert_one(gstats)
@@ -660,15 +664,33 @@ class StatsListener:
                     for _stats_name, _stats_value in _csg_stats.items():
                         if not _sum_stats.get(_stats_name):
                             _sum_stats[_stats_name] = _stats_value
+                        elif _stats_name in ['tcpConnMinLatency', 'tlsConnMinLatency', 'appDataMinLatency']:
+                            if _sum_stats[_stats_name] == 0:
+                                _sum_stats[_stats_name] = _stats_value
+                            elif _stats_value > 0:
+                                _sum_stats[_stats_name] = min (_sum_stats[_stats_name], _stats_value)
+                            else:
+                                pass
+                        elif _stats_name in ['tcpConnMaxLatency', 'tlsConnMaxLatency', 'appDataMaxLatency']:
+                                _sum_stats[_stats_name] = max (_sum_stats[_stats_name], _stats_value)
+                        elif _stats_name in ['tcpConnAvgLatency', 'tlsConnAvgLatency', 'appDataAvgLatency']:
+                            if _stats_value > 0:
+                                _sum_stats[_stats_name] = int ((_sum_stats[_stats_name] + _stats_value) / 2)
+                            else:
+                                pass
                         else:
                             _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
+                        
                 gstats[csg_app]['sum'] = _sum_stats
 
-            if ((time.time() - gstats['ticks'][csg_app]) >= 1):
-                gstats['ticks'][csg_app] = time.time()
+            time_elpse = int(time.time() - gstats['tick'][csg_app])
+            if (time_elpse >= 1):
+                gstats['tick'][csg_app] = time.time()
+                gstats['ticks'][csg_app].append(str(int(time.time())))
                 gstats['tickStats'][csg_app].append(gstats[csg_app])
                 if len(gstats['tickStats'][csg_app]) > stats_ticks:
                     gstats['tickStats'][csg_app].pop(0)
+                    gstats['ticks'][csg_app].pop(0)
 
             stats_col.find_one_and_replace(query, gstats)
 

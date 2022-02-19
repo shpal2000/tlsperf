@@ -40,6 +40,10 @@ struct tlsclient_app_ctx
     int m_cps;
     uint64_t m_total_conn_count;
     uint64_t m_max_active_conn_count;
+
+    std::vector<ev_sockaddrx*> m_clnt_addr_pool;
+    int m_clnt_addr_index;
+    int m_clnt_addr_count;
 };
 
 class tlsclient_app : public tlspack_app
@@ -67,6 +71,8 @@ public:
     bool m_stop;
     uint64_t m_curr_conn_count;
     std::chrono::steady_clock::time_point m_conn_init_time;
+
+    int m_remaining_stats_update;
 };
 
 
@@ -78,14 +84,6 @@ public:
     } \
 }
 
-#define dec_tlsclient_stats(__stat_name) \
-{ \
-    for (uint i=0; i < this->get_sockstats_arr()->size(); i++) { \
-        ev_sockstats* __stats_ptr = (*(this->get_sockstats_arr()))[i]; \
-        ((tlsclient_stats*)(__stats_ptr))->__stat_name--; \
-    } \
-}
-
 #define add_tlsclient_stats(__stat_name,__value) \
 { \
     for (uint i=0; i < this->get_sockstats_arr()->size(); i++) { \
@@ -94,12 +92,20 @@ public:
     } \
 }
 
-#define sub_tlsclient_stats(__stat_name,__value) \
+#define set_min_max_avg_tlsclient_stats(__min_stat_name,__max_stat_name,__avg_stat_name,__value) \
 { \
     for (uint i=0; i < this->get_sockstats_arr()->size(); i++) { \
         ev_sockstats* __stats_ptr = (*(this->get_sockstats_arr()))[i]; \
-        ((tlsclient_stats*)(__stats_ptr))->__stat_name -= (__value); \
+        if ( (((tlsclient_stats*)(__stats_ptr))->__min_stat_name == 0) ||  (((tlsclient_stats*)(__stats_ptr))->__max_stat_name == 0) ) { \
+            ((tlsclient_stats*)(__stats_ptr))->__min_stat_name = __value; \
+            ((tlsclient_stats*)(__stats_ptr))->__max_stat_name = __value; \
+            ((tlsclient_stats*)(__stats_ptr))->__avg_stat_name = __value; \
+        } else if ( __value < ((tlsclient_stats*)(__stats_ptr))->__min_stat_name ) { \
+            ((tlsclient_stats*)(__stats_ptr))->__min_stat_name = __value; \
+        } else if ( __value > ((tlsclient_stats*)(__stats_ptr))->__max_stat_name ) { \
+            ((tlsclient_stats*)(__stats_ptr))->__max_stat_name = __value; \
+        } \
+        ((tlsclient_stats*)(__stats_ptr))->__avg_stat_name = ( (((tlsclient_stats*)(__stats_ptr))->__avg_stat_name) + __value) / 2; \
     } \
 }
-
 #endif

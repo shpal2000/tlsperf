@@ -54,6 +54,8 @@ void tlsclient_socket::on_write ()
 {
     if (!m_udp)
     {
+        
+
         if (m_bytes_written < m_app_ctx->m_send_recv_len)
         {
             int bytes_to_write = m_app_ctx->m_send_recv_len - m_bytes_written;
@@ -66,6 +68,9 @@ void tlsclient_socket::on_write ()
             write_next_data (m_app_ctx->m_send_buff
                             , 0
                             , bytes_to_write);
+        } else if (m_bytes_written == m_app_ctx->m_send_recv_len)
+        {
+            this->write_close();
         }
     }
 }
@@ -77,7 +82,6 @@ void tlsclient_socket::on_wstatus (int bytes_written, int write_status)
         if (write_status == WRITE_STATUS_NORMAL)
         {
             m_bytes_written += bytes_written;
-            add_tlsclient_stats(tlsclientBytesInSec,bytes_written);
 
             if (m_bytes_written == m_app_ctx->m_send_recv_len)
             {
@@ -118,7 +122,7 @@ void tlsclient_socket::on_rstatus (int bytes_read, int read_status)
         }
         else
         {
-            add_tlsclient_stats(tlsclientBytesInSec,bytes_read);
+            m_bytes_read += bytes_read;
         }
     }
 }
@@ -130,4 +134,19 @@ void tlsclient_socket::on_error ()
 
 void tlsclient_socket::on_finish ()
 {
+    if (m_bytes_written == m_app_ctx->m_send_recv_len
+        && m_bytes_read == m_app_ctx->m_send_recv_len) {
+        
+        uint64_t mic_elapsed
+            = (std::chrono::duration_cast<std::chrono::microseconds> 
+                (std::chrono::system_clock::now() - this->m_tcp_init_time)).count();
+
+        set_min_max_avg_tlsclient_stats (appDataMinLatency,
+                                         appDataMaxLatency,
+                                         appDataAvgLatency,
+                                         mic_elapsed);
+
+    } else {
+        //todo stats
+    }
 }

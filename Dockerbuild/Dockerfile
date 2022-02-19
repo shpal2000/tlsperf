@@ -55,10 +55,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/local/tlsperf/lib
-COPY ./*.so /usr/local/tlsperf/lib/
+COPY ./bin/*.so /usr/local/tlsperf/lib/
 RUN echo "/usr/local/tlsperf/lib" > /etc/ld.so.conf.d/tlsperf.conf
 RUN ldconfig -v
-COPY ./*.exe /usr/local/bin/
+COPY ./bin/*.exe /usr/local/bin/
 RUN mkdir -p /tlsperf_util/
 RUN mkdir -p /tlsperf_web/
 COPY ./web_deploy/ /tlsperf_web/
