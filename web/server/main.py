@@ -646,8 +646,8 @@ class StatsListener:
                         'TlsServer': tlsServerStats,
                         'tickStats': {'TlsClient' : [tlsClientStats],
                                         'TlsServer': [tlsServerStats]},
-                        'ticks': {'TlsClient' : ['1'],
-                                    'TlsServer': ['1']},
+                        'ticks': {'TlsClient' : [str(int(time.time()))],
+                                    'TlsServer': [str(int(time.time()))]},
                         'tick': {'TlsClient' : time.time(),
                                     'TlsServer' : time.time()}}
 
@@ -680,7 +680,7 @@ class StatsListener:
                                 pass
                         else:
                             _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
-                        
+
                 gstats[csg_app]['sum'] = _sum_stats
 
             time_elpse = int(time.time() - gstats['tick'][csg_app])
@@ -692,7 +692,7 @@ class StatsListener:
                     gstats['tickStats'][csg_app].pop(0)
                     gstats['ticks'][csg_app].pop(0)
 
-            stats_col.find_one_and_replace(query, gstats)
+                stats_col.find_one_and_replace(query, gstats)
 
 
 def main ():

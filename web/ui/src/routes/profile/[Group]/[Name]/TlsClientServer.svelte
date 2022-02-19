@@ -845,28 +845,28 @@
 
   let cpsChartDataSet = [{
     fill: false,
-    borderWidth: 1,
+    borderWidth: 2,
     lineTension: 0.1,
     borderColor: 'rgb(89, 112, 115)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 1,
+    borderWidth: 2,
     lineTension: 0.2,
     borderColor: 'rgb(114, 137, 218)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 1,
+    borderWidth: 2,
     lineTension: 0.3,
     borderColor: 'rgb(186, 225, 255)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 1,
+    borderWidth: 2,
     lineTension: 0.4,
     borderColor: 'rgb(255, 204, 92)',
     data: []
@@ -875,21 +875,21 @@
 
   let clntThptChartDataSet = [{
     fill: true,
-    borderWidth: 1,
+    borderWidth: 2,
     lineTension: 0.1,
     borderColor: 'rgb(89, 112, 115)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 1,
+    borderWidth: 2,
     lineTension: 0.2,
     borderColor: 'rgb(114, 137, 218)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 1,
+    borderWidth: 2,
     lineTension: 0.3,
     borderColor: 'rgb(186, 225, 255)',
     data: []
@@ -897,7 +897,7 @@
 
   let srvrThptChartDataSet = [{
     fill: true,
-    borderWidth: 1,
+    borderWidth: 2,
     lineTension: 0.1,
     borderColor: 'rgb(255, 204, 92)',
     data: []
