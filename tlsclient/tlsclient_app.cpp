@@ -96,6 +96,8 @@ tlsclient_app::tlsclient_app(tlsclient_cfg* cfg
         m_app_ctx.m_clnt_addr_pool.push_back(next_addr);
         m_app_ctx.m_clnt_addr_count++;
     }
+
+    m_remaining_stats_update = 5;
 }
 
 
@@ -115,8 +117,17 @@ void tlsclient_app::run_iter(bool tick_sec)
 
     if (tick_sec)
     {
-        m_stats.tick_sec();
+        if ( (m_curr_conn_count == m_app_ctx.m_total_conn_count) 
+                            &&        (m_stats.tcpConnInitInUse == 0) )
+        {
+            m_remaining_stats_update--;
+        }
 
+        if (m_remaining_stats_update > 0)
+        {
+            m_stats.tick_sec();
+        }
+        
         json j;
         m_stats.dump_json (j);
 

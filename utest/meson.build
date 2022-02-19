@@ -7,5 +7,5 @@ executable('json.exe'
             , link_with : [ev_socklib, tlspack_applib]
             , build_rpath : '/tlspack/bin'
             , install_rpath : '/tlspack/bin'
-            , install_dir : '/code/Dockerbuild'
+            , install_dir : '/code/Dockerbuild/bin'
             , install : true)

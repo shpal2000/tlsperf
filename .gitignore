@@ -2,6 +2,7 @@
 /subprojects/
 /Dockerbuild/web_deploy/ui/
 /Dockerbuild/web_deploy/server/
+/Dockerbuild/web_deploy/bin/
 
 /web/server/__pycache__
 /web/server/modules/__pycache__

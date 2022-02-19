@@ -4,6 +4,6 @@ ev_socklib = shared_library('ev_sock'
                             , dependencies: [openssl]
                             , include_directories : []
                             , install_rpath : '/tlspack/lib'
-                            , install_dir : '/code/Dockerbuild'
+                            , install_dir : '/code/Dockerbuild/bin'
                             , install : true)
 

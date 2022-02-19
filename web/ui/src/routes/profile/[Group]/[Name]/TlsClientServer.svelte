@@ -403,7 +403,7 @@
           Server: 0},
 
           {id: 3,
-          Name: 'AppAvgLatency',
+          Name: 'AppSessAvgLatency',
           Client: 0,
           Server: 0},
 
@@ -418,7 +418,7 @@
           Server: 0},
 
           {id: 6,
-          Name: 'AppMaxLatency',
+          Name: 'AppSessMaxLatency',
           Client: 0,
           Server: 0}
         ]));
@@ -705,6 +705,13 @@
             if (Profile.Stats.TlsClient.sum.tcpConnInit >=0 
                 && Profile.Stats.TlsServer.sum.tcpConnInit >= 0) {
               
+              Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
+              Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
+              Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
+              Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
+              Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
+              Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
+
               Profile.connStats[0].Server = 0;
               Profile.connStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
               Profile.connStats[2].Server = 0;
@@ -712,13 +719,14 @@
               Profile.connStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
               Profile.connStats[5].Server = 0;
 
-              Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
-              Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
-              Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
-              Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
-              Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
-              Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
-            
+              Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
+              Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
+              Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
+              Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
+              Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
+              Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
+
+
               // cpsChartDataSet[0].data = [
               //   Profile.Stats.TlsClient.sum.tcpConnInitRate,
               //   Profile.Stats.TlsClient.sum.tcpConnInitSuccessRate,
@@ -729,7 +737,7 @@
               cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitRate);
               cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitSuccessRate);
               cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.sslConnInitRate);
-              cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sslConnInitSuccessRate.dataRcvThroughput);
+              cpsChartDataSet[3].data = Profile.Stats.tickStats.TlsClient.map(v => v.sslConnInitSuccessRate);
 
               clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataThroughput);
               clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
@@ -737,12 +745,6 @@
 
               srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.appDataAvgLatency);
 
-              Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
-              Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
-              Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
-              Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
-              Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
-              Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
             }
           } else {
           }
@@ -946,7 +948,11 @@
             intersect: false
           },
           plugins: {
-            legend: false
+            legend: false,
+            title: {
+              display: true,
+              text: 'CPS'
+            }
           },
           scales: {
             x: {
@@ -979,7 +985,11 @@
             intersect: false
           },
           plugins: {
-            legend: false
+            legend: false,
+            title: {
+              display: true,
+              text: 'Throughput'
+            }
           },
           scales: {
             x: {
@@ -1012,7 +1022,11 @@
             intersect: false
           },
           plugins: {
-            legend: false
+            legend: false,
+            title: {
+              display: true,
+              text: 'Latency'
+            }
           },
           scales: {
             x: {
