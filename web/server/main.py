@@ -527,8 +527,6 @@ async def api_get_stats(request):
 
 async def ws_handler (request):
 
-    print ('ws_handler')
-
     ws = web.WebSocketResponse()
     await ws.prepare(request)
 
@@ -542,8 +540,6 @@ async def ws_handler (request):
                 name = r_json['Name']
 
                 query = {'Group': group, 'Name': name}
-
-                print (query)
 
                 await asyncio.sleep(2)
 
@@ -564,7 +560,6 @@ async def ws_handler (request):
         elif msg.type == aiohttp.WSMsgType.ERROR:
                 print ('error %s' % ws.exception())
 
-    print ('ws connection closed')
     return ws    
 
 app = web.Application()

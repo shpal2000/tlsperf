@@ -228,7 +228,6 @@
 
     async function onSave () {
       Profile.isTransient = true;
-      stopTimerTick();
 
       const action = 'onSave'; 
       const p = profileNormalize (Profile);
@@ -296,16 +295,14 @@
         setErrorMsg (action, e.toString());
         Profile.isProgress = false;
       }
-
-      startTimerTick();
+      Profile.isTransient = false;
     }
 
     async function onStop () {
       Profile.isTransient = true;
-      stopTimerTick();
-
-
       let action = 'onStop';
+
+      restartWS ();
 
       const controller = new AbortController();
       const signal = controller.signal;
@@ -353,7 +350,7 @@
         Profile.isProgress = false;
       }
 
-      startTimerTick();
+      Profile.isTransient = false;
     }
     
     function getConnStats () {
@@ -434,9 +431,9 @@
 
     async function onStart () {
       Profile.isTransient = true;
-      stopTimerTick();
-
       clearStats ();
+
+      restartWS ();
 
       const action = 'onStart';
       const controller = new AbortController();
@@ -485,8 +482,7 @@
         setErrorMsg (action, e.toString());
         Profile.isProgress = false;
       }
-
-      startTimerTick();
+      Profile.isTransient = false;
     }
 
     async function onAction () {
@@ -601,204 +597,89 @@
     return p2;
   }
 
-    let Profile = null;
-    let SavedProfile = null;
+  let Profile = null;
+  let SavedProfile = null;
 
-    let NextSyncTick;
-    let SyncTickCount;
-    let NextStatsTick;
-    let StatsTickCount;
-
-    function initTimerTicks() {
-      if (isLoading) {
-        NextSyncTick = 5;
-        SyncTickCount = 0;
-        NextStatsTick = 5;
-        StatsTickCount = 0;
-      } else {
-        NextSyncTick = 15;
-        SyncTickCount = 0;
-        NextStatsTick = 5;
-        StatsTickCount = 0;
-      }
-    }
-
-    initTimerTicks();
-
-    let TimerTick = null;
-
-    function stopTimerTick () {
-      if (!TimerTick) {
-          clearTimeout (TimerTick);
-          TimerTick = null;
-      }
-    }
-
-    function startTimerTick() {
-      // TimerTick = setTimeout ( onTimerTick, 5000);
-    }
-
-    async function onTimerTick() {
-      stopTimerTick ();
-
-      // SyncTickCount += 1;
-      // StatsTickCount += 1;
-
-      // if (SyncTickCount == NextSyncTick) {
-      //   SyncTickCount = 0;
-
-      //   onSyncInterval ();
-      // } 
-      
-      // if (StatsTickCount == NextStatsTick) {
-      //   StatsTickCount = 0;
-
-      //   onStatsInterval ();
-      // }
-
-
-
-      // if (isLoading 
-      //     && (SyncTickCount == 0) 
-      //     && (StatsTickCount == 0) ) {
-
-      //   await tick();
-
-      //   isLoading = false;
-      //   initTimerTicks ();
-      // }
-
-      onSyncInterval ();
-      isLoading = false;
-
-      startTimerTick();
-    }
-
-  async function onStatsInterval () {
-
-    // cpsChartDataSet[0].data = [0,0,0,0,0,0];
-
-    cpsChartDataSet[0].data = [];
-    cpsChartDataSet[1].data = [];
-    cpsChartDataSet[2].data = []; 
-    cpsChartDataSet[3].data = []; 
+  function restartWS () {
     
-    clntThptChartDataSet[0].data = [];
-    clntThptChartDataSet[1].data = [];
-    clntThptChartDataSet[2].data = [];
-
-    srvrThptChartDataSet[0].data = [];
-
-    try{
-      const res = await fetch (`/api/stats.json?group=${Profile.Group}&name=${Profile.Name}`);
-      if (res.ok) {
-        const text = await res.text();
-        let isJson = true;
-        let json = {};
-
-        try {
-            json = JSON.parse (text);
-        } catch (e) {
-            isJson = false;
-        }
-
-        if (isJson) {
-          if (json.status == 0) {
-
-            Profile.Stats =json.data;
-
-            if (Profile.Stats.TlsClient.sum.tcpConnInit >=0 
-                && Profile.Stats.TlsServer.sum.tcpConnInit >= 0) {
-              
-              Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
-              Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
-              Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
-              Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
-              Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
-              Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
-
-              Profile.connStats[0].Server = 0;
-              Profile.connStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
-              Profile.connStats[2].Server = 0;
-              Profile.connStats[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
-              Profile.connStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
-              Profile.connStats[5].Server = 0;
-
-              Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
-              Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
-              Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
-              Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
-              Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
-              Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
-
-
-              // cpsChartDataSet[0].data = [
-              //   Profile.Stats.TlsClient.sum.tcpConnInitRate,
-              //   Profile.Stats.TlsClient.sum.tcpConnInitSuccessRate,
-              //   Profile.Stats.TlsClient.sum.sslConnInitRate,
-              //   Profile.Stats.TlsClient.sum.sslConnInitSuccessRate
-              // ];
-
-              cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitRate);
-              cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitSuccessRate);
-              cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.sslConnInitRate);
-              cpsChartDataSet[3].data = Profile.Stats.tickStats.TlsClient.map(v => v.sslConnInitSuccessRate);
-
-              clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataThroughput);
-              clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
-              clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
-
-              srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.appDataAvgLatency);
-
-            }
-          } else {
-          }
-        } else {
-        }
-      }
-    } catch (e) {
+    if (statsWS) {
+      statsWS.close();
+      statsWS = null;
     }
 
-    cpsChart.update();
-    clntThptChart.update();
-    srvrThptChart.update();
-  }
- 
-  async function onSyncInterval () {
+    statsWS = new WebSocket ('ws://ec2-54-215-51-7.us-west-1.compute.amazonaws.com:30029/ws');
 
-    try{
-      const res = await fetch (`/api/profile_runs.json?group=${Profile.Group}&name=${Profile.Name}`);
-      if (res.ok) {
-        const text = await res.text();
-        let isJson = true;
-        let json = {};
 
-        try {
-            json = JSON.parse (text);
-        } catch (e) {
-            isJson = false;
+    statsWS.addEventListener ('open', () => {
+      console.log ('ws open');
+      statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
+    });
+
+    statsWS.addEventListener ('close', () => {
+      console.log ('ws close');
+    });
+
+    statsWS.addEventListener ('message', (event) => {
+
+      try {
+        let json = JSON.parse (event.data);
+
+        Profile.Stats = json.stats;
+        const task =json.task;
+
+        Profile.isRunning = (task.State == 'run');
+        Profile.isProgress = (task.Status == 'progress');
+        Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
+        
+        if (Profile.Stats.TlsClient.sum.tcpConnInit >=0 
+                  && Profile.Stats.TlsServer.sum.tcpConnInit >= 0) {
+          Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
+          Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
+          Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
+          Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
+          Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
+          Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
+
+          Profile.connStats[0].Server = 0;
+          Profile.connStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
+          Profile.connStats[2].Server = 0;
+          Profile.connStats[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
+          Profile.connStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
+          Profile.connStats[5].Server = 0;
+
+          Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
+          Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
+          Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
+          Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
+          Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
+          Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
+
+          cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitRate);
+          cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitSuccessRate);
+          cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.sslConnInitRate);
+          cpsChartDataSet[3].data = Profile.Stats.tickStats.TlsClient.map(v => v.sslConnInitSuccessRate);
+
+          clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataThroughput);
+          clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
+          clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
+
+          srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.appDataAvgLatency);
+
+          cpsChart.update();
+          clntThptChart.update();
+          srvrThptChart.update();
         }
+      } catch (e) {
 
-        if (isJson) {
-          if (json.status == 0) {
-
-            await tick ();
-
-            const task =json.data;
-            Profile.isRunning = (task.State == 'run');
-            Profile.isProgress = (task.Status == 'progress');
-            Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
-
-            Profile.isTransient = false;
-          } else {
-          }
-        } else {
-        }
       }
-    } catch (e) {
-    }
+
+      isLoading = false;
+      statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
+
+    });    
   }
-  
+
+
   beforeUpdate ( async () => {
 
     const routeViewKey = getProfileStateKey ($page.stuff.Profile.Group, $page.stuff.Profile.Name);
@@ -810,10 +691,7 @@
       //skip updating Profile; as this is case of field update
 
     } else {
-      stopTimerTick();
-      
       isLoading = true;
-      initTimerTicks ();
 
       if ($routeViewState[routeViewKey]) {
         Profile = $routeViewState[routeViewKey].Profile;
@@ -832,85 +710,7 @@
         validateAllFields ();
       }
 
-      startTimerTick();
-      /////
-
-      if (statsWS) {
-        statsWS.close();
-        statsWS = null;
-      }
-
-      statsWS = new WebSocket ('ws://ec2-54-215-51-7.us-west-1.compute.amazonaws.com:30029/ws');
-
-
-      statsWS.addEventListener ('open', () => {
-        console.log ('ws open');
-        statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
-      });
-
-      statsWS.addEventListener ('close', () => {
-        console.log ('ws close');
-      });
-
-      statsWS.addEventListener ('message', (event) => {
-
-        try {
-          let json = JSON.parse (event.data);
-
-          Profile.Stats = json.stats;
-          const task =json.task;
-
-          Profile.isRunning = (task.State == 'run');
-          Profile.isProgress = (task.Status == 'progress');
-          Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
-          Profile.isTransient = false;
-          isLoading = false;
-
-          if (Profile.Stats.TlsClient.sum.tcpConnInit >=0 
-                    && Profile.Stats.TlsServer.sum.tcpConnInit >= 0) {
-            Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
-            Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
-            Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
-            Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
-            Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
-            Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
-
-            Profile.connStats[0].Server = 0;
-            Profile.connStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
-            Profile.connStats[2].Server = 0;
-            Profile.connStats[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
-            Profile.connStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
-            Profile.connStats[5].Server = 0;
-
-            Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
-            Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
-            Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
-            Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
-            Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
-            Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
-
-            cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitRate);
-            cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitSuccessRate);
-            cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.sslConnInitRate);
-            cpsChartDataSet[3].data = Profile.Stats.tickStats.TlsClient.map(v => v.sslConnInitSuccessRate);
-
-            clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataThroughput);
-            clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
-            clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
-
-            srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.appDataAvgLatency);
-
-            cpsChart.update();
-            clntThptChart.update();
-            srvrThptChart.update();
-          }
-        } catch (e) {
-
-        }
-        statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
-
-      });
-      ////
+      restartWS();
     }
   });
 
@@ -1124,8 +924,6 @@
   });
 
   onDestroy ( () => {
-    stopTimerTick ();
-
     if (statsWS) {
       statsWS.close();
       statsWS = null;
