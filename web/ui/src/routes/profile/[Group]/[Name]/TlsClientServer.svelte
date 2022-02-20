@@ -600,7 +600,7 @@
   let Profile = null;
   let SavedProfile = null;
 
-  function restartWS () {
+  async function restartWS () {
     
     if (statsWS) {
       statsWS.close();
@@ -613,14 +613,14 @@
 
     statsWS = new WebSocket (wsUrl);
 
-    statsWS.addEventListener ('open', () => {
-      statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
+    statsWS.addEventListener ('open', async () => {
+      await statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
     });
 
     statsWS.addEventListener ('close', () => {
     });
 
-    statsWS.addEventListener ('message', (event) => {
+    statsWS.addEventListener ('message', async (event) => {
 
       try {
         let json = JSON.parse (event.data);
@@ -675,7 +675,7 @@
       }
 
       isLoading = false;
-      statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
+      await statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
 
     });    
   }
