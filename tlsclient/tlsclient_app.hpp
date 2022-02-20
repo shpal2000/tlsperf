@@ -71,8 +71,6 @@ public:
     bool m_stop;
     uint64_t m_curr_conn_count;
     std::chrono::steady_clock::time_point m_conn_init_time;
-
-    int m_remaining_stats_update;
 };
 
 

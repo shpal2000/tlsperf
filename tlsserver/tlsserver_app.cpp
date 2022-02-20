@@ -148,7 +148,7 @@ void tlsserver_app::run_iter(bool tick_sec)
 
         j["appId"] = m_app_ctx.m_app_id;
         j["appGId"] = m_app_ctx.m_app_gid;
-        j["appIdle"] = 0;
+        j["appDone"] = 0;
 
         std::string s = j.dump();
 
