@@ -607,16 +607,17 @@
       statsWS = null;
     }
 
-    statsWS = new WebSocket ('ws://ec2-54-215-51-7.us-west-1.compute.amazonaws.com:30029/ws');
+    const wsPort = parseInt($page.url.port) + 2;
+    const wsHost = $page.url.hostname;
+    const wsUrl = 'ws://' + wsHost + ':' + wsPort + '/ws';
 
+    statsWS = new WebSocket (wsUrl);
 
     statsWS.addEventListener ('open', () => {
-      console.log ('ws open');
       statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
     });
 
     statsWS.addEventListener ('close', () => {
-      console.log ('ws close');
     });
 
     statsWS.addEventListener ('message', (event) => {
