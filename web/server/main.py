@@ -525,6 +525,48 @@ async def api_get_stats(request):
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 
+async def ws_handler (request):
+
+    print ('ws_handler')
+
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+
+    async for msg in ws:
+        if msg.type == aiohttp.WSMsgType.TEXT:
+            if msg.data == 'close':
+                await ws.close()
+            else:
+                r_json = json.loads(msg.data)
+                group = r_json['Group']
+                name = r_json['Name']
+
+                query = {'Group': group, 'Name': name}
+
+                print (query)
+
+                await asyncio.sleep(2)
+
+                mongoClient = MongoClient(DB_CSTRING)
+                db = mongoClient[DB_NAME]
+                stats_col = db[REALTIME_STATS]
+                task_col = db[TASK_LISTS]
+
+                gstats = stats_col.find_one (query, {'_id' : False})
+                task = task_col.find_one(query, {'_id' : False})
+
+                if gstats and task:
+                    resp = {'stats': gstats, 'task': task}
+                    await ws.send_str(json.dumps(resp))
+                else:
+                    await ws.send_str(json.dumps({}))
+                
+        elif msg.type == aiohttp.WSMsgType.ERROR:
+                print ('error %s' % ws.exception())
+
+    print ('ws connection closed')
+    return ws    
+
 app = web.Application()
 
 app.add_routes([web.route('get'
@@ -600,6 +642,8 @@ app.add_routes([web.route('delete'
 app.add_routes([web.route('get'
                             , '/api/stats'
                             , api_get_stats)])
+
+app.add_routes([web.get('/ws', ws_handler)])
 
 
 class StatsListener:
@@ -691,7 +735,8 @@ class StatsListener:
                 if len(gstats['ticks'][csg_app]) > stats_ticks:
                     gstats['ticks'][csg_app].pop(0)
 
-                if gstats['appDone'] < int(stats_ticks / 2):
+                # if gstats['appDone'] < int(stats_ticks / 2):
+                if True:
                     if len(profile['cs_groups']) == gstats['TlsClient']['sum'].get('appDone', 0) and gstats['TlsClient']['sum'].get('dataThroughput', -1) == 0:
                         gstats['appDone'] = gstats['appDone'] + 1
 

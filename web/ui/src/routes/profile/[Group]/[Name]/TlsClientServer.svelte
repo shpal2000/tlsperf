@@ -501,6 +501,8 @@
       }
     }
 
+    let statsWS = null;
+
     let cpsChartCtx;
     let cpsChartCanvas;
     let cpsChart;
@@ -633,38 +635,41 @@
     }
 
     function startTimerTick() {
-      TimerTick = setTimeout ( onTimerTick, 1000);
+      // TimerTick = setTimeout ( onTimerTick, 5000);
     }
 
     async function onTimerTick() {
       stopTimerTick ();
 
-      SyncTickCount += 1;
-      StatsTickCount += 1;
+      // SyncTickCount += 1;
+      // StatsTickCount += 1;
 
-      if (SyncTickCount == NextSyncTick) {
-        SyncTickCount = 0;
+      // if (SyncTickCount == NextSyncTick) {
+      //   SyncTickCount = 0;
 
-        onSyncInterval ();
-      } 
+      //   onSyncInterval ();
+      // } 
       
-      if (StatsTickCount == NextStatsTick) {
-        StatsTickCount = 0;
+      // if (StatsTickCount == NextStatsTick) {
+      //   StatsTickCount = 0;
 
-        onStatsInterval ();
-      }
+      //   onStatsInterval ();
+      // }
 
 
 
-      if (isLoading 
-          && (SyncTickCount == 0) 
-          && (StatsTickCount == 0) ) {
+      // if (isLoading 
+      //     && (SyncTickCount == 0) 
+      //     && (StatsTickCount == 0) ) {
 
-        await tick();
+      //   await tick();
 
-        isLoading = false;
-        initTimerTicks ();
-      }
+      //   isLoading = false;
+      //   initTimerTicks ();
+      // }
+
+      onSyncInterval ();
+      isLoading = false;
 
       startTimerTick();
     }
@@ -828,6 +833,84 @@
       }
 
       startTimerTick();
+      /////
+
+      if (statsWS) {
+        statsWS.close();
+        statsWS = null;
+      }
+
+      statsWS = new WebSocket ('ws://ec2-54-215-51-7.us-west-1.compute.amazonaws.com:30029/ws');
+
+
+      statsWS.addEventListener ('open', () => {
+        console.log ('ws open');
+        statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
+      });
+
+      statsWS.addEventListener ('close', () => {
+        console.log ('ws close');
+      });
+
+      statsWS.addEventListener ('message', (event) => {
+
+        try {
+          let json = JSON.parse (event.data);
+
+          Profile.Stats = json.stats;
+          const task =json.task;
+
+          Profile.isRunning = (task.State == 'run');
+          Profile.isProgress = (task.Status == 'progress');
+          Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
+          Profile.isTransient = false;
+          isLoading = false;
+
+          if (Profile.Stats.TlsClient.sum.tcpConnInit >=0 
+                    && Profile.Stats.TlsServer.sum.tcpConnInit >= 0) {
+            Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnInit;
+            Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcpConnInitSuccess;
+            Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sslConnInit;
+            Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.sslConnInitSuccess;
+            Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tcpActiveConns;
+            Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcpConnInitFail + Profile.Stats.TlsClient.sum.sslConnInitFail;
+
+            Profile.connStats[0].Server = 0;
+            Profile.connStats[1].Server = Profile.Stats.TlsServer.sum.tcpAcceptSuccess;
+            Profile.connStats[2].Server = 0;
+            Profile.connStats[3].Server = Profile.Stats.TlsServer.sum.sslAcceptSuccess;
+            Profile.connStats[4].Server = Profile.Stats.TlsServer.sum.tcpActiveConns;
+            Profile.connStats[5].Server = 0;
+
+            Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcpConnAvgLatency;
+            Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.tlsConnAvgLatency;
+            Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.appDataAvgLatency;
+            Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.tcpConnMaxLatency;
+            Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.tlsConnMaxLatency;
+            Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.appDataMaxLatency;
+
+            cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitRate);
+            cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcpConnInitSuccessRate);
+            cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.sslConnInitRate);
+            cpsChartDataSet[3].data = Profile.Stats.tickStats.TlsClient.map(v => v.sslConnInitSuccessRate);
+
+            clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataThroughput);
+            clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataSendThroughput);
+            clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dataRcvThroughput);
+
+            srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.appDataAvgLatency);
+
+            cpsChart.update();
+            clntThptChart.update();
+            srvrThptChart.update();
+          }
+        } catch (e) {
+
+        }
+        statsWS.send (JSON.stringify({Group: Profile.Group, Name: Profile.Name}));
+
+      });
+      ////
     }
   });
 
@@ -908,7 +991,7 @@
 
 
   onMount ( () => {
-    
+  
     // cpsChartCtx = cpsChartCanvas.getContext('2d');
     // cpsChart = new Chart(cpsChartCtx, {
     //     type: 'bar',
@@ -1042,6 +1125,11 @@
 
   onDestroy ( () => {
     stopTimerTick ();
+
+    if (statsWS) {
+      statsWS.close();
+      statsWS = null;
+    }
   });
 
 </script>
