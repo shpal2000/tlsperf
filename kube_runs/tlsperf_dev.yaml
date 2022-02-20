@@ -161,4 +161,9 @@ spec:
       targetPort: 7000
       nodePort: 30028
       name: stats
+    - protocol: TCP
+      port: 8887
+      targetPort: 8887
+      nodePort: 30029
+      name: ws
 
