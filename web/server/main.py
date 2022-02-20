@@ -525,6 +525,43 @@ async def api_get_stats(request):
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 
+async def ws_handler (request):
+
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+
+    async for msg in ws:
+        if msg.type == aiohttp.WSMsgType.TEXT:
+            if msg.data == 'close':
+                await ws.close()
+            else:
+                r_json = json.loads(msg.data)
+                group = r_json['Group']
+                name = r_json['Name']
+
+                query = {'Group': group, 'Name': name}
+
+                await asyncio.sleep(2)
+
+                mongoClient = MongoClient(DB_CSTRING)
+                db = mongoClient[DB_NAME]
+                stats_col = db[REALTIME_STATS]
+                task_col = db[TASK_LISTS]
+
+                gstats = stats_col.find_one (query, {'_id' : False})
+                task = task_col.find_one(query, {'_id' : False})
+
+                if gstats and task:
+                    resp = {'stats': gstats, 'task': task}
+                    await ws.send_str(json.dumps(resp))
+                else:
+                    await ws.send_str(json.dumps({}))
+                
+        elif msg.type == aiohttp.WSMsgType.ERROR:
+                print ('error %s' % ws.exception())
+
+    return ws    
+
 app = web.Application()
 
 app.add_routes([web.route('get'
@@ -601,6 +638,8 @@ app.add_routes([web.route('get'
                             , '/api/stats'
                             , api_get_stats)])
 
+app.add_routes([web.get('/ws', ws_handler)])
+
 
 class StatsListener:
     def connection_made(self, transport):
@@ -615,8 +654,6 @@ class StatsListener:
         del stats['appId']
         del stats['appGId']
 
-        appIdle = stats.pop('appIdle', 0)
-
         app, group, name = appGId.split('-')
 
         csg_app, csg_name = appId.split('-')
@@ -628,6 +665,9 @@ class StatsListener:
         stats_col = db[REALTIME_STATS]
 
         gstats = stats_col.find_one (query , {'_id' : False})
+
+        profile_col = db[PROFILE_LISTS]
+        profile = profile_col.find_one(query, {'_id' : False})
 
         if not gstats:
             tlsClientStats = {'sum' : {}}
@@ -646,10 +686,10 @@ class StatsListener:
                         'TlsServer': tlsServerStats,
                         'tickStats': {'TlsClient' : [tlsClientStats],
                                         'TlsServer': [tlsServerStats]},
-                        'ticks': {'TlsClient' : ['1'],
-                                    'TlsServer': ['1']},
-                        'tick': {'TlsClient' : time.time(),
-                                    'TlsServer' : time.time()}}
+                        'ticks': {'TlsClient' : [str(int(time.time()))],
+                                    'TlsServer': [str(int(time.time()))]},
+                        'tick': time.time(), 
+                        'appDone': 0}
 
             stats_col.insert_one(gstats)
         else:
@@ -657,7 +697,6 @@ class StatsListener:
             if not gstats[csg_app]['sum']: #empty
                 gstats[csg_app]['sum'] = stats
             else:
-                # compute gstats[csg_app]['sum']
                 del gstats[csg_app]['sum']
                 _sum_stats = {}
                 for _csg_name, _csg_stats in gstats[csg_app].items():
@@ -680,19 +719,27 @@ class StatsListener:
                                 pass
                         else:
                             _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
-                        
+
                 gstats[csg_app]['sum'] = _sum_stats
 
-            time_elpse = int(time.time() - gstats['tick'][csg_app])
+            time_elpse = int(time.time() - gstats['tick'])
             if (time_elpse >= 1):
-                gstats['tick'][csg_app] = time.time()
+                gstats['tick'] = time.time()
+
                 gstats['ticks'][csg_app].append(str(int(time.time())))
-                gstats['tickStats'][csg_app].append(gstats[csg_app])
-                if len(gstats['tickStats'][csg_app]) > stats_ticks:
-                    gstats['tickStats'][csg_app].pop(0)
+                if len(gstats['ticks'][csg_app]) > stats_ticks:
                     gstats['ticks'][csg_app].pop(0)
 
-            stats_col.find_one_and_replace(query, gstats)
+                # if gstats['appDone'] < int(stats_ticks / 2):
+                if True:
+                    if len(profile['cs_groups']) == gstats['TlsClient']['sum'].get('appDone', 0) and gstats['TlsClient']['sum'].get('dataThroughput', -1) == 0:
+                        gstats['appDone'] = gstats['appDone'] + 1
+
+                    gstats['tickStats'][csg_app].append(gstats[csg_app])
+                    if len(gstats['tickStats'][csg_app]) > stats_ticks:
+                        gstats['tickStats'][csg_app].pop(0)
+
+                stats_col.find_one_and_replace(query, gstats)
 
 
 def main ():
