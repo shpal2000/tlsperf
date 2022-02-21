@@ -541,7 +541,7 @@ async def ws_handler (request):
 
                 query = {'Group': group, 'Name': name}
 
-                await asyncio.sleep(2)
+                await asyncio.sleep(0.25)
 
                 mongoClient = MongoClient(DB_CSTRING)
                 db = mongoClient[DB_NAME]
@@ -686,8 +686,6 @@ class StatsListener:
                         'TlsServer': tlsServerStats,
                         'tickStats': {'TlsClient' : [tlsClientStats],
                                         'TlsServer': [tlsServerStats]},
-                        'ticks': {'TlsClient' : [str(int(time.time()))],
-                                    'TlsServer': [str(int(time.time()))]},
                         'tick': time.time(), 
                         'appDone': 0}
 
@@ -696,50 +694,33 @@ class StatsListener:
             gstats[csg_app][csg_name] = stats
             if not gstats[csg_app]['sum']: #empty
                 gstats[csg_app]['sum'] = stats
-            else:
-                del gstats[csg_app]['sum']
-                _sum_stats = {}
-                for _csg_name, _csg_stats in gstats[csg_app].items():
-                    for _stats_name, _stats_value in _csg_stats.items():
-                        if not _sum_stats.get(_stats_name):
-                            _sum_stats[_stats_name] = _stats_value
-                        elif _stats_name in ['tcpConnMinLatency', 'tlsConnMinLatency', 'appDataMinLatency']:
-                            if _sum_stats[_stats_name] == 0:
-                                _sum_stats[_stats_name] = _stats_value
-                            elif _stats_value > 0:
-                                _sum_stats[_stats_name] = min (_sum_stats[_stats_name], _stats_value)
-                            else:
-                                pass
-                        elif _stats_name in ['tcpConnMaxLatency', 'tlsConnMaxLatency', 'appDataMaxLatency']:
-                                _sum_stats[_stats_name] = max (_sum_stats[_stats_name], _stats_value)
-                        elif _stats_name in ['tcpConnAvgLatency', 'tlsConnAvgLatency', 'appDataAvgLatency']:
-                            if _stats_value > 0:
-                                _sum_stats[_stats_name] = int ((_sum_stats[_stats_name] + _stats_value) / 2)
-                            else:
-                                pass
-                        else:
-                            _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
-
-                gstats[csg_app]['sum'] = _sum_stats
 
             time_elpse = int(time.time() - gstats['tick'])
             if (time_elpse >= 1):
                 gstats['tick'] = time.time()
 
-                gstats['ticks'][csg_app].append(str(int(time.time())))
-                if len(gstats['ticks'][csg_app]) > stats_ticks:
-                    gstats['ticks'][csg_app].pop(0)
+                for _csg_app in ['TlsClient', 'TlsServer']:
+                    del gstats[_csg_app]['sum']
+                    _sum_stats = {}
+                    for _csg_name, _csg_stats in gstats[_csg_app].items():
+                        for _stats_name, _stats_value in _csg_stats.items():
+                            if not _sum_stats.get(_stats_name):
+                                _sum_stats[_stats_name] = _stats_value
+                            elif _stats_name in ['tcal', 'scal', 'adal']:
+                                if _stats_value > 0:
+                                    _sum_stats[_stats_name] = int ((_sum_stats[_stats_name] + _stats_value) / 2)
+                                else:
+                                    pass
+                            else:
+                                _sum_stats[_stats_name] = _sum_stats[_stats_name] + _stats_value
 
-                # if gstats['appDone'] < int(stats_ticks / 2):
-                if True:
-                    if len(profile['cs_groups']) == gstats['TlsClient']['sum'].get('appDone', 0) and gstats['TlsClient']['sum'].get('dataThroughput', -1) == 0:
-                        gstats['appDone'] = gstats['appDone'] + 1
+                    gstats[_csg_app]['sum'] = _sum_stats
 
-                    gstats['tickStats'][csg_app].append(gstats[csg_app])
-                    if len(gstats['tickStats'][csg_app]) > stats_ticks:
-                        gstats['tickStats'][csg_app].pop(0)
+                    gstats['tickStats'][_csg_app].append(gstats[_csg_app])
+                    if len(gstats['tickStats'][_csg_app]) > stats_ticks:
+                        gstats['tickStats'][_csg_app].pop(0)
 
-                stats_col.find_one_and_replace(query, gstats)
+            stats_col.find_one_and_replace(query, gstats)
 
 
 def main ():

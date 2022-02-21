@@ -50,9 +50,19 @@ struct tlspack_app_stats : public ev_sockstats
         SET_JSON_EV_SOCKSTATS(j, stats);
     }
 
+    static void dump_json_ev_sockstats_x (json& j, ev_sockstats* stats)
+    {
+        SET_JSON_EV_SOCKSTATS_X(j, stats);
+    }
+
     virtual void dump_json (json& j)
     {
         dump_json_ev_sockstats (j, this);
+    };
+
+    virtual void dump_json_x (json& j)
+    {
+        dump_json_ev_sockstats_x (j, this);
     };
 
     virtual void tick_sec ()

@@ -938,5 +938,25 @@ __j["tlsConnMaxLatency"] = __stats->tlsConnMaxLatency; \
 __j["tlsConnAvgLatency"] = __stats->tlsConnAvgLatency;
 
 
+#define SET_JSON_EV_SOCKSTATS_X(__j,__stats); \
+__j["tci"] = __stats->tcpConnInit; \
+__j["tcir"] = __stats->tcpConnInitRate; \
+__j["tcis"] = __stats->tcpConnInitSuccess; \
+__j["tcisr"] = __stats->tcpConnInitSuccessRate; \
+__j["tcif"] = __stats->tcpConnInitFail; \
+__j["tas"] = __stats->tcpAcceptSuccess; \
+__j["sci"] = __stats->sslConnInit; \
+__j["scir"] = __stats->sslConnInitRate; \
+__j["scis"] = __stats->sslConnInitSuccess; \
+__j["scisr"] = __stats->sslConnInitSuccessRate; \
+__j["sas"] = __stats->sslAcceptSuccess; \
+__j["scif"] = __stats->sslConnInitFail; \
+__j["tac"] = __stats->tcpActiveConns; \
+__j["dt"] = __stats->dataThroughput; \
+__j["dst"] = __stats->dataSendThroughput; \
+__j["drt"] = __stats->dataRcvThroughput; \
+__j["tcal"] = __stats->tcpConnAvgLatency; \
+__j["scal"] = __stats->tlsConnAvgLatency;
+
 
 #endif

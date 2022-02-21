@@ -25,6 +25,13 @@ struct tlsclient_stats_data : tlspack_app_stats
         j["appDataAvgLatency"] = appDataAvgLatency;
     }
 
+    virtual void dump_json_x (json &j)
+    {
+        tlspack_app_stats::dump_json_x (j);
+        
+        j["adal"] = appDataAvgLatency;
+    }
+
     virtual ~tlsclient_stats_data() {};
 };
 
