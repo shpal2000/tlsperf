@@ -541,7 +541,7 @@ async def ws_handler (request):
 
                 query = {'Group': group, 'Name': name}
 
-                await asyncio.sleep(0.25)
+                await asyncio.sleep(0.75)
 
                 mongoClient = MongoClient(DB_CSTRING)
                 db = mongoClient[DB_NAME]
@@ -696,12 +696,12 @@ class StatsListener:
             if not gstats[csg_app]['sum']: #empty
                 gstats[csg_app]['sum'] = stats
 
-            time_elpse = int(time.time() - gstats['tick'])
+            time_elpse = time.time() - gstats['tick']
             
             tls_client_cfg_detected = len(gstats['TlsClient'].keys()) - 1
             tls_server_cfg_detected = len(gstats['TlsServer'].keys()) - 1
 
-            if time_elpse >= 1 and tls_client_cfg_detected == expected_cfg_detect_count and tls_server_cfg_detected == expected_cfg_detect_count:
+            if time_elpse >= 0.25 and tls_client_cfg_detected == expected_cfg_detect_count and tls_server_cfg_detected == expected_cfg_detect_count:
                 gstats['tick'] = time.time()
 
                 for _csg_app in ['TlsClient', 'TlsServer']:

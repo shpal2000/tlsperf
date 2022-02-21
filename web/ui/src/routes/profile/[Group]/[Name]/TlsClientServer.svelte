@@ -686,8 +686,6 @@
           cpsChart.update();
           clntThptChart.update();
           srvrThptChart.update();
-
-          await tick();
         }
       } catch (e) {
 
