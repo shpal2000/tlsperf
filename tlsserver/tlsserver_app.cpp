@@ -144,7 +144,7 @@ void tlsserver_app::run_iter(bool tick_sec)
         m_stats.tick_sec();
         
         json j;
-        m_stats.dump_json (j);
+        m_stats.dump_json_x (j);
 
         j["appId"] = m_app_ctx.m_app_id;
         j["appGId"] = m_app_ctx.m_app_gid;

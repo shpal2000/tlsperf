@@ -93,7 +93,8 @@ void tlsserver_socket::on_wstatus (int bytes_written, int write_status)
         if (write_status == WRITE_STATUS_NORMAL)
         {
             m_bytes_written += bytes_written;
-            add_tlsserver_stats(tlsserverBytesInSec,bytes_written);
+
+            add_tlsserver_stats(appDataBytesSent, bytes_written);
 
             if (m_bytes_written == m_app_ctx->m_send_recv_len)
             {
@@ -134,7 +135,9 @@ void tlsserver_socket::on_rstatus (int bytes_read, int read_status)
         }
         else
         {
-            add_tlsserver_stats(tlsserverBytesInSec,bytes_read);
+            m_bytes_read += bytes_read;
+
+            add_tlsserver_stats(appDataBytesRcvd, bytes_read);
         }
     }
 }
@@ -146,4 +149,10 @@ void tlsserver_socket::on_error ()
 
 void tlsserver_socket::on_finish ()
 {
+    if (m_bytes_written == m_app_ctx->m_send_recv_len
+        && m_bytes_read == m_app_ctx->m_send_recv_len) {
+
+    } else {
+        inc_tlsserver_stats (appSessionPartial);
+    }
 }

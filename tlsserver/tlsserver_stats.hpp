@@ -7,25 +7,33 @@ class tlsserver_socket;
 
 struct tlsserver_stats_data : tlspack_app_stats
 {
-    uint64_t tlsserverThroughput;
-    uint64_t tlsserverBytesInSec;
+    uint64_t appDataBytesSent;
+    uint64_t appDataBytesRcvd;
+    uint64_t appSessionPartial;
 
     virtual void tick_sec ()
     {
         tlspack_app_stats::tick_sec();
-
-        tlsserverThroughput = tlsserverBytesInSec * 8;
-        tlsserverBytesInSec = 0;
     }
 
     virtual void dump_json (json &j)
     {
         tlspack_app_stats::dump_json (j);
-        
-        j["tlsserverThroughput"] = tlsserverThroughput;
-        j["tlsserverBytesInSec"] = tlsserverBytesInSec;
+    
+        j["appDataBytesSent"] = appDataBytesSent;
+        j["appDataBytesRcvd"] = appDataBytesRcvd;
+        j["appSessionPartial"] = appSessionPartial;
     }
 
+    virtual void dump_json_x (json &j)
+    {
+        tlspack_app_stats::dump_json_x (j);
+
+        j["adbs"] = appDataBytesSent;
+        j["adbr"] = appDataBytesRcvd;
+        j["asprt"] = appSessionPartial;
+    }
+    
     virtual ~tlsserver_stats_data() {};
 };
 
