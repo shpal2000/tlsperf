@@ -405,17 +405,17 @@
           Server: 0},
 
           {id: 4,
-          Name: 'TcpConnMaxLatency',
+          Name: 'AppDataBytesSent',
           Client: 0,
           Server: 0},
 
           {id: 5,
-          Name: 'TlsConnMaxLatency',
+          Name: 'AppDataBytesRcvd',
           Client: 0,
           Server: 0},
 
           {id: 6,
-          Name: 'AppSessMaxLatency',
+          Name: 'AppSessionPartial',
           Client: 0,
           Server: 0}
         ]));
@@ -545,7 +545,8 @@
 
     const latencyStatsHeaders = [
       {key: 'Name', value: 'Name'},
-      {key: 'Client', value: 'Client'}
+      {key: 'Client', value: 'Client'},
+      {key: 'Server', value: 'Server'}
     ];
 
   function profileCanonical (p) {
@@ -668,9 +669,17 @@
           Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcal;
           Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.scal;
           Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.adal;
-          Profile.latencyStats[3].Client = 0;
-          Profile.latencyStats[4].Client = 0;
-          Profile.latencyStats[5].Client = 0;
+          Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.adbs;
+          Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.adbr;
+          Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.asprt;
+
+          Profile.latencyStats[0].Server = 0;
+          Profile.latencyStats[1].Server = 0;
+          Profile.latencyStats[2].Server = 0;
+          Profile.latencyStats[3].Server = Profile.Stats.TlsServer.sum.adbs;
+          Profile.latencyStats[4].Server = Profile.Stats.TlsServer.sum.adbr;
+          Profile.latencyStats[5].Server = Profile.Stats.TlsServer.sum.asprt;
+
 
           cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcir);
           cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcisr);

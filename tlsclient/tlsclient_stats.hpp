@@ -10,6 +10,9 @@ struct tlsclient_stats_data : tlspack_app_stats
     uint64_t appDataMinLatency;
     uint64_t appDataMaxLatency;
     uint64_t appDataAvgLatency;
+    uint64_t appDataBytesSent;
+    uint64_t appDataBytesRcvd;
+    uint64_t appSessionPartial;
 
     virtual void tick_sec ()
     {
@@ -23,6 +26,9 @@ struct tlsclient_stats_data : tlspack_app_stats
         j["appDataMinLatency"] = appDataMinLatency;
         j["appDataMaxLatency"] = appDataMaxLatency;
         j["appDataAvgLatency"] = appDataAvgLatency;
+        j["appDataBytesSent"] = appDataBytesSent;
+        j["appDataBytesRcvd"] = appDataBytesRcvd;
+        j["appSessionPartial"] = appSessionPartial;
     }
 
     virtual void dump_json_x (json &j)
@@ -30,6 +36,9 @@ struct tlsclient_stats_data : tlspack_app_stats
         tlspack_app_stats::dump_json_x (j);
         
         j["adal"] = appDataAvgLatency;
+        j["adbs"] = appDataBytesSent;
+        j["adbr"] = appDataBytesRcvd;
+        j["asprt"] = appSessionPartial;
     }
 
     virtual ~tlsclient_stats_data() {};
