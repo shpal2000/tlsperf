@@ -356,32 +356,32 @@
     function getConnStats () {
       return JSON.parse (JSON.stringify ([
         {id: 1,
-          Name: 'TcpConnInit',
+          Name: 'TcpInit',
           Client: 0,
           Server: 0},
 
           {id: 2,
-          Name: 'TcpEstablished',
+          Name: 'TcpConn',
           Client: 0,
           Server: 0},
 
           {id: 3,
-          Name: 'SslConnInit',
+          Name: 'SslInit',
           Client: 0,
           Server: 0},
 
           {id: 4,
-          Name: 'SslEstablished',
+          Name: 'SslConn',
           Client: 0,
           Server: 0},
 
           {id: 5,
-          Name: 'ActiveConn',
+          Name: 'ActConn',
           Client: 0,
           Server: 0},
 
           {id: 6,
-          Name: 'Tcp/SslConnInitFail',
+          Name: 'ConnFail',
           Client: 0,
           Server: 0}
         ]));
@@ -390,32 +390,32 @@
     function getLatencyStats () {
       return JSON.parse (JSON.stringify ([
         {id: 1,
-          Name: 'TcpConnAvgLatency',
+          Name: 'TcpAvgLat',
           Client: 0,
           Server: 0},
 
           {id: 2,
-          Name: 'TlsConnAvgLatency',
+          Name: 'TlsAvgLat',
           Client: 0,
           Server: 0},
 
           {id: 3,
-          Name: 'AppSessAvgLatency',
+          Name: 'AppAvgLat',
           Client: 0,
           Server: 0},
 
           {id: 4,
-          Name: 'AppDataBytesSent',
+          Name: 'BytesSent',
           Client: 0,
           Server: 0},
 
           {id: 5,
-          Name: 'AppDataBytesRcvd',
+          Name: 'BytesRcvd',
           Client: 0,
           Server: 0},
 
           {id: 6,
-          Name: 'AppSessionPartial',
+          Name: 'SessErr',
           Client: 0,
           Server: 0}
         ]));

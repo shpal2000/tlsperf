@@ -688,6 +688,7 @@ class StatsListener:
                         'tickStats': {'TlsClient' : [tlsClientStats],
                                         'TlsServer': [tlsServerStats]},
                         'tick': time.time(), 
+                        'appDoneTick': 0,
                         'appDone': 0}
 
             stats_col.insert_one(gstats)
@@ -723,8 +724,10 @@ class StatsListener:
 
                     if _sum_stats.get('appDone', 0) == expected_cfg_detect_count:
                         gstats['appDone'] = gstats['appDone'] + 1
+                        if not gstats['appDoneTick']:
+                            gstats['appDoneTick'] = time.time()
                     
-                    if (gstats['appDone'] < stats_ticks/2):
+                    if int(time.time() - gstats['appDoneTick']) < 5 or  gstats['appDone'] < 5:
                         gstats['tickStats'][_csg_app].append(gstats[_csg_app])
                         if len(gstats['tickStats'][_csg_app]) > stats_ticks:
                             gstats['tickStats'][_csg_app].pop(0)
