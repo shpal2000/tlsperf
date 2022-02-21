@@ -668,6 +668,7 @@ class StatsListener:
 
         profile_col = db[PROFILE_LISTS]
         profile = profile_col.find_one(query, {'_id' : False})
+        expected_cfg_detect_count = len(profile['cs_groups'])
 
         if not gstats:
             tlsClientStats = {'sum' : {}}
@@ -696,7 +697,11 @@ class StatsListener:
                 gstats[csg_app]['sum'] = stats
 
             time_elpse = int(time.time() - gstats['tick'])
-            if (time_elpse >= 1):
+            
+            tls_client_cfg_detected = len(gstats['TlsClient'].keys()) - 1
+            tls_server_cfg_detected = len(gstats['TlsServer'].keys()) - 1
+
+            if time_elpse >= 1 and tls_client_cfg_detected == expected_cfg_detect_count and tls_server_cfg_detected == expected_cfg_detect_count:
                 gstats['tick'] = time.time()
 
                 for _csg_app in ['TlsClient', 'TlsServer']:
@@ -716,9 +721,13 @@ class StatsListener:
 
                     gstats[_csg_app]['sum'] = _sum_stats
 
-                    gstats['tickStats'][_csg_app].append(gstats[_csg_app])
-                    if len(gstats['tickStats'][_csg_app]) > stats_ticks:
-                        gstats['tickStats'][_csg_app].pop(0)
+                    if _sum_stats.get('appDone', 0) == expected_cfg_detect_count:
+                        gstats['appDone'] = gstats['appDone'] + 1
+                    
+                    if (gstats['appDone'] < stats_ticks/2):
+                        gstats['tickStats'][_csg_app].append(gstats[_csg_app])
+                        if len(gstats['tickStats'][_csg_app]) > stats_ticks:
+                            gstats['tickStats'][_csg_app].pop(0)
 
             stats_col.find_one_and_replace(query, gstats)
 
