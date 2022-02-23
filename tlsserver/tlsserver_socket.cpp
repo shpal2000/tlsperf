@@ -126,7 +126,7 @@ void tlsserver_socket::on_rstatus (int bytes_read, int read_status)
         {
             if (read_status == READ_STATUS_TCP_CLOSE) 
             {
-                this->write_close();
+                
             }
             else
             {
