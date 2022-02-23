@@ -82,6 +82,10 @@ void tlsserver_socket::on_write ()
             write_next_data (m_app_ctx->m_send_buff
                             , 0
                             , bytes_to_write);
+        } 
+        else if (m_bytes_written == m_app_ctx->m_send_recv_len && m_bytes_read == m_app_ctx->m_send_recv_len)
+        {
+            this->write_close();
         }
     }
 }
@@ -96,7 +100,7 @@ void tlsserver_socket::on_wstatus (int bytes_written, int write_status)
 
             add_tlsserver_stats(appDataBytesSent, bytes_written);
 
-            if (m_bytes_written == m_app_ctx->m_send_recv_len)
+            if (m_bytes_written == m_app_ctx->m_send_recv_len && m_bytes_read == m_app_ctx->m_send_recv_len)
             {
                 this->write_close();
             }
