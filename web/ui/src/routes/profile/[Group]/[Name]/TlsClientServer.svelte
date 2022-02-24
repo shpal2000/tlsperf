@@ -502,6 +502,10 @@
       Profile.isTransient = false;
     }
 
+    function onAddTrafficPath () {
+
+    }
+
     async function onAction () {
       if (Profile.isRunning) {
         await onStop();
@@ -1093,7 +1097,7 @@
 
               <div class="field is-grouped">
                 <div class="control" >
-                  <button class="button  is-info" 
+                  <button class="button {Profile.isRunning ? 'is-danger' : 'is-success'}" 
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onAction} > 
                       {#if Profile.isRunning}
@@ -1308,6 +1312,7 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="column is-full">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -1320,8 +1325,14 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="column is-half">
                   <div class="field is-grouped">
+                    <button class="button is-small is-danger is-outlined" 
+                    disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
+                    on:click={onAddTrafficPath} >
+                    Del Traffic Path
+                    </button> 
                   </div>
                 </div>
               </div>
@@ -1347,6 +1358,19 @@
       </DataTable>
     </div>
     
+    <div class="column is-12">
+
+      <button class="button is-small is-link is-outlined" 
+      disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
+      on:click={onAddTrafficPath} >
+      Add Traffic Path
+      </button>      
+      
+    </div>
+
+    <div class="column is-12">
+    </div>
+
   </div>
 
 
