@@ -415,7 +415,7 @@
           Server: 0},
 
           {id: 6,
-          Name: 'SessErr',
+          Name: 'SessFail',
           Client: 0,
           Server: 0}
         ]));
