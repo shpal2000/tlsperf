@@ -538,7 +538,10 @@
 
           if (isJson) {
             if (json.status == 0){
-              Profile.cs_groups.push (json.data);
+              const csg = json.data;
+              csg.id = csg.app_id;
+              csg.client_ips = csg.client_ips.join(',');
+              Profile.cs_groups.push (csg);
               Profile.cs_groups = [...Profile.cs_groups];
               Profile.markUnsavedFields = true;
             } else {
