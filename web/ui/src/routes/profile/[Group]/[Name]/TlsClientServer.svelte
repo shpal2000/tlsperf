@@ -201,14 +201,14 @@
                     || Profile.serverIfaceError;
 
       for (const csg of Profile.cs_groups) {
-        csg.fieldAttention = false;
+        csg.fieldAttention = '';
         if (csg.client_ipsError) {
           Profile.markErrorFields = true;
-          csg.fieldAttention = true;
+          csg.fieldAttention = 'field-update';
         }
         if (csg.client_ipsUnsaved) {
           Profile.markUnsavedFields = true;
-          csg.fieldAttention = true;
+          csg.fieldAttention = 'field-update';
         }
       }
     }
@@ -503,7 +503,12 @@
     }
 
     function onAddTrafficPath () {
+      Profile.markUnsavedFields = true;
+    }
 
+    function onDelTrafficPath (row_index) {
+      Profile.cs_groups[row_index].fieldAttention = 'mark-delete';
+      Profile.markUnsavedFields = true;
     }
 
     async function onAction () {
@@ -567,7 +572,7 @@
     for (const csg of p2.cs_groups) {
       csg.id = csg.app_id;
       csg.err_status = false;
-      csg.client_ips = csg.client_ips.join(',')
+      csg.client_ips = csg.client_ips.join(',');
     }
 
     return p2;
@@ -588,10 +593,22 @@
     p2.ClientIface = p.ClientIface;
     p2.ServerIface = p.ServerIface;
 
+    let csg_count = 0;
+    for (const csg of p.cs_groups) {
+      if (csg.fieldAttention == 'mark-delete') {
+        continue;
+      }
+      csg_count += 1;
+    }
 
     p2.cs_groups = [];
     let csg_index = 0;
     for (const csg of p.cs_groups) {
+
+      if (csg.fieldAttention == 'mark-delete') {
+        continue;
+      }
+
       const csg2 = {};
 
       csg2.index = csg_index;
@@ -600,16 +617,16 @@
       csg2.client_ips = csg.client_ips.split(',');
       csg2.server_ip = csg.server_ip;
 
-      csg2.app_id = csg.app_id;
+      csg2.app_id = "CSG" + csg_index.toString();
         
       csg2.app_gid = csg.app_gid;
 
       csg2.server_port = csg.server_port;
       csg2.server_ssl = csg.server_ssl;
       csg2.send_recv_len = p2.DataLength;
-      csg2.cps = Math.floor (p2.CPS / p.cs_groups.length); 
-      csg2.max_active_conn_count = Math.floor (p2.MaxPipeline / p.cs_groups.length);
-      csg2.total_conn_count = Math.floor (p2.Transactions / p.cs_groups.length);
+      csg2.cps = Math.floor (p2.CPS / csg_count); 
+      csg2.max_active_conn_count = Math.floor (p2.MaxPipeline / csg_count);
+      csg2.total_conn_count = Math.floor (p2.Transactions / csg_count);
       csg2.server_key = csg.server_key
       csg2.server_cert = csg.server_cert
 
@@ -1329,12 +1346,14 @@
                 <div class="column is-half">
                   <div class="field is-grouped">
                     <button class="button is-small is-danger is-outlined" 
-                    disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
-                    on:click={onAddTrafficPath} >
-                    Del Traffic Path
+                    disabled={Profile.isTransient || Profile.isRunning}
+                    on:click={onDelTrafficPath (row.index)} >
+                    Mark Delete
                     </button> 
                   </div>
                 </div>
+
+                <div class="column is-full"></div>
               </div>
             </div>
 
@@ -1345,7 +1364,9 @@
 
         <div slot="cell" let:row let:cell>
           {#if cell.key == 'fieldAttention'}
-            {#if cell.value}
+            {#if cell.value == 'mark-delete'}
+              <p><strong class="errmsg">x</strong></p>
+            {:else if cell.value == 'field-update'}
               <p><strong class="errmsg">!</strong></p>
             {:else}
               <p><strong class="okmsg">&#10003;</strong></p>
@@ -1361,7 +1382,7 @@
     <div class="column is-12">
 
       <button class="button is-small is-link is-outlined" 
-      disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
+      disabled={Profile.isTransient || Profile.isRunning}
       on:click={onAddTrafficPath} >
       Add Traffic Path
       </button>      
