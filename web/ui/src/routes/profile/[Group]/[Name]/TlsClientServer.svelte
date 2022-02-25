@@ -510,6 +510,26 @@
 
     function onAddTrafficPath () {
       Profile.markUnsavedFields = true;
+
+      const csg2 = {};
+
+      csg2.index = Profile.cs_groups.length;
+      csg2.app_id = "CSG" + (csg2.index+1).toString();
+      csg2.app_gid = Profile.cs_groups[0].app_gid;
+
+      csg2.id = csg2.app_id;
+      csg2.fieldAttention = 'field-update';
+
+      csg2.client_ips = Profile.cs_groups[0].client_ips;
+      csg2.server_ip = Profile.cs_groups[0].server_ip;
+      csg2.server_port = Profile.cs_groups[0].server_port;
+      csg2.server_ssl = Profile.cs_groups[0].server_ssl;
+      csg2.server_key = Profile.cs_groups[0].server_key;
+      csg2.server_cert = Profile.cs_groups[0].server_cert;
+
+      Profile.cs_groups.push (csg2);
+
+      Profile.cs_groups = [...Profile.cs_groups];
     }
 
     function checkLastCSG () {
@@ -600,7 +620,6 @@
     //for table header and row
     for (const csg of p2.cs_groups) {
       csg.id = csg.app_id;
-      csg.err_status = false;
       csg.client_ips = csg.client_ips.join(',');
     }
 
