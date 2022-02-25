@@ -176,6 +176,7 @@ async def api_get_profiles(request):
     try:
         group = request.query.get('group')
         name = request.query.get('name')
+        newcsg = request.query.get('newcsg')
 
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
@@ -186,7 +187,13 @@ async def api_get_profiles(request):
             profile = profile_col.find_one(query, {'_id' : False})
             if not profile:
                 return web.json_response({'status' : -1, 'message': 'profile not found'})
-            return web.json_response({'status': 0, 'data': profile})
+            
+            if newcsg:
+                csg_index = int(newcsg)
+                new_csg = TlsClientServer.get_new_csg(csg_index, group, name)
+                return web.json_response({'status': 0, 'data': new_csg})
+            else:
+                return web.json_response({'status': 0, 'data': profile})
         else:
             profiles = profile_col.find({}, {'_id' : False})
             if not profiles:

@@ -508,28 +508,59 @@
       Profile.isTransient = false;
     }
 
-    function onAddTrafficPath () {
-      Profile.markUnsavedFields = true;
+    async function onAddTrafficPath () {
 
-      const csg2 = {};
+      Profile.isTransient = true;
 
-      csg2.index = Profile.cs_groups.length;
-      csg2.app_id = "CSG" + (csg2.index+1).toString();
-      csg2.app_gid = Profile.cs_groups[0].app_gid;
+      let action = 'onAddTrafficPath';
 
-      csg2.id = csg2.app_id;
-      csg2.fieldAttention = 'field-update';
+      const controller = new AbortController();
+      const signal = controller.signal;
 
-      csg2.client_ips = Profile.cs_groups[0].client_ips;
-      csg2.server_ip = Profile.cs_groups[0].server_ip;
-      csg2.server_port = Profile.cs_groups[0].server_port;
-      csg2.server_ssl = Profile.cs_groups[0].server_ssl;
-      csg2.server_key = Profile.cs_groups[0].server_key;
-      csg2.server_cert = Profile.cs_groups[0].server_cert;
+      try {
+        const group = Profile.Group;
+        const name = Profile.Name;
+        const newcsg = Profile.cs_groups.length;
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        Profile.progressText = 'Add Path ...';
+        const res = await fetch (`/api/profiles.json?group=${group}&name=${name}&newcsg=${newcsg}`);
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
 
-      Profile.cs_groups.push (csg2);
+          if (isJson) {
+            if (json.status == 0){
+              Profile.cs_groups.push (json.data);
+              Profile.cs_groups = [...Profile.cs_groups];
+              Profile.markUnsavedFields = true;
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+              Profile.isProgress = false;
+            }
+          } else {
+            setErrorMsg (action, text);
+            Profile.isProgress = false;
+          }
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
 
-      Profile.cs_groups = [...Profile.cs_groups];
+      Profile.isTransient = false;
     }
 
     function checkLastCSG () {

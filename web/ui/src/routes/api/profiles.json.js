@@ -3,10 +3,15 @@ import apiClient from './api_client';
 export async function get ({url}) {
     const group = url.searchParams.get("group");
     const name = url.searchParams.get("name");
+    const newcsg = url.searchParams.get("newcsg");
 
     let res;
     if (group && name) {
-        res = await apiClient.get(`/profiles?group=${group}&name=${name}`)
+        if (newcsg) {
+            res = await apiClient.get(`/profiles?group=${group}&name=${name}&newcsg=${newcsg}`)
+        } else {
+            res = await apiClient.get(`/profiles?group=${group}&name=${name}`)
+        }
     } else {
         res = await apiClient.get('/profiles')
     }

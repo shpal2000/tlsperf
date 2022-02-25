@@ -68,7 +68,7 @@ IiTeT4+t5dboeDFh3HNsLqlh9w==
 
 import random
 
-def get_default_csg (csg_index, group, name):
+def get_new_csg (csg_index, group, name):
 
   ipstr = str(random.randint(1,254)) + '.' + str(random.randint(1,254)) + '.' + str(random.randint(1,254))
 
@@ -98,7 +98,7 @@ def set_profile_defaults (prof_j):
     prof_j['cs_groups'] = []
     for csg_index in range(0, csg_count):
 
-        csg = get_default_csg (csg_index, prof_j['Group'], prof_j['Name'])
+        csg = get_new_csg (csg_index, prof_j['Group'], prof_j['Name'])
 
         csg["send_recv_len"] = prof_j["DataLength"]
         csg["cps"] = int (prof_j["CPS"]/csg_count) 
