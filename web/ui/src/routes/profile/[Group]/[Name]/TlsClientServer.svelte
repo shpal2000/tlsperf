@@ -202,6 +202,7 @@
 
       for (const csg of Profile.cs_groups) {
         if (csg.fieldAttention == 'mark-delete') {
+          Profile.markUnsavedFields = true;
           continue;
         }
 
