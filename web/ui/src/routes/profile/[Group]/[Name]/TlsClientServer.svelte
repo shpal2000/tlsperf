@@ -201,16 +201,22 @@
                     || Profile.serverIfaceError;
 
       for (const csg of Profile.cs_groups) {
-        csg.fieldAttention = false;
+        if (csg.fieldAttention == 'mark-delete') {
+          continue;
+        }
+
+        csg.fieldAttention = '';
         if (csg.client_ipsError) {
           Profile.markErrorFields = true;
-          csg.fieldAttention = true;
+          csg.fieldAttention = 'field-update';
         }
         if (csg.client_ipsUnsaved) {
           Profile.markUnsavedFields = true;
-          csg.fieldAttention = true;
+          csg.fieldAttention = 'field-update';
         }
       }
+
+      checkLastCSG ();
     }
 
     function validateAllFields() {
@@ -356,32 +362,32 @@
     function getConnStats () {
       return JSON.parse (JSON.stringify ([
         {id: 1,
-          Name: 'TcpConnInit',
+          Name: 'TcpInit',
           Client: 0,
           Server: 0},
 
           {id: 2,
-          Name: 'TcpEstablished',
+          Name: 'TcpConn',
           Client: 0,
           Server: 0},
 
           {id: 3,
-          Name: 'SslConnInit',
+          Name: 'SslInit',
           Client: 0,
           Server: 0},
 
           {id: 4,
-          Name: 'SslEstablished',
+          Name: 'SslConn',
           Client: 0,
           Server: 0},
 
           {id: 5,
-          Name: 'ActiveConn',
+          Name: 'ActConn',
           Client: 0,
           Server: 0},
 
           {id: 6,
-          Name: 'Tcp/SslConnInitFail',
+          Name: 'ConnFail',
           Client: 0,
           Server: 0}
         ]));
@@ -390,32 +396,32 @@
     function getLatencyStats () {
       return JSON.parse (JSON.stringify ([
         {id: 1,
-          Name: 'TcpConnAvgLatency',
+          Name: 'TcpAvgLat',
           Client: 0,
           Server: 0},
 
           {id: 2,
-          Name: 'TlsConnAvgLatency',
+          Name: 'TlsAvgLat',
           Client: 0,
           Server: 0},
 
           {id: 3,
-          Name: 'AppSessAvgLatency',
+          Name: 'AppAvgLat',
           Client: 0,
           Server: 0},
 
           {id: 4,
-          Name: 'AppDataBytesSent',
+          Name: 'BytesSent',
           Client: 0,
           Server: 0},
 
           {id: 5,
-          Name: 'AppDataBytesRcvd',
+          Name: 'BytesRcvd',
           Client: 0,
           Server: 0},
 
           {id: 6,
-          Name: 'AppSessionPartial',
+          Name: 'SessFail',
           Client: 0,
           Server: 0}
         ]));
@@ -502,6 +508,38 @@
       Profile.isTransient = false;
     }
 
+    function onAddTrafficPath () {
+      Profile.markUnsavedFields = true;
+    }
+
+    function checkLastCSG () {
+      Profile.isLastCSG = false;
+
+      let csg_count = 0;
+      for (const csg of Profile.cs_groups) {
+        if (csg.fieldAttention == 'mark-delete') {
+          continue;
+        }
+        csg_count += 1;
+      }
+
+      if ( csg_count == 1) {
+        Profile.isLastCSG = true;
+      }
+
+      return Profile.isLastCSG
+    }
+
+    function onMarkUnmarkDelete (row_index) {
+      if (Profile.cs_groups[row_index].fieldAttention == 'mark-delete') {
+        Profile.cs_groups[row_index].fieldAttention = '';
+        checkFields();
+      } else if (!checkLastCSG()) {
+        Profile.cs_groups[row_index].fieldAttention = 'mark-delete';
+        Profile.markUnsavedFields = true;
+      }
+    }
+
     async function onAction () {
       if (Profile.isRunning) {
         await onStop();
@@ -563,7 +601,7 @@
     for (const csg of p2.cs_groups) {
       csg.id = csg.app_id;
       csg.err_status = false;
-      csg.client_ips = csg.client_ips.join(',')
+      csg.client_ips = csg.client_ips.join(',');
     }
 
     return p2;
@@ -584,10 +622,22 @@
     p2.ClientIface = p.ClientIface;
     p2.ServerIface = p.ServerIface;
 
+    let csg_count = 0;
+    for (const csg of p.cs_groups) {
+      if (csg.fieldAttention == 'mark-delete') {
+        continue;
+      }
+      csg_count += 1;
+    }
 
     p2.cs_groups = [];
     let csg_index = 0;
     for (const csg of p.cs_groups) {
+
+      if (csg.fieldAttention == 'mark-delete') {
+        continue;
+      }
+
       const csg2 = {};
 
       csg2.index = csg_index;
@@ -596,16 +646,16 @@
       csg2.client_ips = csg.client_ips.split(',');
       csg2.server_ip = csg.server_ip;
 
-      csg2.app_id = csg.app_id;
+      csg2.app_id = "CSG" + csg_index.toString();
         
       csg2.app_gid = csg.app_gid;
 
       csg2.server_port = csg.server_port;
       csg2.server_ssl = csg.server_ssl;
       csg2.send_recv_len = p2.DataLength;
-      csg2.cps = Math.floor (p2.CPS / p.cs_groups.length); 
-      csg2.max_active_conn_count = Math.floor (p2.MaxPipeline / p.cs_groups.length);
-      csg2.total_conn_count = Math.floor (p2.Transactions / p.cs_groups.length);
+      csg2.cps = Math.floor (p2.CPS / csg_count); 
+      csg2.max_active_conn_count = Math.floor (p2.MaxPipeline / csg_count);
+      csg2.total_conn_count = Math.floor (p2.Transactions / csg_count);
       csg2.server_key = csg.server_key
       csg2.server_cert = csg.server_cert
 
@@ -716,7 +766,6 @@
             && Profile.Name == $page.stuff.Profile.Name) {
 
       //skip updating Profile; as this is case of field update
-
     } else {
       isLoading = true;
 
@@ -726,6 +775,7 @@
 
         clearStats ();
         validateAllFields ();
+        checkLastCSG ();
       } else {
 
         Profile = profileCanonical ($page.stuff.Profile);
@@ -735,6 +785,7 @@
 
         clearStats ();
         validateAllFields ();
+        checkLastCSG ();
       }
 
       restartWS();
@@ -1093,7 +1144,7 @@
 
               <div class="field is-grouped">
                 <div class="control" >
-                  <button class="button  is-info" 
+                  <button class="button {Profile.isRunning ? 'is-danger' : 'is-success'}" 
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onAction} > 
                       {#if Profile.isRunning}
@@ -1308,6 +1359,7 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="column is-full">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -1320,10 +1372,22 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="column is-half">
                   <div class="field is-grouped">
+                    <button class="button is-small is-danger is-outlined" 
+                    disabled={Profile.isTransient || Profile.isRunning || (Profile.isLastCSG && Profile.cs_groups[row.index].fieldAttention!='mark-delete') }
+                    on:click={onMarkUnmarkDelete (row.index)} >
+                    {#if Profile.cs_groups[row.index].fieldAttention=='mark-delete'}
+                      Unmark Delete
+                    {:else}
+                      Mark Delete
+                    {/if}
+                    </button> 
                   </div>
                 </div>
+
+                <div class="column is-full"></div>
               </div>
             </div>
 
@@ -1334,7 +1398,9 @@
 
         <div slot="cell" let:row let:cell>
           {#if cell.key == 'fieldAttention'}
-            {#if cell.value}
+            {#if cell.value == 'mark-delete'}
+              <p><strong class="errmsg">x</strong></p>
+            {:else if cell.value == 'field-update'}
               <p><strong class="errmsg">!</strong></p>
             {:else}
               <p><strong class="okmsg">&#10003;</strong></p>
@@ -1347,6 +1413,19 @@
       </DataTable>
     </div>
     
+    <div class="column is-12">
+
+      <button class="button is-small is-link is-outlined" 
+      disabled={Profile.isTransient || Profile.isRunning}
+      on:click={onAddTrafficPath} >
+      Add Traffic Path
+      </button>      
+      
+    </div>
+
+    <div class="column is-12">
+    </div>
+
   </div>
 
 

@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import time
+from threading import Thread
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -127,6 +128,35 @@ def get_v1_api_instance ():
 
   v1_api= kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(k8s_config))
   return v1_api
+
+def start_pod_th(v1_api, cmap, pod):
+
+    try:
+      resp = v1_api.delete_namespaced_config_map(namespace='default',
+                      name=cmap.metadata.name)
+    except kubernetes.client.rest.ApiException as err:
+      pass # stale server config map does not exist
+                
+    resp = v1_api.create_namespaced_config_map(namespace='default',
+                      body=cmap)
+
+    try:
+      resp = v1_api.delete_namespaced_pod(namespace='default',
+                      name=pod.metadata.name)
+    except kubernetes.client.rest.ApiException as err:
+      pass # stale server pod does not exist
+
+    resp = v1_api.create_namespaced_pod (namespace='default',
+                        body=pod)
+
+    while True:
+      time.sleep(1)
+
+      resp = v1_api.read_namespaced_pod (namespace='default',
+                        name=pod.metadata.name)
+
+      if resp.status.phase == 'Running':
+        break
 
 
 def start (group, name, stats_addr):
@@ -284,84 +314,45 @@ def start (group, name, stats_addr):
             'client_pod': client_pod
         })
 
-    events.append('timestamp: starting server pods')
+    events.append('starting servers')
     update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
+
+    startth_list = []
     for start_json in start_pod_info:
-        try:
-          resp = v1Api.delete_namespaced_config_map(namespace='default',
-                                          name='tlsserver-{AppMetaId}'.format(**input_map))
-          events.append('timestamp: stale server config map removed')
-        except kubernetes.client.rest.ApiException as err:
-          events.append('timestamp: stale server config map not found')
+        thd = Thread(target=start_pod_th
+                    , args=[v1Api
+                            , start_json['server_cmap']
+                            , start_json['server_pod'] ])
                     
-        resp = v1Api.create_namespaced_config_map(namespace='default',
-                                    body=start_json['server_cmap'])
-
-
-        try:
-          resp = v1Api.delete_namespaced_pod(namespace='default',
-                                          name='tlsserver-{AppMetaId}'.format(**input_map))
-          events.append('timestamp: stale server pod removed')
-        except kubernetes.client.rest.ApiException as err:
-          events.append('timestamp: stale server pod not found')
-
-        resp = v1Api.create_namespaced_pod (namespace='default',
-                                    body=start_json['server_pod'])
-
-    events.append('timestamp: checking server pods status')
-    update = { '$set': {'Events': events}}
-    task_col.update_one(query, update)
-    all_pod_started = False
-    while not all_pod_started:
-        all_pod_started = True
-        for start_json in start_pod_info:
-            resp = v1Api.read_namespaced_pod (namespace='default',
-                                    name=start_json['server_pod'].metadata.name)
-            if resp.status.phase == 'Pending':
-                all_pod_started = False
-                break
+        thd.daemon = True
+        thd.start()
+        startth_list.append(thd)
+    
+    for thd in startth_list:
+        thd.join()
 
     time.sleep(5)
 
-    events.append('timestamp: starting client pods')
+    events.append('starting clients')
     update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
+
+    startth_list = []
     for start_json in start_pod_info:
-        try:
-          resp = v1Api.delete_namespaced_config_map(namespace='default',
-                                          name='tlsclient-{AppMetaId}'.format(**input_map))
-          events.append('timestamp: stale client config map removed')
-        except kubernetes.client.rest.ApiException as err:
-          events.append('timestamp: stale client config map not found')
+        thd = Thread(target=start_pod_th
+                    , args=[v1Api
+                            , start_json['client_cmap']
+                            , start_json['client_pod']])
+                    
+        thd.daemon = True
+        thd.start()
+        startth_list.append(thd)
+    
+    for thd in startth_list:
+        thd.join()
 
-        resp = v1Api.create_namespaced_config_map(namespace='default',
-                                    body=start_json['client_cmap'])
-
-        try:
-          resp = v1Api.delete_namespaced_pod(namespace='default',
-                                          name='tlsclient-{AppMetaId}'.format(**input_map))
-          events.append('timestamp: stale client pod removed')
-        except kubernetes.client.rest.ApiException as err:
-          events.append('timestamp: stale client pod not found')
-
-        resp = v1Api.create_namespaced_pod (namespace='default',
-                                    body=start_json['client_pod'])
-
-    events.append('timestamp: checking client pods status')
-    update = { '$set': {'Events': events}}
-    task_col.update_one(query, update)
-    all_pod_started = False
-    while not all_pod_started:
-        all_pod_started = True
-        for start_json in start_pod_info:
-            resp = v1Api.read_namespaced_pod (namespace='default',
-                                    name=start_json['client_pod'].metadata.name)
-            if resp.status.phase == 'Pending':
-                all_pod_started = False
-                break
-
-    events.append('timestamp: client, server pods running')
+    events.append('clients, servers running')
     update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
 
@@ -382,7 +373,7 @@ def stop (group, name, stats_addr):
     profile_col = db[PROFILE_LISTS]
     profile = profile_col.find_one(query)
 
-    events.append('timestamp: stopping clients pods')
+    events.append('stopping clients pods')
     update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
 
@@ -425,15 +416,15 @@ def stop (group, name, stats_addr):
           resp = v1Api.delete_namespaced_pod (namespace='default',
                                               name=name)
         except kubernetes.client.rest.ApiException as err:
-          events.append('timestamp: delete client pod failed')
+          events.append('delete client pod failed')
 
         try:
           resp = v1Api.delete_namespaced_config_map (namespace='default',
                                               name=name)
         except kubernetes.client.rest.ApiException as err:
-          events.append('timestamp: delete client config map failed')
+          events.append('delete client config map failed')
 
-    events.append('timestamp: stopping server pods')
+    events.append('stopping server pods')
     update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
 
@@ -475,15 +466,15 @@ def stop (group, name, stats_addr):
           resp = v1Api.delete_namespaced_pod (namespace='default',
                                               name=name)
         except kubernetes.client.rest.ApiException as err:
-          events.append('timestamp: delete server pod failed')
+          events.append('delete server pod failed')
 
         try:
           resp = v1Api.delete_namespaced_config_map (namespace='default',
                                               name=name)
         except kubernetes.client.rest.ApiException as err:
-          events.append('timestamp: delete server config map failed')
+          events.append('delete server config map failed')
 
-    events.append('timestamp: client, server pods stopped')
+    events.append('client, server pods stopped')
     update = { '$set': {'Events': events}}
     task_col.update_one(query, update)
 

@@ -97,14 +97,14 @@
 <style>
 
   .selected {
-    background-color: darkgray;
+    background-color: #b3cde0;
     color: white;
   }
 
   li {
       border-bottom: solid 0px aliceblue;
       margin: 0 0;
-      padding: 0.60rem;
+      padding: 0.30rem;
       display: flex;
       cursor: pointer;
       vertical-align: middle;
