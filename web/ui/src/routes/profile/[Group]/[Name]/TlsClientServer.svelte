@@ -201,6 +201,10 @@
                     || Profile.serverIfaceError;
 
       for (const csg of Profile.cs_groups) {
+        if (csg.fieldAttention == 'mark-delete') {
+          continue;
+        }
+
         csg.fieldAttention = '';
         if (csg.client_ipsError) {
           Profile.markErrorFields = true;
@@ -211,6 +215,8 @@
           csg.fieldAttention = 'field-update';
         }
       }
+
+      checkLastCSG ();
     }
 
     function validateAllFields() {
@@ -506,9 +512,32 @@
       Profile.markUnsavedFields = true;
     }
 
-    function onDelTrafficPath (row_index) {
-      Profile.cs_groups[row_index].fieldAttention = 'mark-delete';
-      Profile.markUnsavedFields = true;
+    function checkLastCSG () {
+      Profile.isLastCSG = false;
+
+      let csg_count = 0;
+      for (const csg of Profile.cs_groups) {
+        if (csg.fieldAttention == 'mark-delete') {
+          continue;
+        }
+        csg_count += 1;
+      }
+
+      if ( csg_count == 1) {
+        Profile.isLastCSG = true;
+      }
+
+      return Profile.isLastCSG
+    }
+
+    function onMarkUnmarkDelete (row_index) {
+      if (Profile.cs_groups[row_index].fieldAttention == 'mark-delete') {
+        Profile.cs_groups[row_index].fieldAttention = '';
+        checkFields();
+      } else if (!checkLastCSG()) {
+        Profile.cs_groups[row_index].fieldAttention = 'mark-delete';
+        Profile.markUnsavedFields = true;
+      }
     }
 
     async function onAction () {
@@ -737,7 +766,6 @@
             && Profile.Name == $page.stuff.Profile.Name) {
 
       //skip updating Profile; as this is case of field update
-
     } else {
       isLoading = true;
 
@@ -747,6 +775,7 @@
 
         clearStats ();
         validateAllFields ();
+        checkLastCSG ();
       } else {
 
         Profile = profileCanonical ($page.stuff.Profile);
@@ -756,6 +785,7 @@
 
         clearStats ();
         validateAllFields ();
+        checkLastCSG ();
       }
 
       restartWS();
@@ -1346,9 +1376,13 @@
                 <div class="column is-half">
                   <div class="field is-grouped">
                     <button class="button is-small is-danger is-outlined" 
-                    disabled={Profile.isTransient || Profile.isRunning}
-                    on:click={onDelTrafficPath (row.index)} >
-                    Mark Delete
+                    disabled={Profile.isTransient || Profile.isRunning || (Profile.isLastCSG && Profile.cs_groups[row.index].fieldAttention!='mark-delete') }
+                    on:click={onMarkUnmarkDelete (row.index)} >
+                    {#if Profile.cs_groups[row.index].fieldAttention=='mark-delete'}
+                      Unmark Delete
+                    {:else}
+                      Mark Delete
+                    {/if}
                     </button> 
                   </div>
                 </div>
