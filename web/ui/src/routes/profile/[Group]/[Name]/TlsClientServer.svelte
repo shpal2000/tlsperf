@@ -872,6 +872,7 @@
 
         Profile.Stats = json.stats;
         const task =json.task;
+        Profile.isCapturing = json.capon;
 
         Profile.isRunning = (task.State == 'run');
         Profile.isProgress = (task.Status == 'progress');

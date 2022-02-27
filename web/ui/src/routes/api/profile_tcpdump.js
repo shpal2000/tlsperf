@@ -6,7 +6,11 @@ export async function get ({url}) {
   const iface = url.searchParams.get("iface");
 
   let res;
-  res = await apiClient.get(`/profile_tcpdump?group=${group}&name=${name}&iface=${iface}`);
+  if (iface) {
+    res = await apiClient.get(`/profile_tcpdump?group=${group}&name=${name}&iface=${iface}`);
+  } else {
+    res = await apiClient.get(`/profile_tcpdump?group=${group}&name=${name}`);
+  }
 
   return {
       body: res.data

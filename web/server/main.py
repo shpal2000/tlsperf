@@ -606,6 +606,7 @@ async def api_start_profile_tcpdump(request):
             if server_node_iface_status == None:
                 return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (server_node_label, server_node_iface)})
 
+
             if client_node_iface_status.get('Group') and (client_node_iface_status['Group'] != group or client_node_iface_status['Name'] != name):
                 return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (client_node_label
                                                                                                         , client_node_iface
@@ -617,7 +618,6 @@ async def api_start_profile_tcpdump(request):
                                                                                                         , server_node_iface
                                                                                                         , server_node_iface_status['Group']
                                                                                                         , server_node_iface_status['Name'])})
-
             if client_node_iface_status.get('PacketCapture') == 'on':
                 return web.json_response({'status' : -1, 'message': 'iface capture on {}:{}'.format (client_node_label
                                                                                                     , client_node_iface)})
@@ -691,6 +691,7 @@ async def api_stop_profile_tcpdump(request):
             if server_node_iface_status == None:
                 return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (server_node_label, server_node_iface)})
 
+
             if client_node_iface_status.get('Group') and (client_node_iface_status['Group'] != group or client_node_iface_status['Name'] != name):
                 return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (client_node_label
                                                                                                         , client_node_iface
@@ -702,6 +703,7 @@ async def api_stop_profile_tcpdump(request):
                                                                                                         , server_node_iface
                                                                                                         , server_node_iface_status['Group']
                                                                                                         , server_node_iface_status['Name'])})
+
             if client_node_iface_status.get('PacketCapture') == 'off':
                 return web.json_response({'status' : -1, 'message': 'iface capture off {}:{}'.format (client_node_label
                                                                                                     , client_node_iface)})
@@ -732,6 +734,27 @@ async def api_stop_profile_tcpdump(request):
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 
+
+async def api_get_profile_tcpdump (request):
+    try:
+        group = request.query['group']
+        name = request.query['name']
+        iface = request.query['iface']
+
+        query = {'Group': group, 'Name': name}
+
+        mongoClient = MongoClient(DB_CSTRING)
+        db = mongoClient[DB_NAME]
+
+        profile_col = db[PROFILE_LISTS]
+        profile = profile_col.find_one(query)
+
+        node_col = db[NODE_LISTS]
+
+        return web.json_response({'status' : -1, 'message': 'profile not found'})
+
+    except Exception as err:
+        return web.json_response({'status' : -1, 'message': str(err)})
 
 
 async def api_get_stats(request):
@@ -775,12 +798,31 @@ async def ws_handler (request):
                 db = mongoClient[DB_NAME]
                 stats_col = db[REALTIME_STATS]
                 task_col = db[TASK_LISTS]
+                profile_col = db[PROFILE_LISTS]
+                node_col = db[NODE_LISTS]
 
                 gstats = stats_col.find_one (query, {'_id' : False})
                 task = task_col.find_one(query, {'_id' : False})
+                profile = profile_col.find_one(query, {'_id' : False})
 
-                if gstats and task:
-                    resp = {'stats': gstats, 'task': task}
+                capon = 0
+
+                client_node_label, client_node_iface  = profile["ClientIface"].split(':')
+                client_node = node_col.find_one ({'Label': client_node_label})
+                if client_node:
+                    client_node_iface_status = client_node.get(client_node_iface, {})
+                    if client_node_iface_status.get('Group') == group and client_node_iface_status.get('Name') == name:
+                        capon = 1
+
+                server_node_label, server_node_iface  = profile["ClientIface"].split(':')
+                server_node = node_col.find_one ({'Label': server_node_label})
+                if server_node:
+                    server_node_iface_status = server_node.get(server_node_iface, {})
+                    if server_node_iface_status.get('Group') == group and server_node_iface_status.get('Name') == name:
+                        capon = 1
+
+                if profile and gstats and task:
+                    resp = {'stats': gstats, 'task': task, 'capon': capon}
                     await ws.send_str(json.dumps(resp))
                 else:
                     await ws.send_str(json.dumps({}))
