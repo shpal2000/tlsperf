@@ -1331,13 +1331,13 @@
                       {/if}
                   </button>
 
-                  <button class="button is-light {Profile.isRunning ? ' is-danger' : 'is-info'}" 
-                    disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
+                  <button class="button is-light is-info" 
+                    disabled={Profile.isTransient || (!Profile.isRunning)}
                     on:click={onCaptureAction} > 
                       {#if Profile.isCapturing}
-                        Stop Capture
+                        Capture On
                       {:else}
-                        Start Capture 
+                        Capture Off
                       {/if}
                   </button>
                 </div>

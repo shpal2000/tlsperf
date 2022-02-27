@@ -53,57 +53,6 @@ class SshLinux():
                                     , known_hosts=None) as conn:
             await conn.run (command)
 
-    async def start_tcpdump1(self, iface, capfile):
-        async with asyncssh.connect(self.ip
-                                    , username=self.username
-                                    , password=self.password
-                                    , known_hosts=None) as conn:
-            _stdin, _stdout, _stderr = await conn.open_session('sudo tcpdump -i {} -n -c 1000 -w ~/{}.pcap&'.format(iface, capfile))
-           
-            capture_msg = 'bytes'
-            sudo_pass_msg = 'for {}: '.format(self.username)
- 
-            print ('here1')
-            read_msg = await self.read_until(_stderr, [capture_msg, sudo_pass_msg])
-            print ('here2')
-            print (read_msg)
-
-            if read_msg.endswith(capture_msg):
-                read_msg += await _stdout.read(-1)
-                read_msg += await _stderr.read(-1)
-                self.log.append(read_msg)
-                return read_msg
-            elif read_msg == sudo_pass_msg:
-                _stdin.write ('{}\n'.format(self.password))
-                read_msg += await _stdout.read(-1)
-                read_msg += await _stderr.read(-1)
-                self.log.append(read_msg)
-                return read_msg
- 
-    async def stop_tcpdump1(self):
-        async with asyncssh.connect(self.ip
-                                    , username=self.username
-                                    , password=self.password
-                                    , known_hosts=None) as conn:
-            _stdin, _stdout, _stderr = await conn.open_session('sudo killall tcpdump')
-           
-            not_found_msg = 'no process found'
-            kernel_msg = 'kernel'
-            sudo_pass_msg = 'for {}: '.format(self.username)
- 
-            read_msg = await self.read_until(_stderr, [not_found_msg, kernel_msg, sudo_pass_msg])
- 
-            if read_msg.endswith(not_found_msg) or read_msg.endswith(kernel_msg):
-                read_msg += await _stdout.read(-1)
-                read_msg += await _stderr.read(-1)
-                self.log.append(read_msg)
-                return read_msg
-            elif read_msg == sudo_pass_msg:
-                _stdin.write ('{}\n'.format(self.password))
-                read_msg += await _stdout.read(-1)
-                read_msg += await _stderr.read(-1)
-                self.log.append(read_msg)
-                return read_msg
 
 stats_ticks = 60
 
@@ -649,13 +598,25 @@ async def api_start_profile_tcpdump(request):
             if not server_node:
                 return web.json_response({'status' : -1, 'message': 'node not found ' + server_node_label})
 
-            client_node_iface_status = client_node.get(client_node_iface, {})
-            if not client_node_iface_status:
+            client_node_iface_status = client_node.get(client_node_iface, None)
+            if client_node_iface_status == None:
                 return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (client_node_label, client_node_iface)})
 
-            server_node_iface_status = server_node.get(server_node_iface, {})
-            if not server_node_iface_status:
+            server_node_iface_status = server_node.get(server_node_iface, None)
+            if server_node_iface_status == None:
                 return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (server_node_label, server_node_iface)})
+
+            if client_node_iface_status.get('Group') and (client_node_iface_status['Group'] != group or client_node_iface_status['Name'] != name):
+                return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (client_node_label
+                                                                                                        , client_node_iface
+                                                                                                        , client_node_iface_status['Group']
+                                                                                                        , client_node_iface_status['Name'])})
+
+            if server_node_iface_status.get('Group') and (server_node_iface_status['Group'] != group or server_node_iface_status['Name'] != name):
+                return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (server_node_label
+                                                                                                        , server_node_iface
+                                                                                                        , server_node_iface_status['Group']
+                                                                                                        , server_node_iface_status['Name'])})
 
             if client_node_iface_status.get('PacketCapture') == 'on':
                 return web.json_response({'status' : -1, 'message': 'iface capture on {}:{}'.format (client_node_label
@@ -664,9 +625,9 @@ async def api_start_profile_tcpdump(request):
                 return web.json_response({'status' : -1, 'message': 'iface capture on {}:{}'.format (server_node_label
                                                                                                     , server_node_iface)})
 
-            node_col.update_one ({'Label': client_node_label}, {'$set': {client_node_iface: {'PacketCapture' : 'on'}}} )
+            node_col.update_one ({'Label': client_node_label}, {'$set': {client_node_iface: {'PacketCapture' : 'on', 'Group': group, 'Name': name}}} )
 
-            node_col.update_one ({'Label': server_node_label}, {'$set': {server_node_iface: {'PacketCapture' : 'on'}}} )
+            node_col.update_one ({'Label': server_node_label}, {'$set': {server_node_iface: {'PacketCapture' : 'on', 'Group': group, 'Name': name}}} )
 
             client_node = node_col.find_one ({'Label': client_node_label})
 
@@ -722,14 +683,25 @@ async def api_stop_profile_tcpdump(request):
             if not server_node:
                 return web.json_response({'status' : -1, 'message': 'node not found ' + server_node_label})
 
-            client_node_iface_status = client_node.get(client_node_iface, {})
-            if not client_node_iface_status:
+            client_node_iface_status = client_node.get(client_node_iface, None)
+            if client_node_iface_status == None:
                 return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (client_node_label, client_node_iface)})
 
-            server_node_iface_status = server_node.get(server_node_iface, {})
-            if not server_node_iface_status:
+            server_node_iface_status = server_node.get(server_node_iface, None)
+            if server_node_iface_status == None:
                 return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (server_node_label, server_node_iface)})
 
+            if client_node_iface_status.get('Group') and (client_node_iface_status['Group'] != group or client_node_iface_status['Name'] != name):
+                return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (client_node_label
+                                                                                                        , client_node_iface
+                                                                                                        , client_node_iface_status['Group']
+                                                                                                        , client_node_iface_status['Name'])})
+
+            if server_node_iface_status.get('Group') and (server_node_iface_status['Group'] != group or server_node_iface_status['Name'] != name):
+                return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (server_node_label
+                                                                                                        , server_node_iface
+                                                                                                        , server_node_iface_status['Group']
+                                                                                                        , server_node_iface_status['Name'])})
             if client_node_iface_status.get('PacketCapture') == 'off':
                 return web.json_response({'status' : -1, 'message': 'iface capture off {}:{}'.format (client_node_label
                                                                                                     , client_node_iface)})
@@ -745,7 +717,6 @@ async def api_stop_profile_tcpdump(request):
             await asyncio.wait_for (sshLinux.send_commamnd2('sudo pkill tcpdump'), timeout=5.0)
 
             await asyncio.wait_for (sshLinux.send_commamnd2('sudo pkill tcpdump'), timeout=5.0)
-
 
             node_col.update_one ({'Label': client_node_label}, {'$set': {client_node_iface: {'PacketCapture' : 'off'}}} )
 
