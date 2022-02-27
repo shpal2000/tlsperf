@@ -3,14 +3,9 @@ import apiClient from './api_client';
 export async function get ({url}) {
   const group = url.searchParams.get("group");
   const name = url.searchParams.get("name");
-  const iface = url.searchParams.get("iface");
 
   let res;
-  if (iface) {
-    res = await apiClient.get(`/profile_tcpdump?group=${group}&name=${name}&iface=${iface}`);
-  } else {
-    res = await apiClient.get(`/profile_tcpdump?group=${group}&name=${name}`);
-  }
+  res = await apiClient.get(`/profile_tcpdump?group=${group}&name=${name}`);
 
   return {
       body: res.data

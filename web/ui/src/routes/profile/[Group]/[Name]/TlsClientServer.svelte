@@ -523,7 +523,7 @@
         Profile.isError = false;
         Profile.isProgress = true;
         Profile.progressText = 'Capture On...';
-        const res = await fetch ('/api/profile_tcpdump', {
+        const res = await fetch ('/api/profile_tcpdump.pcap', {
           signal,
           method: 'POST',
           body: JSON.stringify({'Group': Profile.Group,
@@ -578,7 +578,7 @@
         Profile.isError = false;
         Profile.isProgress = true;
         Profile.progressText = 'Capture Off...';
-        const res = await fetch ('/api/profile_tcpdump', {
+        const res = await fetch ('/api/profile_tcpdump.pcap', {
           signal,
           method: 'DELETE',
           body: JSON.stringify({'Group': Profile.Group,
@@ -1297,7 +1297,13 @@
                         readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateClientIface}
                       >
-                      <p class="help msg_border">{Profile.clientIfaceHelp}</p>
+                      <p class="help msg_border">
+                        {#if Profile.clientIfaceHelp}
+                          {Profile.clientIfaceHelp}
+                        {:else}
+                          <a href="/api/profile_tcpdump_client.pcap?group={Profile.Group}&name={Profile.Name}">Download</a>
+                        {/if}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1314,7 +1320,13 @@
                         readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateServerIface}
                       >
-                      <p class="help msg_border">{Profile.serverIfaceHelp}</p>
+                      <p class="help msg_border">
+                        {#if Profile.serverIfaceHelp}
+                          {Profile.serverIfaceHelp}
+                        {:else}
+                          <a href="/api/profile_tcpdump_server.pcap?group={Profile.Group}&name={Profile.Name}">Download</a>
+                        {/if}
+                      </p>
                     </div>
                   </div>
                 </div>
