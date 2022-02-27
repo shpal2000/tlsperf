@@ -509,6 +509,115 @@
       Profile.isTransient = false;
     }
 
+
+    async function onStartCapture () {
+      Profile.isTransient = true;
+      clearStats ();
+
+      const action = 'onStartCapture';
+      const controller = new AbortController();
+      const signal = controller.signal;
+
+      try {
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        Profile.progressText = 'Capture On...';
+        const res = await fetch ('/api/profile_tcpdump', {
+          signal,
+          method: 'POST',
+          body: JSON.stringify({'Group': Profile.Group,
+                                  'Name': Profile.Name})
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
+
+          if (isJson) {
+            if (json.status == 0){
+              Profile.isCapturing = true;
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+              Profile.isProgress = false;
+            }
+          } else {
+            setErrorMsg (action, text);
+            Profile.isProgress = false;
+          }
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
+      Profile.isTransient = false;
+    }
+
+    async function onStopCapture () {
+      Profile.isTransient = true;
+      clearStats ();
+
+      const action = 'onStopCapture';
+      const controller = new AbortController();
+      const signal = controller.signal;
+
+      try {
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        Profile.progressText = 'Capture Off...';
+        const res = await fetch ('/api/profile_tcpdump', {
+          signal,
+          method: 'DELETE',
+          body: JSON.stringify({'Group': Profile.Group,
+                                  'Name': Profile.Name})
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
+
+          if (isJson) {
+            if (json.status == 0){
+              Profile.isCapturing = false;
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+              Profile.isProgress = false;
+            }
+          } else {
+            setErrorMsg (action, text);
+            Profile.isProgress = false;
+          }
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
+      Profile.isTransient = false;
+    }
+
     async function onAddTrafficPath () {
 
       Profile.isTransient = true;
@@ -608,14 +717,10 @@
     }
 
     async function onCaptureAction () {
-      if (Profile.isRunning) {
-        await onStop();
+      if (Profile.isCapturing) {
+        await onStopCapture();
       } else {
-        if (Profile.markUnsavedFields || Profile.markErrorFields) {
-          await onSave();
-        } else {
-          await onStart();
-        }
+        await onStartCapture();
       }
     }
 
@@ -1214,12 +1319,12 @@
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onProfileAction} > 
                       {#if Profile.isRunning}
-                        Stop Traffic
+                        Stop
                       {:else}
                         {#if Profile.markUnsavedFields || Profile.markErrorFields}
-                          Save Profile
+                          Save
                         {:else}
-                          Start Traffic
+                          Run
                         {/if} 
                       {/if}
                   </button>
@@ -1227,14 +1332,10 @@
                   <button class="button is-light {Profile.isRunning ? ' is-danger' : 'is-info'}" 
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onCaptureAction} > 
-                      {#if Profile.isRunning}
+                      {#if Profile.isCapturing}
                         Stop Capture
                       {:else}
-                        {#if Profile.markUnsavedFields || Profile.markErrorFields}
-                        Start Capture
-                        {:else}
-                          Start Capture
-                        {/if} 
+                        Start Capture 
                       {/if}
                   </button>
                 </div>
