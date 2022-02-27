@@ -681,7 +681,7 @@ async def api_start_profile_tcpdump(request):
             await asyncio.wait_for (sshLinux.send_commamnd2 (tcpdump_command), timeout=10.0)
 
 
-            tcpdump_command = 'sudo nohup tcpdump -i {} -n -c 1000 -w ~/{}_client.pcap < /dev/null > /dev/null 2>&1 &'.format(server_node_iface, server_node_iface)
+            tcpdump_command = 'sudo nohup tcpdump -i {} -n -c 1000 -w ~/{}_server.pcap < /dev/null > /dev/null 2>&1 &'.format(server_node_iface, server_node_iface)
             await asyncio.wait_for (sshLinux.send_commamnd2 (tcpdump_command), timeout=10.0)
 
             return web.json_response({'status' : 0})
@@ -742,9 +742,9 @@ async def api_stop_profile_tcpdump(request):
                                 , client_node['Ssh']['User']
                                 , client_node['Ssh']['Pass'])
 
-            await asyncio.wait_for (sshLinux.send_commamnd2('sudo pkill tcpdump'), timeout=15.0)
+            await asyncio.wait_for (sshLinux.send_commamnd2('sudo pkill tcpdump'), timeout=5.0)
 
-            await asyncio.wait_for (sshLinux.send_commamnd2('sudo pkill tcpdump'), timeout=15.0)
+            await asyncio.wait_for (sshLinux.send_commamnd2('sudo pkill tcpdump'), timeout=5.0)
 
 
             node_col.update_one ({'Label': client_node_label}, {'$set': {client_node_iface: {'PacketCapture' : 'off'}}} )
