@@ -543,6 +543,7 @@
           if (isJson) {
             if (json.status == 0){
               Profile.isCapturing = true;
+              Profile.isProgress = false;
             } else {
               console.log(json);
               setErrorMsg (action, json.message);
@@ -597,6 +598,7 @@
           if (isJson) {
             if (json.status == 0){
               Profile.isCapturing = false;
+              Profile.isProgress = false;
             } else {
               console.log(json);
               setErrorMsg (action, json.message);

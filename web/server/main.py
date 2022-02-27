@@ -45,7 +45,14 @@ class SshLinux():
             read_msg += await _stderr.read(-1)
             self.log.append(read_msg)
             return read_msg
-    
+
+    async def send_commamnd2(self, command):
+        async with asyncssh.connect(self.ip
+                                    , username=self.username
+                                    , password=self.password
+                                    , known_hosts=None) as conn:
+            await conn.run (command)
+
     async def start_tcpdump1(self, iface, capfile):
         async with asyncssh.connect(self.ip
                                     , username=self.username
@@ -56,8 +63,11 @@ class SshLinux():
             capture_msg = 'bytes'
             sudo_pass_msg = 'for {}: '.format(self.username)
  
+            print ('here1')
             read_msg = await self.read_until(_stderr, [capture_msg, sudo_pass_msg])
- 
+            print ('here2')
+            print (read_msg)
+
             if read_msg.endswith(capture_msg):
                 read_msg += await _stdout.read(-1)
                 read_msg += await _stderr.read(-1)
@@ -506,12 +516,12 @@ async def api_start_profile_run(request):
             if not server_node_iface_status:
                 return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (server_node_label, server_node_iface)})
 
-            if client_node_iface_status['Usage'] == 'inuse':
+            if client_node_iface_status.get('Usage') == 'inuse':
                 return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (client_node_label
                                                                                                         , client_node_iface
                                                                                                         , client_node_iface_status['Group']
                                                                                                         , client_node_iface_status['Name'])})
-            if server_node_iface_status['Usage'] == 'inuse':
+            if server_node_iface_status.get('Usage') == 'inuse':
                 return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (server_node_label
                                                                                                         , server_node_iface
                                                                                                         , server_node_iface_status['Group']
@@ -647,10 +657,10 @@ async def api_start_profile_tcpdump(request):
             if not server_node_iface_status:
                 return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (server_node_label, server_node_iface)})
 
-            if client_node_iface_status['PacketCapture'] == 'on':
+            if client_node_iface_status.get('PacketCapture') == 'on':
                 return web.json_response({'status' : -1, 'message': 'iface capture on {}:{}'.format (client_node_label
                                                                                                     , client_node_iface)})
-            if server_node_iface_status['Usage'] == 'on':
+            if server_node_iface_status.get('PacketCapture') == 'on':
                 return web.json_response({'status' : -1, 'message': 'iface capture on {}:{}'.format (server_node_label
                                                                                                     , server_node_iface)})
 
@@ -665,11 +675,14 @@ async def api_start_profile_tcpdump(request):
 
             sshLinux = SshLinux(client_node['Ssh']['Ip']
                                 , client_node['Ssh']['User']
-                                , client_node['Ssh']['User'])
+                                , client_node['Ssh']['Pass'])
 
-            await asyncio.wait_for (sshLinux.start_tcpdump1 (client_node_iface,  '~/{}.pcap'.format(client_node_iface)), timeout=15.0)
+            tcpdump_command = 'sudo nohup tcpdump -i {} -n -c 1000 -w ~/{}_client.pcap < /dev/null > /dev/null 2>&1 &'.format(client_node_iface, client_node_iface)
+            await asyncio.wait_for (sshLinux.send_commamnd2 (tcpdump_command), timeout=10.0)
 
-            await asyncio.wait_for (sshLinux.start_tcpdump1 (server_node_iface,  '~/{}.pcap'.format(server_node_iface)), timeout=15.0)
+
+            tcpdump_command = 'sudo nohup tcpdump -i {} -n -c 1000 -w ~/{}_client.pcap < /dev/null > /dev/null 2>&1 &'.format(server_node_iface, server_node_iface)
+            await asyncio.wait_for (sshLinux.send_commamnd2 (tcpdump_command), timeout=10.0)
 
             return web.json_response({'status' : 0})
         else:
@@ -717,21 +730,21 @@ async def api_stop_profile_tcpdump(request):
             if not server_node_iface_status:
                 return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (server_node_label, server_node_iface)})
 
-            if client_node_iface_status['PacketCapture'] == 'off':
+            if client_node_iface_status.get('PacketCapture') == 'off':
                 return web.json_response({'status' : -1, 'message': 'iface capture off {}:{}'.format (client_node_label
                                                                                                     , client_node_iface)})
-            if server_node_iface_status['Usage'] == 'off':
+            if server_node_iface_status.get('PacketCapture') == 'off':
                 return web.json_response({'status' : -1, 'message': 'iface capture off {}:{}'.format (server_node_label
                                                                                                     , server_node_iface)})
 
 
             sshLinux = SshLinux(client_node['Ssh']['Ip']
                                 , client_node['Ssh']['User']
-                                , client_node['Ssh']['User'])
+                                , client_node['Ssh']['Pass'])
 
-            await asyncio.wait_for (sshLinux.stop_tcpdump1(), timeout=15.0)
+            await asyncio.wait_for (sshLinux.send_commamnd2('sudo pkill tcpdump'), timeout=15.0)
 
-            await asyncio.wait_for (sshLinux.stop_tcpdump1(), timeout=15.0)
+            await asyncio.wait_for (sshLinux.send_commamnd2('sudo pkill tcpdump'), timeout=15.0)
 
 
             node_col.update_one ({'Label': client_node_label}, {'$set': {client_node_iface: {'PacketCapture' : 'off'}}} )
