@@ -1092,11 +1092,11 @@
         <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <section>
-              <div class="columns is-multiline is-mobile">
+              <div class="columns is-multiline is-mobile start_stop_border">
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Transactions</label>
+                    <label class="label">Transactions</label>
                     <div class="control">
                       <input class="input {(Profile.transactionsError || Profile.transactionsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
@@ -1105,7 +1105,7 @@
                         bind:value={Profile.Transactions}
                         on:input={validateTransactions}
                       >
-                      <p class="help">{Profile.transactionsHelp}</p>
+                      <p class="help msg_border">{Profile.transactionsHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -1113,7 +1113,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">CPS</label>
+                    <label class="label">CPS</label>
                     <div class="control">
                       <input class="input {(Profile.cpsError || Profile.cpsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
@@ -1122,7 +1122,7 @@
                         bind:value={Profile.CPS}
                         on:input={validateCps}
                       >
-                      <p class="help">{Profile.cpsHelp}</p>
+                      <p class="help msg_border">{Profile.cpsHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -1130,7 +1130,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">DataLength</label>
+                    <label class="label">DataLength</label>
                     <div class="control">
                       <input class="input {(Profile.dataLengthError || Profile.dataLengthUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
@@ -1139,7 +1139,7 @@
                         bind:value={Profile.DataLength}
                         on:input={validateDataLength}
                       >
-                      <p class="help">{Profile.dataLengthHelp}</p>
+                      <p class="help msg_border">{Profile.dataLengthHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -1147,7 +1147,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">MaxPipeline</label>
+                    <label class="label">MaxPipeline</label>
                     <div class="control">
                       <input class="input {(Profile.maxPipelineError || Profile.maxPipelineUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
@@ -1156,7 +1156,7 @@
                         bind:value={Profile.MaxPipeline}
                         on:input={validateMaxPipeline}
                       >
-                      <p class="help">{Profile.maxPipelineHelp}</p>
+                      <p class="help msg_border">{Profile.maxPipelineHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -1164,7 +1164,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">ClientPort</label>
+                    <label class="label">ClientPort</label>
                     <div class="control">
                       <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ClientIface}
@@ -1173,7 +1173,7 @@
                         readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateClientIface}
                       >
-                      <p class="help">{Profile.clientIfaceHelp}</p>
+                      <p class="help msg_border">{Profile.clientIfaceHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -1190,24 +1190,38 @@
                         readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateServerIface}
                       >
-                      <p class="help">{Profile.serverIfaceHelp}</p>
+                      <p class="help msg_border">{Profile.serverIfaceHelp}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div class="field is-grouped">
-                <div class="control" >
-                  <button class="button {Profile.isRunning ? 'is-danger' : 'is-success'}" 
+              <div class="field has-text-centered">
+                <div class="control has-text-centered" >
+                  <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-info'}" 
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onAction} > 
                       {#if Profile.isRunning}
-                        Stop
+                        Stop Traffic
                       {:else}
                         {#if Profile.markUnsavedFields || Profile.markErrorFields}
-                          Save
+                          Save Profile
                         {:else}
-                          Start
+                          Start Traffic
+                        {/if} 
+                      {/if}
+                  </button>
+
+                  <button class="button is-light {Profile.isRunning ? ' is-danger' : 'is-info'}" 
+                    disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
+                    on:click={onAction} > 
+                      {#if Profile.isRunning}
+                        Stop Capture
+                      {:else}
+                        {#if Profile.markUnsavedFields || Profile.markErrorFields}
+                        Start Capture
+                        {:else}
+                          Start Capture
                         {/if} 
                       {/if}
                   </button>
@@ -1469,7 +1483,7 @@
     
     <div class="column is-12">
 
-      <button class="button is-small is-link is-outlined" 
+      <button class="button is-small is-info is-outlined" 
       disabled={Profile.isTransient || Profile.isRunning}
       on:click={onAddTrafficPath} >
       Add Traffic Path
@@ -1514,6 +1528,14 @@
     .cert-margin {
       padding-top: 0;
       padding-bottom: 0;
+    }
+
+    .start_stop_border {
+      padding-top: 0.5rem;
+    }
+
+    .msg_border {
+      margin-left: 0.6rem;
     }
 
 </style>
