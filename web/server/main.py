@@ -431,9 +431,46 @@ async def api_start_profile_run(request):
         stats_col = db[REALTIME_STATS]
         stats = stats_col.find_one(query)
 
+        node_col = db[NODE_LISTS]
+    
         if profile:
             if task['State'] == 'run':
                 return web.json_response({'status' : -1, 'message': 'is already running'})
+
+            client_node_label, client_node_iface  = profile["ClientIface"].split(':')
+            server_node_label, server_node_iface = profile["ServerIface"].split(':')
+
+            client_node = node_col.find_one ({'Label': client_node_label})
+            server_node = node_col.find_one ({'Label': server_node_label})
+
+            if not client_node:
+                return web.json_response({'status' : -1, 'message': 'node not found ' + client_node_label})
+
+            if not server_node:
+                return web.json_response({'status' : -1, 'message': 'node not found ' + server_node_label})
+
+            client_node_iface_status = client_node.get(client_node_iface, {})
+            if not client_node_iface_status:
+                return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (client_node_label, client_node_iface)})
+
+            server_node_iface_status = server_node.get(server_node_iface, {})
+            if not server_node_iface_status:
+                return web.json_response({'status' : -1, 'message': 'iface not found {}:{}'.format (server_node_label, server_node_iface)})
+
+            if client_node_iface_status['Usage'] == 'inuse':
+                return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (client_node_label
+                                                                                                        , client_node_iface
+                                                                                                        , client_node_iface_status['Group']
+                                                                                                        , client_node_iface_status['Name'])})
+            if server_node_iface_status['Usage'] == 'inuse':
+                return web.json_response({'status' : -1, 'message': 'iface in use {}:{} by {}:{}'.format (server_node_label
+                                                                                                        , server_node_iface
+                                                                                                        , server_node_iface_status['Group']
+                                                                                                        , server_node_iface_status['Name'])})
+
+            node_col.update_one ({'Label': client_node_label}, {'$set': {client_node_iface: {'Usage' : 'inuse', 'Group': profile['Group'], 'Name': profile['Name']}}} )
+
+            node_col.update_one ({'Label': server_node_label}, {'$set': {server_node_iface: {'Usage' : 'inuse', 'Group': profile['Group'], 'Name': profile['Name']}}} )
 
             if stats:
                 stats_col.delete_one (query)
@@ -506,6 +543,14 @@ async def api_stop_profile_run(request):
             task_col.update_one(query, update)
 
             asyncio.create_task (task_stop_profile_run(group, name))
+
+            node_col = db[NODE_LISTS]
+
+            client_node_label, client_node_iface  = profile["ClientIface"].split(':')
+            server_node_label, server_node_iface = profile["ServerIface"].split(':')
+
+            node_col.update_one ({'Label': client_node_label}, {'$set': {client_node_iface: {'Usage' : 'idle', 'Group': '', 'Name': ''}}} )
+            node_col.update_one ({'Label': server_node_label}, {'$set': {server_node_iface: {'Usage' : 'idle', 'Group': '', 'Name': ''}}} )
 
             return web.json_response({'status' : 0})
         else:

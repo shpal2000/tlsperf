@@ -595,7 +595,19 @@
       }
     }
 
-    async function onAction () {
+    async function onProfileAction () {
+      if (Profile.isRunning) {
+        await onStop();
+      } else {
+        if (Profile.markUnsavedFields || Profile.markErrorFields) {
+          await onSave();
+        } else {
+          await onStart();
+        }
+      }
+    }
+
+    async function onCaptureAction () {
       if (Profile.isRunning) {
         await onStop();
       } else {
@@ -1200,7 +1212,7 @@
                 <div class="control has-text-centered" >
                   <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-info'}" 
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
-                    on:click={onAction} > 
+                    on:click={onProfileAction} > 
                       {#if Profile.isRunning}
                         Stop Traffic
                       {:else}
@@ -1214,7 +1226,7 @@
 
                   <button class="button is-light {Profile.isRunning ? ' is-danger' : 'is-info'}" 
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
-                    on:click={onAction} > 
+                    on:click={onCaptureAction} > 
                       {#if Profile.isRunning}
                         Stop Capture
                       {:else}
