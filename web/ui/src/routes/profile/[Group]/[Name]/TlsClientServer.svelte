@@ -707,12 +707,16 @@
     }
 
     async function onProfileAction () {
-      if (Profile.isRunning) {
+      if (Profile.isRunning) {     
         await onStop();
+        if (Profile.isCapturing) {
+          await onStopCapture();
+        }
       } else {
         if (Profile.markUnsavedFields || Profile.markErrorFields) {
           await onSave();
         } else {
+          await onStartCapture();
           await onStart();
         }
       }
@@ -1200,7 +1204,7 @@
       <li class="is-active" ><a>{Profile.Type} : {Profile.Name}</a></li>
 
       <!-- svelte-ignore a11y-missing-attribute -->
-      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] <strong class="{Profile.markUnsavedFields || Profile.markErrorFields ? 'errmsg' : ''}">&nbsp;&nbsp;{Profile.markUnsavedFields ? "Unsaved Fields" : ""} &nbsp;&nbsp;{Profile.markErrorFields ? "Error Fields" : ""}</strong> </a></li>
+      <li class="is-active"><a> <strong class="{Profile.markUnsavedFields || Profile.markErrorFields ? 'errmsg' : ''}">&nbsp;&nbsp;{Profile.markUnsavedFields ? "Unsaved Fields" : ""} &nbsp;&nbsp;{Profile.markErrorFields ? "Error Fields" : ""}</strong> </a></li>
   </ul>
 </nav>
 
@@ -1321,12 +1325,12 @@
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onProfileAction} > 
                       {#if Profile.isRunning}
-                        Stop
+                        Stop Traffic
                       {:else}
                         {#if Profile.markUnsavedFields || Profile.markErrorFields}
-                          Save
+                          Save Profile
                         {:else}
-                          Run
+                          Start Traffic
                         {/if} 
                       {/if}
                   </button>
@@ -1335,9 +1339,9 @@
                     disabled={Profile.isTransient || (!Profile.isRunning)}
                     on:click={onCaptureAction} > 
                       {#if Profile.isCapturing}
-                        Capture On
+                        Stop Capture
                       {:else}
-                        Capture Off
+                        Start Capture
                       {/if}
                   </button>
                 </div>
