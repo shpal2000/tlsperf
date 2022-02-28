@@ -9,6 +9,7 @@ from pymongo import MongoClient
 import yaml
 import asyncssh
 import time
+import base64
 
 from config import *
 
@@ -42,8 +43,8 @@ class SshLinux():
                                     , known_hosts=None) as conn:
             _stdin, _stdout, _stderr = await conn.open_session(command)
             read_msg = await _stdout.read(-1)
-            read_msg += await _stderr.read(-1)
-            self.log.append(read_msg)
+            await _stderr.read(-1)
+            # self.log.append(read_msg)
             return read_msg
 
     async def send_commamnd2(self, command):
@@ -751,8 +752,34 @@ async def api_get_profile_tcpdump (request):
 
         node_col = db[NODE_LISTS]
 
-        return web.json_response({'status' : -1, 'message': 'profile not found'})
+        if profile:
+            if iface == 'client':
+                node_label, node_iface  = profile["ClientIface"].split(':')
+            elif iface == 'server':
+                node_label, node_iface  = profile["ServerIface"].split(':')
 
+            node = node_col.find_one ({'Label': node_label})
+
+            if node:
+                iface_status = node.get(node_iface, None)
+                if iface_status == None:
+                    return web.json_response({'status' : -1, 'message': 'iface not found'})
+                else:
+                    if iface_status.get('PacketCapture') == 'off':
+                        sshLinux = SshLinux(node['Ssh']['Ip']
+                                            , node['Ssh']['User']
+                                            , node['Ssh']['Pass'])
+
+                        await sshLinux.send_commamnd ('base64 ~/{}_{}.pcap > ~/{}_{}.txt'.format(node_iface, iface, node_iface, iface))
+                        data = await sshLinux.send_commamnd ('cat ~/{}_{}.txt'.format(node_iface, iface))
+                        return web.Response(text=data)
+                        # return web.Response(body=base64.standard_b64decode(data))
+                    else:
+                        return web.json_response({'status' : -1, 'message': 'iface : pcap denied'})
+            else:
+                return web.json_response({'status' : -1, 'message': 'node not found'})
+        else:
+            return web.json_response({'status' : -1, 'message': 'profile not found'})
     except Exception as err:
         return web.json_response({'status' : -1, 'message': str(err)})
 
@@ -909,9 +936,9 @@ app.add_routes([web.route('get'
                             , api_get_stats)])
 
 
-# app.add_routes([web.route('get'
-#                             , '/api/profile_tcpdump'
-#                             , api_get_profile_tcpdump)])
+app.add_routes([web.route('get'
+                            , '/api/profile_tcpdump'
+                            , api_get_profile_tcpdump)])
 
 app.add_routes([web.route('post'
                             , '/api/profile_tcpdump'
