@@ -202,6 +202,7 @@
 
       for (const csg of Profile.cs_groups) {
         if (csg.fieldAttention == 'mark-delete') {
+          Profile.markUnsavedFields = true;
           continue;
         }
 
@@ -508,8 +509,173 @@
       Profile.isTransient = false;
     }
 
-    function onAddTrafficPath () {
-      Profile.markUnsavedFields = true;
+
+    async function onStartCapture () {
+      Profile.isTransient = true;
+      clearStats ();
+
+      const action = 'onStartCapture';
+      const controller = new AbortController();
+      const signal = controller.signal;
+
+      try {
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        Profile.progressText = 'Capture On...';
+        const res = await fetch ('/api/profile_tcpdump.pcap', {
+          signal,
+          method: 'POST',
+          body: JSON.stringify({'Group': Profile.Group,
+                                  'Name': Profile.Name})
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
+
+          if (isJson) {
+            if (json.status == 0){
+              Profile.isCapturing = 1;
+              Profile.isProgress = false;
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+              Profile.isProgress = false;
+            }
+          } else {
+            setErrorMsg (action, text);
+            Profile.isProgress = false;
+          }
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
+      Profile.isTransient = false;
+    }
+
+    async function onStopCapture () {
+      Profile.isTransient = true;
+      clearStats ();
+
+      const action = 'onStopCapture';
+      const controller = new AbortController();
+      const signal = controller.signal;
+
+      try {
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        Profile.progressText = 'Capture Off...';
+        const res = await fetch ('/api/profile_tcpdump.pcap', {
+          signal,
+          method: 'DELETE',
+          body: JSON.stringify({'Group': Profile.Group,
+                                  'Name': Profile.Name})
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
+
+          if (isJson) {
+            if (json.status == 0){
+              Profile.isCapturing = 0;
+              Profile.isProgress = false;
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+              Profile.isProgress = false;
+            }
+          } else {
+            setErrorMsg (action, text);
+            Profile.isProgress = false;
+          }
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
+      Profile.isTransient = false;
+    }
+
+    async function onAddTrafficPath () {
+
+      Profile.isTransient = true;
+
+      let action = 'onAddTrafficPath';
+
+      const controller = new AbortController();
+      const signal = controller.signal;
+
+      try {
+        const group = Profile.Group;
+        const name = Profile.Name;
+        const newcsg = Profile.cs_groups.length;
+        Profile.errorMsg = '';
+        Profile.isError = false;
+        Profile.isProgress = true;
+        Profile.progressText = 'Add Path ...';
+        const res = await fetch (`/api/profiles.json?group=${group}&name=${name}&newcsg=${newcsg}`);
+        if (res.ok) {
+          const text = await res.text();
+          let isJson = true;
+          let json = {};
+          try {
+            json = JSON.parse (text);
+          } catch (e) {
+            isJson = false;
+          }
+
+          if (isJson) {
+            if (json.status == 0){
+              const csg = json.data;
+              csg.id = csg.app_id;
+              csg.client_ips = csg.client_ips.join(',');
+              Profile.cs_groups.push (csg);
+              Profile.cs_groups = [...Profile.cs_groups];
+              Profile.markUnsavedFields = true;
+            } else {
+              console.log(json);
+              setErrorMsg (action, json.message);
+              Profile.isProgress = false;
+            }
+          } else {
+            setErrorMsg (action, text);
+            Profile.isProgress = false;
+          }
+        } else {
+          console.log(res);
+          setErrorMsg (action, res.statusText);
+          Profile.isProgress = false;
+        }
+      } catch (e) {
+        setErrorMsg (action, e.toString());
+        Profile.isProgress = false;
+      }
+
+      Profile.isTransient = false;
     }
 
     function checkLastCSG () {
@@ -540,15 +706,27 @@
       }
     }
 
-    async function onAction () {
-      if (Profile.isRunning) {
+    async function onProfileAction () {
+      if (Profile.isRunning) {     
         await onStop();
+        if (Profile.isCapturing) {
+          await onStopCapture();
+        }
       } else {
         if (Profile.markUnsavedFields || Profile.markErrorFields) {
           await onSave();
         } else {
+          await onStartCapture();
           await onStart();
         }
+      }
+    }
+
+    async function onCaptureAction () {
+      if (Profile.isCapturing) {
+        await onStopCapture();
+      } else {
+        await onStartCapture();
       }
     }
 
@@ -600,7 +778,6 @@
     //for table header and row
     for (const csg of p2.cs_groups) {
       csg.id = csg.app_id;
-      csg.err_status = false;
       csg.client_ips = csg.client_ips.join(',');
     }
 
@@ -695,6 +872,7 @@
 
         Profile.Stats = json.stats;
         const task =json.task;
+        Profile.isCapturing = json.capon;
 
         Profile.isRunning = (task.State == 'run');
         Profile.isProgress = (task.Status == 'progress');
@@ -1027,7 +1205,7 @@
       <li class="is-active" ><a>{Profile.Type} : {Profile.Name}</a></li>
 
       <!-- svelte-ignore a11y-missing-attribute -->
-      <li class="is-active"><a> [ Duration: {Profile.Transactions / Profile.CPS} seconds ] <strong class="{Profile.markUnsavedFields || Profile.markErrorFields ? 'errmsg' : ''}">&nbsp;&nbsp;{Profile.markUnsavedFields ? "Unsaved Fields" : ""} &nbsp;&nbsp;{Profile.markErrorFields ? "Error Fields" : ""}</strong> </a></li>
+      <li class="is-active"><a> <strong class="{Profile.markUnsavedFields || Profile.markErrorFields ? 'errmsg' : ''}">&nbsp;&nbsp;{Profile.markUnsavedFields ? "Unsaved Fields" : ""} &nbsp;&nbsp;{Profile.markErrorFields ? "Error Fields" : ""}</strong> </a></li>
   </ul>
 </nav>
 
@@ -1038,11 +1216,11 @@
         <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <section>
-              <div class="columns is-multiline is-mobile">
+              <div class="columns is-multiline is-mobile start_stop_border">
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Transactions</label>
+                    <label class="label">Transactions</label>
                     <div class="control">
                       <input class="input {(Profile.transactionsError || Profile.transactionsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
@@ -1051,7 +1229,7 @@
                         bind:value={Profile.Transactions}
                         on:input={validateTransactions}
                       >
-                      <p class="help">{Profile.transactionsHelp}</p>
+                      <p class="help msg_border">{Profile.transactionsHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -1059,7 +1237,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">CPS</label>
+                    <label class="label">CPS</label>
                     <div class="control">
                       <input class="input {(Profile.cpsError || Profile.cpsUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
@@ -1068,7 +1246,7 @@
                         bind:value={Profile.CPS}
                         on:input={validateCps}
                       >
-                      <p class="help">{Profile.cpsHelp}</p>
+                      <p class="help msg_border">{Profile.cpsHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -1076,7 +1254,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">DataLength</label>
+                    <label class="label">DataLength</label>
                     <div class="control">
                       <input class="input {(Profile.dataLengthError || Profile.dataLengthUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
@@ -1085,7 +1263,7 @@
                         bind:value={Profile.DataLength}
                         on:input={validateDataLength}
                       >
-                      <p class="help">{Profile.dataLengthHelp}</p>
+                      <p class="help msg_border">{Profile.dataLengthHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -1093,7 +1271,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">MaxPipeline</label>
+                    <label class="label">MaxPipeline</label>
                     <div class="control">
                       <input class="input {(Profile.maxPipelineError || Profile.maxPipelineUnsaved) ? 'is-danger' : ''}" 
                         type="text" 
@@ -1102,7 +1280,7 @@
                         bind:value={Profile.MaxPipeline}
                         on:input={validateMaxPipeline}
                       >
-                      <p class="help">{Profile.maxPipelineHelp}</p>
+                      <p class="help msg_border">{Profile.maxPipelineHelp}</p>
                     </div>
                   </div>
                 </div>
@@ -1110,7 +1288,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">ClientPort</label>
+                    <label class="label">ClientPort <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
                     <div class="control">
                       <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ClientIface}
@@ -1119,7 +1297,11 @@
                         readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateClientIface}
                       >
-                      <p class="help">{Profile.clientIfaceHelp}</p>
+                      <p class="help msg_border">
+                        {#if Profile.clientIfaceHelp}
+                          {Profile.clientIfaceHelp}
+                        {/if}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1127,7 +1309,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">ServerPort</label>
+                    <label class="label ">ServerPort <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
                     <div class="control">
                       <input class="input {(Profile.serverIfaceError || Profile.serverIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ServerIface}
@@ -1136,25 +1318,39 @@
                         readonly={Profile.isTransient || Profile.isRunning}
                         on:input={validateServerIface}
                       >
-                      <p class="help">{Profile.serverIfaceHelp}</p>
+                      <p class="help msg_border">
+                        {#if Profile.serverIfaceHelp}
+                          {Profile.serverIfaceHelp}
+                        {/if}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div class="field is-grouped">
-                <div class="control" >
-                  <button class="button {Profile.isRunning ? 'is-danger' : 'is-success'}" 
+              <div class="field has-text-centered">
+                <div class="control has-text-centered" >
+                  <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-info'}" 
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
-                    on:click={onAction} > 
+                    on:click={onProfileAction} > 
                       {#if Profile.isRunning}
-                        Stop
+                        Stop Traffic
                       {:else}
                         {#if Profile.markUnsavedFields || Profile.markErrorFields}
-                          Save
+                          Save Profile
                         {:else}
-                          Start
+                          Start Traffic
                         {/if} 
+                      {/if}
+                  </button>
+
+                  <button class="button is-light is-info" 
+                    disabled={Profile.isTransient || (!Profile.isRunning)}
+                    on:click={onCaptureAction} > 
+                      {#if Profile.isCapturing}
+                        Stop Capture
+                      {:else}
+                        Start Capture
                       {/if}
                   </button>
                 </div>
@@ -1415,7 +1611,7 @@
     
     <div class="column is-12">
 
-      <button class="button is-small is-link is-outlined" 
+      <button class="button is-small is-info is-outlined" 
       disabled={Profile.isTransient || Profile.isRunning}
       on:click={onAddTrafficPath} >
       Add Traffic Path
@@ -1460,6 +1656,14 @@
     .cert-margin {
       padding-top: 0;
       padding-bottom: 0;
+    }
+
+    .start_stop_border {
+      padding-top: 0.5rem;
+    }
+
+    .msg_border {
+      margin-left: 0.6rem;
     }
 
 </style>

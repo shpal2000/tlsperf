@@ -66,26 +66,28 @@ IiTeT4+t5dboeDFh3HNsLqlh9w==
 -----END CERTIFICATE-----
 '''
 
-def set_profile_defaults (prof_j):
+import random
 
-    cs_groups = [
-        { "client_ips" :  ["12.21.50.1/16"], 
-            "server_ip": "12.21.100.1/16"
-        }
-        ,
-        { "client_ips" :  ["12.22.50.1/16"], 
-            "server_ip": "12.22.100.1/16"
-        }
-        ,
-        { "client_ips" :  ["12.23.50.1/16"], 
-            "server_ip": "12.23.100.1/16"
-        }
-        ,
-        { "client_ips" :  ["12.24.50.1/16"], 
-            "server_ip": "12.24.100.1/16"
-        }
-    ]    
-    
+def get_new_csg (csg_index, group, name):
+
+  ipstr = str(random.randint(1,254)) + '.' + str(random.randint(1,254)) + '.' + str(random.randint(1,254))
+
+  csg = {
+    "client_ips" : [ipstr + '.1/16'],
+    "server_ip": ipstr + '.201/16',
+    "index": csg_index,
+    "app_id": "CSG" + str(csg_index+1),
+    "app_gid": group + '-' + name,
+    "server_port": 443,
+    "server_ssl": 1,
+    "server_key": default_key.strip(),
+    "server_cert": default_cert.strip()
+  }
+
+  return csg
+
+def set_profile_defaults (prof_j):
+    csg_count = 4
     prof_j["Transactions"] = 60000
     prof_j["CPS"] = 100
     prof_j["DataLength"] = 1
@@ -94,27 +96,16 @@ def set_profile_defaults (prof_j):
     prof_j["ServerIface"] = ""
 
     prof_j['cs_groups'] = []
-    csg_index = 0
-    for csg in cs_groups:
+    for csg_index in range(0, csg_count):
 
-        csg["index"] = csg_index
-        csg_index += 1
-        csg["app_id"] = "CSG" + str(csg_index)
-        
-        csg["app_gid"] = prof_j['Group'] + '-' + prof_j['Name']
+        csg = get_new_csg (csg_index, prof_j['Group'], prof_j['Name'])
 
-        csg["server_port"] = 443
-        csg["server_ssl"] = 1
         csg["send_recv_len"] = prof_j["DataLength"]
-        csg["cps"] = int (prof_j["CPS"]/len(cs_groups)) 
-        csg["max_active_conn_count"] = int (prof_j["MaxPipeline"]/len(cs_groups))
-        csg["total_conn_count"] = int (prof_j["Transactions"]/len(cs_groups))
-        csg["server_key"] = default_key.strip()
-        csg["server_cert"] = default_cert.strip()
+        csg["cps"] = int (prof_j["CPS"]/csg_count) 
+        csg["max_active_conn_count"] = int (prof_j["MaxPipeline"]/csg_count)
+        csg["total_conn_count"] = int (prof_j["Transactions"]/csg_count)
 
         prof_j['cs_groups'].append(csg)
-
-
 
 def get_v1_api_instance ():
 
