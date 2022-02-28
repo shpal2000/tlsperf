@@ -1301,7 +1301,7 @@
                         {#if Profile.clientIfaceHelp}
                           {Profile.clientIfaceHelp}
                         {:else}
-                          <a href="/api/profile_tcpdump_client.pcap?group={Profile.Group}&name={Profile.Name}">Download</a>
+                          <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}">Download</a>
                         {/if}
                       </p>
                     </div>
@@ -1324,7 +1324,7 @@
                         {#if Profile.serverIfaceHelp}
                           {Profile.serverIfaceHelp}
                         {:else}
-                          <a href="/api/profile_tcpdump_server.pcap?group={Profile.Group}&name={Profile.Name}">Download</a>
+                          <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}">Download</a>
                         {/if}
                       </p>
                     </div>
