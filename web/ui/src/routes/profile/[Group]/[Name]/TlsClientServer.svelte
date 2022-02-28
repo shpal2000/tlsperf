@@ -542,7 +542,7 @@
 
           if (isJson) {
             if (json.status == 0){
-              Profile.isCapturing = true;
+              Profile.isCapturing = 1;
               Profile.isProgress = false;
             } else {
               console.log(json);
@@ -597,7 +597,7 @@
 
           if (isJson) {
             if (json.status == 0){
-              Profile.isCapturing = false;
+              Profile.isCapturing = 0;
               Profile.isProgress = false;
             } else {
               console.log(json);
@@ -1288,7 +1288,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label">ClientPort</label>
+                    <label class="label">ClientPort <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
                     <div class="control">
                       <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ClientIface}
@@ -1300,8 +1300,6 @@
                       <p class="help msg_border">
                         {#if Profile.clientIfaceHelp}
                           {Profile.clientIfaceHelp}
-                        {:else}
-                          <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}">Download</a>
                         {/if}
                       </p>
                     </div>
@@ -1311,7 +1309,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">ServerPort</label>
+                    <label class="label ">ServerPort <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
                     <div class="control">
                       <input class="input {(Profile.serverIfaceError || Profile.serverIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ServerIface}
@@ -1323,8 +1321,6 @@
                       <p class="help msg_border">
                         {#if Profile.serverIfaceHelp}
                           {Profile.serverIfaceHelp}
-                        {:else}
-                          <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}">Download</a>
                         {/if}
                       </p>
                     </div>
