@@ -834,19 +834,21 @@ async def ws_handler (request):
 
                 capon = 0
 
-                client_node_label, client_node_iface  = profile["ClientIface"].split(':')
-                client_node = node_col.find_one ({'Label': client_node_label})
-                if client_node:
-                    client_node_iface_status = client_node.get(client_node_iface, {})
-                    if client_node_iface_status.get('Group') == group and client_node_iface_status.get('Name') == name:
-                        capon = 1
-
-                server_node_label, server_node_iface  = profile["ClientIface"].split(':')
-                server_node = node_col.find_one ({'Label': server_node_label})
-                if server_node:
-                    server_node_iface_status = server_node.get(server_node_iface, {})
-                    if server_node_iface_status.get('Group') == group and server_node_iface_status.get('Name') == name:
-                        capon = 1
+                if profile:
+                    if profile.get("ClientIface"):
+                        client_node_label, client_node_iface  = profile["ClientIface"].split(':')
+                        client_node = node_col.find_one ({'Label': client_node_label})
+                        if client_node:
+                            client_node_iface_status = client_node.get(client_node_iface, {})
+                            if client_node_iface_status.get('Group') == group and client_node_iface_status.get('Name') == name:
+                                capon = 1
+                    if profile.get("ServerIface"):
+                        server_node_label, server_node_iface  = profile["ServerIface"].split(':')
+                        server_node = node_col.find_one ({'Label': server_node_label})
+                        if server_node:
+                            server_node_iface_status = server_node.get(server_node_iface, {})
+                            if server_node_iface_status.get('Group') == group and server_node_iface_status.get('Name') == name:
+                                capon = 1
 
                 if profile and gstats and task:
                     resp = {'stats': gstats, 'task': task, 'capon': capon}
