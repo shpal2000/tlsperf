@@ -87,7 +87,7 @@ def get_new_csg (csg_index, group, name):
     "server_cert": default_cert.strip(),
 
     "tls_version": "tls1_2",
-    "tls_cipher" : "AES-128",
+    "tls_cipher" : "AES128-SHA",
     "tcp_close_type": "close_fin",
     "tls_close_type": "close_notify_no_send",
 
