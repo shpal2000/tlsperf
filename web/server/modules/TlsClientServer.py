@@ -81,17 +81,34 @@ def get_new_csg (csg_index, group, name):
     "server_port": 443,
     "server_ssl": 1,
     "server_key": default_key.strip(),
-    "server_cert": default_cert.strip()
+    "server_cert": default_cert.strip(),
+
+    "tls_version": "tls1_2",
+    "tls_cipher" : "AES-128",
+    "tcp_close_type": "close_fin",
+    "tls_close_type": "close_notify_no_send",
+
+    "resumption_count": 0,
+    "resumption_type": "session_none",
+
+    "cs_starttls_len": 0,
+    "sc_starttls_len": 0,
+    
+    "tcp_rcv_buff_len": 0,
+    "tcp_snd_buff_len": 0,
+
+    "read_chunk_len": 4096,
+    "write_chunk_len": 512
   }
 
   return csg
 
 def set_profile_defaults (prof_j):
     csg_count = 4
-    prof_j["Transactions"] = 60000
-    prof_j["CPS"] = 100
+    prof_j["Transactions"] = 1000
+    prof_j["CPS"] = 20
     prof_j["DataLength"] = 1
-    prof_j["MaxPipeline"] = 10
+    prof_j["MaxPipeline"] = 20
     prof_j["ClientIface"] = ""
     prof_j["ServerIface"] = ""
 
@@ -100,12 +117,15 @@ def set_profile_defaults (prof_j):
 
         csg = get_new_csg (csg_index, prof_j['Group'], prof_j['Name'])
 
-        csg["send_recv_len"] = prof_j["DataLength"]
+        csg["cs_data_len"] = prof_j["DataLength"]
+        csg["sc_data_len"] = prof_j["DataLength"]
+
         csg["cps"] = int (prof_j["CPS"]/csg_count) 
         csg["max_active_conn_count"] = int (prof_j["MaxPipeline"]/csg_count)
         csg["total_conn_count"] = int (prof_j["Transactions"]/csg_count)
 
         prof_j['cs_groups'].append(csg)
+
 
 def get_v1_api_instance ():
 
@@ -189,7 +209,22 @@ def start (group, name, stats_addr):
             'IsTls': csg["server_ssl"],
             'WebIP': stats_addr.split(':')[0],
             'WebPortStats': int(stats_addr.split(':')[1]),
-            'ClientServerDataLen': csg["send_recv_len"],
+
+            'ClientToServerDataLen': csg["cs_data_len"],
+            'ServerToClientDataLen': csg["sc_data_len"],
+            'ClientToServerStartTlsLen': csg["cs_starttls_len"],
+            'ServerToClientStartTlsLen': csg["sc_starttls_len"],
+            'TlsVersion': csg['tls_version'],
+            'TlsCipher': csg['tls_cipher'],
+            'TcpCloseType': csg['tcp_close_type'],
+            'TlsCloseType': csg['tls_close_type'],
+            'ResumptionCount': csg['resumption_count'],
+            'ResumptionType': csg['resumption_type'],
+            'TcpRcvBuffLen': csg['tcp_rcv_buff_len'],
+            'TcpSndBuffLen': csg['tcp_snd_buff_len'],
+            'ReadChunkLen': csg['read_chunk_len'],
+            'WriteChunkLen': csg['write_chunk_len'],
+
             'CPS': csg["cps"],
             'ClientIPsAnno': cips,
             'ClientIPs': _cips,
@@ -216,7 +251,24 @@ def start (group, name, stats_addr):
           "stats_ip"   : "{WebIP}",
           "stats_port" : {WebPortStats},
 
-          "send_recv_len" : {ClientServerDataLen}
+          "cs_data_len" : {ClientToServerDataLen},
+          "sc_data_len" : {ServerToClientDataLen},
+          "cs_starttls_len" : {ClientToServerStartTlsLen},
+          "sc_starttls_len" : {ServerToClientStartTlsLen},
+
+          "tls_version": "{TlsVersion}",
+          "tls_cipher": "{TlsCipher}",
+          "tcp_close_type": "{TcpCloseType}",
+          "tls_close_type": "{TlsCloseType}",
+
+          "resumption_count": {ResumptionCount},
+          "resumption_type": "{ResumptionType}",
+
+          "tcp_rcv_buff_len": {TcpRcvBuffLen},
+          "tcp_snd_buff_len": {TcpSndBuffLen},
+
+          "read_chunk_len": {ReadChunkLen},
+          "write_chunk_len": {WriteChunkLen}
         }}'''.format(**input_map)
         server_cmap.data['key.pem'] = '{ServerKey}'.format(**input_map)
         server_cmap.data['cert.pem'] = '{ServerCert}'.format(**input_map)
@@ -233,15 +285,34 @@ def start (group, name, stats_addr):
           "server_port" : {ServerPort},
           "server_ssl"  : {IsTls},
 
+          "client_ips"  : [{ClientIPs}],  
+
           "stats_ip"   : "{WebIP}",
           "stats_port" : {WebPortStats},
 
-          "send_recv_len" : {ClientServerDataLen},
+          "cs_data_len" : {ClientToServerDataLen},
+          "sc_data_len" : {ServerToClientDataLen},
+          "cs_starttls_len" : {ClientToServerStartTlsLen},
+          "sc_starttls_len" : {ServerToClientStartTlsLen},
 
-          "client_ips"  : [{ClientIPs}],  
           "cps": {CPS},
           "total_conn_count" : {Transactions},
-          "max_active_conn_count" : {MaxPipeline}
+          "max_active_conn_count" : {MaxPipeline},
+
+
+          "tls_version": "{TlsVersion}",
+          "tls_cipher": "{TlsCipher}",
+          "tcp_close_type": "{TcpCloseType}",
+          "tls_close_type": "{TlsCloseType}",
+
+          "resumption_count": {ResumptionCount},
+          "resumption_type": "{ResumptionType}",
+
+          "tcp_rcv_buff_len": {TcpRcvBuffLen},
+          "tcp_snd_buff_len": {TcpSndBuffLen},
+
+          "read_chunk_len": {ReadChunkLen},
+          "write_chunk_len": {WriteChunkLen}
         }}'''.format(**input_map)
 
         server_pod = kubernetes.client.V1Pod()
@@ -348,7 +419,6 @@ def start (group, name, stats_addr):
     task_col.update_one(query, update)
 
 
-
 def stop (group, name, stats_addr):
 
     v1Api= get_v1_api_instance ()
@@ -379,28 +449,7 @@ def stop (group, name, stats_addr):
         _cips = _cips.rstrip(',')
           
         input_map = {
-            'AppGid': csg["app_gid"],
-            'AppId': csg["app_id"],
-            'AppMetaId': csg["app_gid"].lower() + '-' + csg["app_id"].lower(),
-            'ServerKey': csg["server_key"],
-            'ServerCert': csg["server_cert"],
-            'ServerIPAnno': csg["server_ip"],
-            'ServerIP': csg["server_ip"].split('/')[0],
-            'ServerPort': csg["server_port"],
-            'IsTls': csg["server_ssl"],
-            'WebIP': stats_addr.split(':')[0],
-            'WebPortStats': int(stats_addr.split(':')[1]),
-            'ClientServerDataLen': csg["send_recv_len"],
-            'CPS': csg["cps"],
-            'ClientIPsAnno': cips,
-            'ClientIPs': _cips,
-            'Transactions': csg["total_conn_count"],
-            'MaxPipeline': csg["max_active_conn_count"],
-
-            'ServerNodeLabel': profile["ServerIface"].split(':')[0],
-            'ClientNodeLabel': profile["ClientIface"].split(':')[0],
-            'ServerInterfaceName': profile["ServerIface"].split(':')[1],
-            'ClientInterfaceName': profile["ClientIface"].split(':')[1]
+            'AppMetaId': csg["app_gid"].lower() + '-' + csg["app_id"].lower()
         }
         name = 'tlsclient-{AppMetaId}'.format(**input_map)
         try:
@@ -429,28 +478,7 @@ def stop (group, name, stats_addr):
         _cips = _cips.rstrip(',')
           
         input_map = {
-            'AppGid': csg["app_gid"],
-            'AppId': csg["app_id"],
-            'AppMetaId': csg["app_gid"].lower() + '-' + csg["app_id"].lower(),
-            'ServerKey': csg["server_key"],
-            'ServerCert': csg["server_cert"],
-            'ServerIPAnno': csg["server_ip"],
-            'ServerIP': csg["server_ip"].split('/')[0],
-            'ServerPort': csg["server_port"],
-            'IsTls': csg["server_ssl"],
-            'WebIP': stats_addr.split(':')[0],
-            'WebPortStats': int(stats_addr.split(':')[1]),
-            'ClientServerDataLen': csg["send_recv_len"],
-            'CPS': csg["cps"],
-            'ClientIPsAnno': cips,
-            'ClientIPs': _cips,
-            'Transactions': csg["total_conn_count"],
-            'MaxPipeline': csg["max_active_conn_count"],
-
-            'ServerNodeLabel': profile["ServerIface"].split(':')[0],
-            'ClientNodeLabel': profile["ClientIface"].split(':')[0],
-            'ServerInterfaceName': profile["ServerIface"].split(':')[1],
-            'ClientInterfaceName': profile["ClientIface"].split(':')[1]
+            'AppMetaId': csg["app_gid"].lower() + '-' + csg["app_id"].lower()
         }
         name = 'tlsserver-{AppMetaId}'.format(**input_map)
         try:
