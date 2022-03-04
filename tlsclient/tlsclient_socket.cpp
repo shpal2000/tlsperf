@@ -56,9 +56,9 @@ void tlsclient_socket::on_write ()
     {
         
 
-        if (m_bytes_written < m_app_ctx->m_send_recv_len)
+        if (m_bytes_written < m_app_ctx->m_cs_data_len)
         {
-            int bytes_to_write = m_app_ctx->m_send_recv_len - m_bytes_written;
+            int bytes_to_write = m_app_ctx->m_cs_data_len - m_bytes_written;
 
             if (bytes_to_write > m_app_ctx->m_send_buff_len)
             {
@@ -69,7 +69,7 @@ void tlsclient_socket::on_write ()
                             , 0
                             , bytes_to_write);
         } 
-        else if (m_bytes_written == m_app_ctx->m_send_recv_len && m_bytes_read == m_app_ctx->m_send_recv_len)
+        else if (m_bytes_written == m_app_ctx->m_cs_data_len && m_bytes_read == m_app_ctx->m_sc_data_len)
         {
             this->write_close();
         }
@@ -86,7 +86,7 @@ void tlsclient_socket::on_wstatus (int bytes_written, int write_status)
             
             add_tlsclient_stats(appDataBytesSent, bytes_written);
 
-            if (m_bytes_written == m_app_ctx->m_send_recv_len && m_bytes_read == m_app_ctx->m_send_recv_len)
+            if (m_bytes_written == m_app_ctx->m_cs_data_len && m_bytes_read == m_app_ctx->m_sc_data_len)
             {
                 this->write_close();
             }
@@ -139,8 +139,8 @@ void tlsclient_socket::on_error ()
 
 void tlsclient_socket::on_finish ()
 {
-    if (m_bytes_written == m_app_ctx->m_send_recv_len
-        && m_bytes_read == m_app_ctx->m_send_recv_len) {
+    if (m_bytes_written == m_app_ctx->m_cs_data_len
+        && m_bytes_read == m_app_ctx->m_sc_data_len) {
         
         uint64_t mic_elapsed
             = (std::chrono::duration_cast<std::chrono::microseconds> 

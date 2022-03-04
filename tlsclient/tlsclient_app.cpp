@@ -14,13 +14,68 @@ tlsclient_app::tlsclient_app(tlsclient_cfg* cfg
     m_app_ctx.m_cs_starttls_len = cfg->cs_starttls_len;
     m_app_ctx.m_sc_starttls_len = cfg->sc_starttls_len;
 
-    m_app_ctx.m_tls_version = cfg->tls_version;
+    if (strcmp(cfg->tls_version.c_str(), "sslv3") == 0)
+    {
+        m_app_ctx.m_tls_version = sslv3;
+    }
+    else if (strcmp(cfg->tls_version.c_str(), "tls1") == 0)
+    {
+        m_app_ctx.m_tls_version = tls1;
+    }
+    else if (strcmp(cfg->tls_version.c_str(), "tls1_1") == 0)
+    {
+        m_app_ctx.m_tls_version = tls1_1;
+    } 
+    else if (strcmp(cfg->tls_version.c_str(), "tls1_2") == 0)
+    {
+        m_app_ctx.m_tls_version = tls1_2;
+    } 
+    else if (strcmp(cfg->tls_version.c_str(), "tls1_3") == 0)
+    {
+        m_app_ctx.m_tls_version = tls1_3;
+    } 
+    else
+    {
+        m_app_ctx.m_tls_version = tls1_2;
+    }
+
     m_app_ctx.m_tls_cipher = cfg->tls_cipher;
-    m_app_ctx.m_tcp_close_type = cfg->tcp_close_type;
-    m_app_ctx.m_tls_close_type = cfg->tls_close_type;
+
+    if (strcmp(cfg->tcp_close_type.c_str(), "close_fin") == 0){
+        m_app_ctx.m_tcp_close_type = close_fin;
+    }
+    else
+    {
+        m_app_ctx.m_tcp_close_type = close_reset;
+    }
+
+    if (strcmp(cfg->tls_close_type.c_str(), "close_notify_send") == 0){
+        m_app_ctx.m_tls_close_type = close_notify_send;
+    }
+    else if (strcmp(cfg->tls_close_type.c_str(), "close_notify_send_recv") == 0)
+    {
+        m_app_ctx.m_tls_close_type = close_notify_send_recv;
+    }
+    else
+    {
+        m_app_ctx.m_tls_close_type = close_notify_no_send;
+    }
 
     m_app_ctx.m_resumption_count = cfg->resumption_count;
-    m_app_ctx.m_resumption_type = cfg->resumption_type;
+
+    if (strcmp(cfg->resumption_type.c_str(), "session_ticket") == 0){
+        m_app_ctx.m_resumption_type = session_ticket;
+    }
+    else if (strcmp(cfg->resumption_type.c_str(), "session_id") == 0){
+        m_app_ctx.m_resumption_type = session_id;
+    }
+    else if (strcmp(cfg->resumption_type.c_str(), "session_ticket_and_id") == 0){
+        m_app_ctx.m_resumption_type = session_ticket_and_id;
+    }
+    else
+    {
+        m_app_ctx.m_resumption_type = session_none;
+    }
 
     m_app_ctx.m_tcp_rcv_buff_len = cfg->tcp_rcv_buff_len;
     m_app_ctx.m_tcp_snd_buff_len = cfg->tcp_snd_buff_len;
@@ -32,7 +87,7 @@ tlsclient_app::tlsclient_app(tlsclient_cfg* cfg
     m_app_ctx.m_total_conn_count = cfg->total_conn_count;    
     m_app_ctx.m_max_active_conn_count = cfg->max_active_conn_count;
 
-    m_app_ctx.m_recv_buff_len = m_app_ctx.read_chunk_len;
+    m_app_ctx.m_recv_buff_len = m_app_ctx.m_read_chunk_len;
     m_app_ctx.m_recv_buff 
         = (char*) malloc(m_app_ctx.m_recv_buff_len);
 
@@ -51,8 +106,8 @@ tlsclient_app::tlsclient_app(tlsclient_cfg* cfg
                             , cfg->stats_ip.c_str()
                             , htons(cfg->stats_port));
 
-    m_app_ctx.m_sock_opt.rcv_buff_len = m_app_ctx.tcp_rcv_buff_len;
-    m_app_ctx.m_sock_opt.snd_buff_len = m_app_ctx.tcp_snd_buff_len;
+    m_app_ctx.m_sock_opt.rcv_buff_len = m_app_ctx.m_tcp_rcv_buff_len;
+    m_app_ctx.m_sock_opt.snd_buff_len = m_app_ctx.m_tcp_snd_buff_len;
 
     m_app_ctx.m_stats_arr.push_back(&m_stats);
     m_app_ctx.m_stats_arr.push_back(gstats);

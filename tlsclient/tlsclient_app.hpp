@@ -44,7 +44,7 @@ struct tlsclient_app_ctx
     uint64_t m_total_conn_count;
     uint64_t m_max_active_conn_count;
 
-    enum_close_type m_tls_version;
+    enum_tls_version m_tls_version;
     std::string m_tls_cipher;
     enum_close_type m_tcp_close_type;
     enum_close_notify m_tls_close_type;
