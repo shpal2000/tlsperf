@@ -29,7 +29,10 @@ struct tlsclient_app_ctx
 
     int m_server_ssl;
 
-    int m_send_recv_len;
+    int m_cs_data_len;
+    int m_sc_data_len;
+    int m_cs_starttls_len;
+    int m_sc_starttls_len;
 
     int m_send_buff_len;
     char* m_send_buff;
@@ -40,6 +43,20 @@ struct tlsclient_app_ctx
     int m_cps;
     uint64_t m_total_conn_count;
     uint64_t m_max_active_conn_count;
+
+    enum_close_type m_tls_version;
+    std::string m_tls_cipher;
+    enum_close_type m_tcp_close_type;
+    enum_close_notify m_tls_close_type;
+
+    int m_resumption_count;
+    enum_resumption_type m_resumption_type;
+
+    int m_tcp_rcv_buff_len;
+    int m_tcp_snd_buff_len;
+
+    int m_read_chunk_len;
+    int m_write_chunk_len;
 
     std::vector<ev_sockaddrx*> m_clnt_addr_pool;
     int m_clnt_addr_index;

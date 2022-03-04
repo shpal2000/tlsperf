@@ -36,6 +36,10 @@ struct tlsserver_app_ctx
 
     int m_recv_buff_len;
     char* m_recv_buff;
+
+    std::string m_tls_min_version;
+    std::string m_tls_max_version;
+    std::vector<std::string> m_cipher_list;
 };
 
 class tlsserver_app : public tlspack_app

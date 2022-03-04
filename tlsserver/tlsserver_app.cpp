@@ -5,8 +5,8 @@
 tlsserver_app::tlsserver_app(tlsserver_cfg* cfg
                                     , tlsserver_stats* gstats)
 {
-    m_app_ctx.m_app_id = cfg->m_app_id;
-    m_app_ctx.m_app_gid = cfg->m_app_gid;
+    m_app_ctx.m_app_id = cfg->app_id;
+    m_app_ctx.m_app_gid = cfg->app_gid;
     m_app_ctx.m_server_ssl = cfg->server_ssl;
 
     m_app_ctx.m_send_recv_len = cfg->send_recv_len;

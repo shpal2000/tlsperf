@@ -6,8 +6,8 @@
 
 struct tlsserver_cfg
 {
-    std::string m_app_id;
-    std::string m_app_gid;
+    std::string app_id;
+    std::string app_gid;
 
     std::string server_ip;
     u_short server_port;
@@ -17,6 +17,10 @@ struct tlsserver_cfg
     u_short stats_port;
 
     int send_recv_len;
+
+    std::string tls_min_version;
+    std::string tls_max_version;
+    std::vector<std::string> cipher_list;
 };
 
 #endif
