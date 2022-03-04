@@ -29,11 +29,9 @@ private:
     bool ssl_server_init();
     void set_context_from(tlsserver_socket* from_sock);
     void set_context_from_parent();
-    void abort_session();
 
 private:
     bool m_ssl_init;
-    bool m_write_close_marked;
     SSL* m_ssl;
 
     int m_bytes_read;

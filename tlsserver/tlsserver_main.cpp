@@ -29,17 +29,26 @@ int main(int /*argc*/, char ** /*argv*/)
     app_cfg.stats_ip = cfg_json["stats_ip"].get<std::string>();
     app_cfg.stats_port = cfg_json["stats_port"].get<int>();
 
-    app_cfg.send_recv_len = cfg_json["send_recv_len"].get<int>();
+    app_cfg.cs_data_len = cfg_json["cs_data_len"].get<int>();
+    app_cfg.sc_data_len = cfg_json["sc_data_len"].get<int>();
+    app_cfg.cs_starttls_len = cfg_json["cs_starttls_len"].get<int>();
+    app_cfg.sc_starttls_len = cfg_json["sc_starttls_len"].get<int>();
 
-    app_cfg.tls_min_version = cfg_json["tls_min_version"].get<std::string>();
-    app_cfg.tls_max_version = cfg_json["tls_max_version"].get<std::string>();
+    app_cfg.tls_version = cfg_json["tls_version"].get<std::string>();
+    app_cfg.tls_cipher = cfg_json["tls_cipher"].get<std::string>();
+    app_cfg.tcp_close_type = cfg_json["tcp_close_type"].get<std::string>();
+    app_cfg.tls_close_type = cfg_json["tls_close_type"].get<std::string>();
 
-    auto cipher_list = cfg_json["cipher_list"];
-    for (auto it = cipher_list.begin(); it != cipher_list.end(); ++it)
-    {
-        auto cipher = it.value ();
-        app_cfg.cipher_list.push_back (cipher.get<std::string>());
-    }
+
+    app_cfg.resumption_count = cfg_json["resumption_count"].get<int>();
+    app_cfg.resumption_type = cfg_json["resumption_type"].get<std::string>();
+
+    app_cfg.tcp_rcv_buff_len = cfg_json["tcp_rcv_buff_len"].get<int>();
+    app_cfg.tcp_snd_buff_len = cfg_json["tcp_snd_buff_len"].get<int>();
+
+    app_cfg.read_chunk_len = cfg_json["read_chunk_len"].get<int>();
+    app_cfg.write_chunk_len = cfg_json["write_chunk_len"].get<int>();
+
 
     tlsserver_app* tcpApp 
         = new tlsserver_app(&app_cfg, &app_gstats);
