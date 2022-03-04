@@ -73,11 +73,14 @@ def get_new_csg (csg_index, group, name):
   ipstr = str(random.randint(1,254)) + '.' + str(random.randint(1,254)) + '.' + str(random.randint(1,254))
 
   csg = {
+    "index": csg_index,
+
     "client_ips" : [ipstr + '.1/16'],
     "server_ip": ipstr + '.201/16',
-    "index": csg_index,
+
     "app_id": "CSG" + str(csg_index+1),
     "app_gid": group + '-' + name,
+    
     "server_port": 443,
     "server_ssl": 1,
     "server_key": default_key.strip(),
