@@ -43,6 +43,11 @@ enum enum_tls_version { sslv3=0
                             , tls1_3
                             , tls_all};
 
+enum enum_resumption_type { session_ticket=1
+                            , session_id
+                            , session_ticket_and_id
+                            , session_none };
+
 struct tlspack_app_stats : public ev_sockstats
 {
     static void dump_json_ev_sockstats (json& j, ev_sockstats* stats)

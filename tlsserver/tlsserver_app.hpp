@@ -29,13 +29,30 @@ struct tlsserver_app_ctx
 
     int m_server_ssl;
 
-    int m_send_recv_len;
+    int m_cs_data_len;
+    int m_sc_data_len;
+    int m_cs_starttls_len;
+    int m_sc_starttls_len;
     
     int m_send_buff_len;
     char* m_send_buff;
 
     int m_recv_buff_len;
     char* m_recv_buff;
+
+    enum_tls_version m_tls_version;
+    std::string m_tls_cipher;
+    enum_close_type m_tcp_close_type;
+    enum_close_notify m_tls_close_type;
+
+    int m_resumption_count;
+    enum_resumption_type m_resumption_type;
+
+    int m_tcp_rcv_buff_len;
+    int m_tcp_snd_buff_len;
+
+    int m_read_chunk_len;
+    int m_write_chunk_len;
 };
 
 class tlsserver_app : public tlspack_app

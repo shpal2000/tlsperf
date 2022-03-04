@@ -7,7 +7,6 @@ tlsserver_socket::tlsserver_socket(bool is_udp)
     m_app_ctx = nullptr;
     m_grp_ctx = nullptr;
     m_ssl = nullptr;
-    m_write_close_marked = false;
     m_bytes_read = 0;
     m_bytes_written = 0;
 }
@@ -48,11 +47,6 @@ void tlsserver_socket::set_context_from_parent()
     set_context_from (parent_socket);
 }
 
-void tlsserver_socket::abort_session()
-{
-    this->abort();
-}
-
 void tlsserver_socket::on_establish ()
 {
     set_context_from_parent();
@@ -61,7 +55,7 @@ void tlsserver_socket::on_establish ()
     {
         if (m_grp_ctx->m_s_ssl_ctx && !ssl_server_init()) 
         {
-            abort_session();
+            abort();
         }
     }
 }
@@ -70,9 +64,9 @@ void tlsserver_socket::on_write ()
 {
     if (!m_udp)
     {
-        if (m_bytes_written < m_app_ctx->m_send_recv_len)
+        if (m_bytes_written < m_app_ctx->m_sc_data_len)
         {
-            int bytes_to_write = m_app_ctx->m_send_recv_len - m_bytes_written;
+            int bytes_to_write = m_app_ctx->m_sc_data_len - m_bytes_written;
 
             if (bytes_to_write > m_app_ctx->m_send_buff_len)
             {
@@ -83,9 +77,27 @@ void tlsserver_socket::on_write ()
                             , 0
                             , bytes_to_write);
         } 
-        else if (m_bytes_written == m_app_ctx->m_send_recv_len && m_bytes_read == m_app_ctx->m_send_recv_len)
+        else if (m_bytes_written == m_app_ctx->m_sc_data_len && m_bytes_read == m_app_ctx->m_cs_data_len)
         {
-            this->write_close();
+            if (m_app_ctx->m_tcp_close_type == close_reset)
+            {
+                abort ();
+            } 
+            else 
+            {
+                switch (m_app_ctx->m_tls_close_type)
+                {
+                    case close_notify_no_send:
+                        write_close ();
+                        break;
+                    case close_notify_send:
+                        write_close (SSL_SEND_CLOSE_NOTIFY);
+                        break;
+                    case close_notify_send_recv:
+                        write_close (SSL_SEND_RECEIVE_CLOSE_NOTIFY);
+                        break;
+                }
+            }
         }
     }
 }
@@ -100,14 +112,32 @@ void tlsserver_socket::on_wstatus (int bytes_written, int write_status)
 
             add_tlsserver_stats(appDataBytesSent, bytes_written);
 
-            if (m_bytes_written == m_app_ctx->m_send_recv_len && m_bytes_read == m_app_ctx->m_send_recv_len)
+            if (m_bytes_written == m_app_ctx->m_sc_data_len && m_bytes_read == m_app_ctx->m_cs_data_len)
             {
-                this->write_close();
+                if (m_app_ctx->m_tcp_close_type == close_reset)
+                {
+                    abort ();
+                } 
+                else 
+                {
+                    switch (m_app_ctx->m_tls_close_type)
+                    {
+                        case close_notify_no_send:
+                            write_close ();
+                            break;
+                        case close_notify_send:
+                            write_close (SSL_SEND_CLOSE_NOTIFY);
+                            break;
+                        case close_notify_send_recv:
+                            write_close (SSL_SEND_RECEIVE_CLOSE_NOTIFY);
+                            break;
+                    }
+                }
             }
         }
         else
         {
-            abort_session ();
+            abort();
         }
     }
 }
@@ -134,7 +164,7 @@ void tlsserver_socket::on_rstatus (int bytes_read, int read_status)
             }
             else
             {
-                this->abort();
+                abort();
             }
         }
         else
@@ -153,8 +183,8 @@ void tlsserver_socket::on_error ()
 
 void tlsserver_socket::on_finish ()
 {
-    if (m_bytes_written == m_app_ctx->m_send_recv_len
-        && m_bytes_read == m_app_ctx->m_send_recv_len) {
+    if (m_bytes_written == m_app_ctx->m_sc_data_len
+        && m_bytes_read == m_app_ctx->m_cs_data_len) {
 
     } else {
         inc_tlsserver_stats (appSessionPartial);

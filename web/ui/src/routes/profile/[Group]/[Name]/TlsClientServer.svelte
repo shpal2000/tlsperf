@@ -824,17 +824,36 @@
       csg2.server_ip = csg.server_ip;
 
       csg2.app_id = "CSG" + csg_index.toString();
-        
       csg2.app_gid = csg.app_gid;
 
       csg2.server_port = csg.server_port;
       csg2.server_ssl = csg.server_ssl;
-      csg2.send_recv_len = p2.DataLength;
+      csg2.server_key = csg.server_key;
+      csg2.server_cert = csg.server_cert;
+
+      csg2.tls_version = csg.tls_version;
+      csg2.tls_cipher = csg.tls_cipher;
+      csg2.tcp_close_type = csg.tcp_close_type;
+      csg2.tls_close_type = csg.tls_close_type;
+
+      csg2.resumption_count = csg.resumption_count;
+      csg2.resumption_type = csg.resumption_type;
+
+      csg2.tcp_rcv_buff_len = csg.tcp_rcv_buff_len;
+      csg2.tcp_snd_buff_len = csg.tcp_snd_buff_len;
+
+      csg2.read_chunk_len = csg.read_chunk_len;
+      csg2.write_chunk_len = csg.write_chunk_len;
+
+      csg2.cs_data_len = p2.DataLength;
+      csg2.sc_data_len = p2.DataLength;
+
+      csg2.cs_starttls_len = csg.cs_starttls_len;
+      csg2.sc_starttls_len = csg.sc_starttls_len;
+      
       csg2.cps = Math.floor (p2.CPS / csg_count); 
       csg2.max_active_conn_count = Math.floor (p2.MaxPipeline / csg_count);
       csg2.total_conn_count = Math.floor (p2.Transactions / csg_count);
-      csg2.server_key = csg.server_key
-      csg2.server_cert = csg.server_cert
 
       p2.cs_groups.push (csg2);
     }
@@ -1288,7 +1307,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label">ClientPort <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
+                    <label class="label">C-Iface <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
                     <div class="control">
                       <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ClientIface}
@@ -1309,7 +1328,7 @@
                 <div class="column is-one-third">
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">ServerPort <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
+                    <label class="label ">S-Iface <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
                     <div class="control">
                       <input class="input {(Profile.serverIfaceError || Profile.serverIfaceUnsaved) ? 'is-danger' : ''}"
                         bind:value={Profile.ServerIface}

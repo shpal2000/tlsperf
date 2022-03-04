@@ -27,11 +27,9 @@ public:
 
 private:
     bool ssl_client_init();
-    void abort_session();
 
 private:
     bool m_ssl_init;
-    bool m_write_close_marked;
     SSL* m_ssl;
 
     int m_bytes_read;
