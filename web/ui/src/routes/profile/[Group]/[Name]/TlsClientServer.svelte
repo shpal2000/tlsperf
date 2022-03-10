@@ -13,6 +13,10 @@
     import { ProgressBar, Loading } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
+    import Textfield from '@smui/textfield';
+    import HelperText from '@smui/textfield/helper-text';
+    import Select from '@smui/select';
+
     let isLoading = false;
 
     function setErrorMsg(action, msg) {
@@ -1232,6 +1236,128 @@
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
+
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <section>
+              <div class="columns is-multiline is-mobile start_stop_border">
+                <div class="column is-one-third">
+                  <div class="field">
+                    <div class="control">
+                      <Textfield bind:value={Profile.Transactions} 
+                        label="Transactions"
+                        invalid={(Profile.transactionsError || Profile.transactionsUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={validateTransactions}>
+                        <HelperText persistent slot="helper">{Profile.transactionsHelp}</HelperText>
+                      </Textfield>
+                    </div>
+                  </div>
+                </div>
+      
+                <div class="column is-one-third">
+                  <div class="field">
+                    <div class="control">
+                      <Textfield bind:value={Profile.CPS} 
+                        label="CPS"
+                        invalid={(Profile.cpsError || Profile.cpsUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={validateCps}>
+                        <HelperText persistent slot="helper">{Profile.cpsHelp}</HelperText>
+                      </Textfield>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-one-third">
+                  <div class="field">
+                    <div class="control">
+                      <Textfield bind:value={Profile.DataLength} 
+                        label="DataLength"
+                        invalid={(Profile.dataLengthError || Profile.dataLengthUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={validateDataLength}>
+                        <HelperText persistent slot="helper">{Profile.dataLengthHelp}</HelperText>
+                      </Textfield>
+                    </div>
+                  </div>
+                </div>
+      
+                <div class="column is-one-third">
+                  <div class="field">
+                    <div class="control">
+                      <Textfield bind:value={Profile.MaxPipeline} 
+                        label="MaxPipeline"
+                        invalid={(Profile.maxPipelineError || Profile.maxPipelineUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={validateMaxPipeline}>
+                        <HelperText persistent slot="helper">{Profile.maxPipelineHelp}</HelperText>
+                      </Textfield>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-one-third">
+                  <div class="field">
+                    <div class="control">
+                      <Textfield bind:value={Profile.ClientIface} 
+                        label="C-Iface"
+                        invalid={(Profile.clientIfaceError || Profile.clientIfaceUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={validateClientIface}>
+                        <HelperText persistent slot="helper">{Profile.clientIfaceHelp}</HelperText>
+                      </Textfield>
+                    </div>
+                  </div>
+                </div>
+      
+                <div class="column is-one-third">
+                  <div class="field">
+                    <div class="control">
+                      <Textfield bind:value={Profile.ServerIface} 
+                        label="S-Iface"
+                        invalid={(Profile.serverIfaceError || Profile.serverIfaceUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={validateServerIface}>
+                        <HelperText persistent slot="helper">{Profile.serverIfaceHelp}</HelperText>
+                      </Textfield>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field has-text-centered">
+                <div class="control has-text-centered" >
+                  <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-info'}" 
+                    disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
+                    on:click={onProfileAction} > 
+                      {#if Profile.isRunning}
+                        Stop Traffic
+                      {:else}
+                        {#if Profile.markUnsavedFields || Profile.markErrorFields}
+                          Save Profile
+                        {:else}
+                          Start Traffic
+                        {/if} 
+                      {/if}
+                  </button>
+
+                  <button class="button is-light is-info" 
+                    disabled={Profile.isTransient || (!Profile.isRunning)}
+                    on:click={onCaptureAction} > 
+                      {#if Profile.isCapturing}
+                        Stop Capture
+                      {:else}
+                        Start Capture
+                      {/if}
+                  </button>
+                </div>
+              </div>
+            </section> 
+
+          </div>
+        </div>
+
         <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <section>
@@ -1378,29 +1504,157 @@
 
           </div>
         </div>
+
         <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
-            <DataTable
-            size="short"
-            headers={topStatsHeaders}
-            rows={Profile.connStats}
-            zebra
-            />
-          </div>
-        </div>
-        <div class="tile is-4 is-parent">
-          <div class="tile is-child my-border">
-            <DataTable
-            size="short"
-            headers={latencyStatsHeaders}
-            rows={Profile.latencyStats}
-            zebra
-            />
+            <section>
+              <div class="columns is-multiline is-mobile start_stop_border">
+                <div class="column is-one-third">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label">Transactions</label>
+                    <div class="control">
+                      <input class="input {(Profile.transactionsError || Profile.transactionsUnsaved) ? 'is-danger' : ''}" 
+                        type="text" 
+                        placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        bind:value={Profile.Transactions}
+                        on:input={validateTransactions}
+                      >
+                      <p class="help msg_border">{Profile.transactionsHelp}</p>
+                    </div>
+                  </div>
+                </div>
+      
+                <div class="column is-one-third">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label">CPS</label>
+                    <div class="control">
+                      <input class="input {(Profile.cpsError || Profile.cpsUnsaved) ? 'is-danger' : ''}" 
+                        type="text" 
+                        placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        bind:value={Profile.CPS}
+                        on:input={validateCps}
+                      >
+                      <p class="help msg_border">{Profile.cpsHelp}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-one-third">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label">DataLength</label>
+                    <div class="control">
+                      <input class="input {(Profile.dataLengthError || Profile.dataLengthUnsaved) ? 'is-danger' : ''}" 
+                        type="text" 
+                        placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        bind:value={Profile.DataLength}
+                        on:input={validateDataLength}
+                      >
+                      <p class="help msg_border">{Profile.dataLengthHelp}</p>
+                    </div>
+                  </div>
+                </div>
+      
+                <div class="column is-one-third">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label">MaxPipeline</label>
+                    <div class="control">
+                      <input class="input {(Profile.maxPipelineError || Profile.maxPipelineUnsaved) ? 'is-danger' : ''}" 
+                        type="text" 
+                        placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        bind:value={Profile.MaxPipeline}
+                        on:input={validateMaxPipeline}
+                      >
+                      <p class="help msg_border">{Profile.maxPipelineHelp}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-one-third">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label">C-Iface <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
+                    <div class="control">
+                      <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
+                        bind:value={Profile.ClientIface}
+                        type=""
+                        placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        on:input={validateClientIface}
+                      >
+                      <p class="help msg_border">
+                        {#if Profile.clientIfaceHelp}
+                          {Profile.clientIfaceHelp}
+                        {/if}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+      
+                <div class="column is-one-third">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">S-Iface <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
+                    <div class="control">
+                      <input class="input {(Profile.serverIfaceError || Profile.serverIfaceUnsaved) ? 'is-danger' : ''}"
+                        bind:value={Profile.ServerIface}
+                        type=""
+                        placeholder=""
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        on:input={validateServerIface}
+                      >
+                      <p class="help msg_border">
+                        {#if Profile.serverIfaceHelp}
+                          {Profile.serverIfaceHelp}
+                        {/if}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field has-text-centered">
+                <div class="control has-text-centered" >
+                  <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-info'}" 
+                    disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
+                    on:click={onProfileAction} > 
+                      {#if Profile.isRunning}
+                        Stop Traffic
+                      {:else}
+                        {#if Profile.markUnsavedFields || Profile.markErrorFields}
+                          Save Profile
+                        {:else}
+                          Start Traffic
+                        {/if} 
+                      {/if}
+                  </button>
+
+                  <button class="button is-light is-info" 
+                    disabled={Profile.isTransient || (!Profile.isRunning)}
+                    on:click={onCaptureAction} > 
+                      {#if Profile.isCapturing}
+                        Stop Capture
+                      {:else}
+                        Start Capture
+                      {/if}
+                  </button>
+                </div>
+              </div>
+            </section> 
+
           </div>
         </div>
       </div>
     </div>
 
+        
     <div class="column is-12">
       {#if Profile.isProgress}
         <div class="field">
@@ -1420,6 +1674,7 @@
         </div>          
       {/if}
     </div>  
+
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
@@ -1640,6 +1895,45 @@
 
     <div class="column is-12">
     </div>
+
+    <div class="column is-12">
+      <div class="tile is-ancestor is-mobile">
+
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <DataTable
+            size="short"
+            headers={topStatsHeaders}
+            rows={Profile.connStats}
+            zebra
+            />
+          </div>
+        </div>
+
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <DataTable
+            size="short"
+            headers={latencyStatsHeaders}
+            rows={Profile.latencyStats}
+            zebra
+            />
+          </div>
+        </div>
+
+        <div class="tile is-4 is-parent">
+          <div class="tile is-child my-border">
+            <DataTable
+            size="short"
+            headers={latencyStatsHeaders}
+            rows={Profile.latencyStats}
+            zebra
+            />
+          </div>
+        </div>
+
+      </div>
+    </div>   
 
   </div>
 
