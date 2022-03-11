@@ -61,6 +61,33 @@
       Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
     }
 
+
+    function validateServerIP (csg_index) {
+      let numRegex = new RegExp('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/([1-2][0-9]?|3[0-2]?|[4-9])$', );
+      
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
+
+      csg.server_ipError = false;
+      csg.server_ipUnsaved = false;
+      csg.server_ipHelp = ''
+
+      if (csg.server_ip.trim() == ''){
+        csg.server_ipHelp = 'required';
+        csg.server_ipError = true;
+      } else if (!(csg.server_ip.match(numRegex) && csg.server_ip.match(numRegex)[0] === csg.server_ip)) {
+        csg.server_ipHelp = 'invalid - ip/cidr';
+        csg.server_ipError = true;
+      } else if (csg.server_ip != savedCsg.server_ip) {
+        csg.server_ipUnsaved = true;
+        csg.server_ipHelp = "modified"
+      }
+      
+      checkFields();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+    }
+
     function validateTransactions () {
       let numRegex = new RegExp('^[0-9]+$', 'i');
 
@@ -205,7 +232,8 @@
                     || Profile.serverIfaceError;
 
       for (const csg of Profile.cs_groups) {
-        if (csg.fieldAttention == 'mark-delete') {
+        if (csg.fieldAttention == 'mark-delete' 
+              || csg.fieldAttention == 'new-csg') {
           Profile.markUnsavedFields = true;
           continue;
         }
@@ -233,7 +261,8 @@
       validateServerIface ();
 
       for (let i=0; i < Profile.cs_groups.length; i++) {
-        validateClientIPs (i)
+        validateClientIPs (i);
+        validateServerIP (i);
       }
     }
 
@@ -655,10 +684,17 @@
           if (isJson) {
             if (json.status == 0){
               const csg = json.data;
-              csg.id = csg.app_id;
-              csg.client_ips = csg.client_ips.join(',');
+              const csg2 = JSON.parse(JSON.stringify(csg));
+
+              csgCanonical (csg);
+              csg.fieldAttention = 'new-csg';
+
               Profile.cs_groups.push (csg);
               Profile.cs_groups = [...Profile.cs_groups];
+
+              SavedProfile.cs_groups.push (csg2);
+              SavedProfile.cs_groups = [...SavedProfile.cs_groups];
+
               Profile.markUnsavedFields = true;
             } else {
               console.log(json);
@@ -769,6 +805,19 @@
       {key: 'Server', value: 'Server'}
     ];
 
+  function csgCanonical (csg) {
+    csg.id = csg.app_id;
+    csg.client_ips = csg.client_ips.join(',');
+
+    csg.client_ipsError = false;
+    csg.client_ipsUnsaved = false;
+    csg.client_ipsHelp = ''
+
+    csg.server_ipError = false;
+    csg.server_ipUnsaved = false;
+    csg.server_ipHelp = '';
+  }
+
   function profileCanonical (p) {
 
     const p2 = JSON.parse(JSON.stringify(p));
@@ -781,8 +830,7 @@
 
     //for table header and row
     for (const csg of p2.cs_groups) {
-      csg.id = csg.app_id;
-      csg.client_ips = csg.client_ips.join(',');
+      csgCanonical (csg);
     }
 
     return p2;
@@ -1268,12 +1316,11 @@
                     </div>
                   </div>
                 </div>
-      
               </div>
 
               <div class="field has-text-centered">
                 <div class="control has-text-centered" >
-                  <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-info'}" 
+                  <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-dark'}" 
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onProfileAction} > 
                       {#if Profile.isRunning}
@@ -1287,7 +1334,7 @@
                       {/if}
                   </button>
 
-                  <button class="button is-light is-info" 
+                  <button class="button is-light is-dark" 
                     disabled={Profile.isTransient || (!Profile.isRunning)}
                     on:click={onCaptureAction} > 
                       {#if Profile.isCapturing}
@@ -1391,17 +1438,16 @@
                 <div class="column is-half">
 
                   <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Client IPs</label>
                     <div class="control">
-                      <input class="input {(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved) ? 'is-danger' : ''}" 
-                        type="text" 
-                        placeholder=""
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        bind:value={Profile.cs_groups[row.index].client_ips}
+                      <Textfield bind:value={Profile.cs_groups[row.index].client_ips}
+                        label="Client IPs"
+                        invalid={(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
                         on:input={() => validateClientIPs(row.index)}
-                      >
-                      <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
+                        style="width: 100%"
+                        >
+                        <HelperText persistent slot="helper">{Profile.cs_groups[row.index].client_ipsHelp}</HelperText>
+                      </Textfield>
                     </div>
                   </div>
               
@@ -1410,17 +1456,19 @@
               
               <div class="column is-half">
               
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Server IP</label>
-                    <div class="control">
-                      <input class="input " 
-                      type="text" 
-                      placeholder=""
-                      bind:value={Profile.cs_groups[row.index].server_ip}
+                <div class="field">
+                  <div class="control">
+                    <Textfield bind:value={Profile.cs_groups[row.index].server_ip}
+                      label="Server IPs"
+                      invalid={(Profile.cs_groups[row.index].server_ipError || Profile.cs_groups[row.index].server_ipUnsaved)}
+                      disabled={Profile.isTransient || Profile.isRunning}
+                      on:input={() => validateServerIP(row.index)}
+                      style="width: 100%"
                       >
-                    </div>
+                      <HelperText persistent slot="helper">{Profile.cs_groups[row.index].server_ipHelp}</HelperText>
+                    </Textfield>
                   </div>
+                </div>
               
               </div>
               
@@ -1546,6 +1594,8 @@
               <p><strong class="errmsg">x</strong></p>
             {:else if cell.value == 'field-update'}
               <p><strong class="errmsg">!</strong></p>
+            {:else if cell.value == 'new-csg'}
+              <p><strong class="errmsg">*</strong></p>
             {:else}
               <p><strong class="okmsg">&#10003;</strong></p>
             {/if}

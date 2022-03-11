@@ -78,7 +78,7 @@
 	<p>Loading ...</p>
 {:then}
     <!-- svelte-ignore a11y-no-redundant-roles -->
-    <nav class="navbar is-small topbar is-dark has-shadow" role="navigation" aria-label="main navigation">
+    <nav class="navbar is-small topbar has-background-warning-dark has-shadow" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <a class="navbar-item" href="/">
                 <p class="is-size-6 has-text-white">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MyTLS</p>
