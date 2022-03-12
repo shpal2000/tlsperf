@@ -125,8 +125,8 @@ def set_profile_defaults (prof_j):
         csg["max_active_conn_count"] = int (prof_j["MaxPipeline"]/csg_count)
         csg["total_conn_count"] = int (prof_j["Transactions"]/csg_count)
 
-        csg["client_iface"] = prof_j[ClientIface]
-        csg["server_iface"] = prof_j[ServerIface]
+        csg["client_iface"] = prof_j["ClientIface"]
+        csg["server_iface"] = prof_j["ServerIface"]
 
         prof_j['cs_groups'].append(csg)
 
