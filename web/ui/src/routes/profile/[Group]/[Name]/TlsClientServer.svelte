@@ -1360,7 +1360,7 @@ import { select_option } from "svelte/internal";
                 <div class="column is-half">
                   <div class="field">
                     <div class="control">
-                      <TextInput bind:value={Profile.CPS} 
+                      <TextInput light bind:value={Profile.CPS} 
                       labelText="CPS"
                         invalid={(Profile.cpsError || Profile.cpsUnsaved)}
                         invalidText="{Profile.cpsHelp}"
