@@ -10,7 +10,7 @@
     import {goto} from "$app/navigation";
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
-    import { ProgressBar, Loading } from "carbon-components-svelte";
+    import { ProgressBar, Loading, TextInput} from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
     import Textfield from '@smui/textfield';
@@ -1347,13 +1347,12 @@ import { select_option } from "svelte/internal";
                 <div class="column is-half">
                   <div class="field">
                     <div class="control">
-                      <Textfield bind:value={Profile.Transactions} 
-                        label="Transactions"
+                      <TextInput light bind:value={Profile.Transactions} 
+                        labelText="Transactions"
+                        invalidText= "{Profile.transactionsHelp}"
                         invalid={(Profile.transactionsError || Profile.transactionsUnsaved)}
                         disabled={Profile.isTransient || Profile.isRunning}
-                        on:input={validateTransactions}>
-                        <HelperText persistent slot="helper">{Profile.transactionsHelp}</HelperText>
-                      </Textfield>
+                        on:input={validateTransactions} />
                     </div>
                   </div>
                 </div>
@@ -1361,13 +1360,12 @@ import { select_option } from "svelte/internal";
                 <div class="column is-half">
                   <div class="field">
                     <div class="control">
-                      <Textfield bind:value={Profile.CPS} 
-                        label="CPS"
+                      <TextInput bind:value={Profile.CPS} 
+                      labelText="CPS"
                         invalid={(Profile.cpsError || Profile.cpsUnsaved)}
+                        invalidText="{Profile.cpsHelp}"
                         disabled={Profile.isTransient || Profile.isRunning}
-                        on:input={validateCps}>
-                        <HelperText persistent slot="helper">{Profile.cpsHelp}</HelperText>
-                      </Textfield>
+                        on:input={validateCps}/>
                     </div>
                   </div>
                 </div>
