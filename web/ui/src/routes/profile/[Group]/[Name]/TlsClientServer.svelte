@@ -10,7 +10,7 @@
     import {goto} from "$app/navigation";
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
-    import { ProgressBar, Loading, TextInput} from "carbon-components-svelte";
+    import { ProgressBar, Loading, TextInput, FormGroup} from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
     import Textfield from '@smui/textfield';
@@ -1344,58 +1344,51 @@ import { select_option } from "svelte/internal";
           <div class="tile is-child my-border">
             <section>
               <div class="columns is-multiline is-mobile start_stop_border">
-                <div class="column is-half">
-                  <div class="field">
-                    <div class="control">
-                      <TextInput light bind:value={Profile.Transactions} 
-                        labelText="Transactions"
-                        invalidText= "{Profile.transactionsHelp}"
-                        invalid={(Profile.transactionsError || Profile.transactionsUnsaved)}
-                        disabled={Profile.isTransient || Profile.isRunning}
-                        on:input={validateTransactions} />
-                    </div>
-                  </div>
-                </div>
-      
-                <div class="column is-half">
-                  <div class="field">
-                    <div class="control">
-                      <TextInput light bind:value={Profile.CPS} 
+                <div class="column is-full">
+                  <FormGroup>
+                    <TextInput size="sm" light inline bind:value={Profile.Transactions} 
+                      labelText="Sess"
+                      invalidText= "{Profile.transactionsHelp}"
+                      invalid={(Profile.transactionsError || Profile.transactionsUnsaved)}
+                      disabled={Profile.isTransient || Profile.isRunning}
+                      on:input={validateTransactions} />
+
+                      <TextInput size="sm" light inline bind:value={Profile.CPS} 
                       labelText="CPS"
                         invalid={(Profile.cpsError || Profile.cpsUnsaved)}
                         invalidText="{Profile.cpsHelp}"
                         disabled={Profile.isTransient || Profile.isRunning}
                         on:input={validateCps}/>
+                  </FormGroup>
+
+                  <div class="field has-text-centered">
+                    <div class="control has-text-centered" >
+                      <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-dark'}" 
+                        disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
+                        on:click={onProfileAction} > 
+                          {#if Profile.isRunning}
+                            Stop Traffic
+                          {:else}
+                            {#if Profile.markUnsavedFields || Profile.markErrorFields}
+                              Save Profile
+                            {:else}
+                              Start Traffic
+                            {/if} 
+                          {/if}
+                      </button>
+    
+                      <button class="button is-light is-dark" 
+                        disabled={Profile.isTransient || (!Profile.isRunning)}
+                        on:click={onCaptureAction} > 
+                          {#if Profile.isCapturing}
+                            Stop Capture
+                          {:else}
+                            Start Capture
+                          {/if}
+                      </button>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div class="field has-text-centered">
-                <div class="control has-text-centered" >
-                  <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-dark'}" 
-                    disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
-                    on:click={onProfileAction} > 
-                      {#if Profile.isRunning}
-                        Stop Traffic
-                      {:else}
-                        {#if Profile.markUnsavedFields || Profile.markErrorFields}
-                          Save Profile
-                        {:else}
-                          Start Traffic
-                        {/if} 
-                      {/if}
-                  </button>
-
-                  <button class="button is-light is-dark" 
-                    disabled={Profile.isTransient || (!Profile.isRunning)}
-                    on:click={onCaptureAction} > 
-                      {#if Profile.isCapturing}
-                        Stop Capture
-                      {:else}
-                        Start Capture
-                      {/if}
-                  </button>
                 </div>
               </div>
             </section> 
@@ -1723,10 +1716,6 @@ import { select_option } from "svelte/internal";
 
     .start_stop_border {
       padding-top: 0.5rem;
-    }
-
-    .msg_border {
-      margin-left: 0.6rem;
     }
 
 </style>
