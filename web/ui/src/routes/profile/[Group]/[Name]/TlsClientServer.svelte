@@ -13,6 +13,11 @@
     import { ProgressBar, Loading } from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
+    import Textfield from '@smui/textfield';
+    import HelperText from '@smui/textfield/helper-text';
+    import Select, { Option } from '@smui/select';
+import { select_option } from "svelte/internal";
+
     let isLoading = false;
 
     function setErrorMsg(action, msg) {
@@ -50,6 +55,33 @@
       } else if (csg.client_ips != savedCsg.client_ips) {
         csg.client_ipsUnsaved = true;
         csg.client_ipsHelp = "modified"
+      }
+      
+      checkFields();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+    }
+
+
+    function validateServerIP (csg_index) {
+      let numRegex = new RegExp('^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/([1-2][0-9]?|3[0-2]?|[4-9])$', );
+      
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
+
+      csg.server_ipError = false;
+      csg.server_ipUnsaved = false;
+      csg.server_ipHelp = ''
+
+      if (csg.server_ip.trim() == ''){
+        csg.server_ipHelp = 'required';
+        csg.server_ipError = true;
+      } else if (!(csg.server_ip.match(numRegex) && csg.server_ip.match(numRegex)[0] === csg.server_ip)) {
+        csg.server_ipHelp = 'invalid - ip/cidr';
+        csg.server_ipError = true;
+      } else if (csg.server_ip != savedCsg.server_ip) {
+        csg.server_ipUnsaved = true;
+        csg.server_ipHelp = "modified"
       }
       
       checkFields();
@@ -142,48 +174,76 @@
       checkFields();
     }
 
-    function validateClientIface () {
+    function validateClientIface (csg_index) {
       let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
 
-      Profile.clientIfaceError = false;
-      Profile.clientIfaceUnsaved = false;
-      Profile.clientIfaceHelp = ''
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
 
-      if (Profile.ClientIface.trim() == ''){
-        Profile.clientIfaceHelp = 'required';
-        Profile.clientIfaceError = true;
-      } else if (!(Profile.ClientIface.match(numRegex) && Profile.ClientIface.match(numRegex)[0] === Profile.ClientIface)){
-        Profile.clientIfaceHelp = 'invalid - node:port';
-        Profile.clientIfaceError = true;
-      } else if (Profile.ClientIface != SavedProfile.ClientIface){
-        Profile.clientIfaceUnsaved = true;
-        Profile.clientIfaceHelp = "modified"
+      csg.client_ifaceError = false;
+      csg.client_ifaceUnsaved = false;
+      csg.client_ifaceHelp = ''
+
+      if (csg.client_iface.trim() == ''){
+        csg.client_ifaceHelp = 'required';
+        csg.client_ifaceError = true;
+      } else if (!(csg.client_iface.match(numRegex) && csg.client_iface.match(numRegex)[0] === csg.client_iface)) {
+        csg.client_ifaceHelp = 'invalid - iface';
+        csg.client_ifaceError = true;
+      } else if (csg.client_iface != savedCsg.client_iface) {
+        csg.client_ifaceUnsaved = true;
+        csg.client_ifaceHelp = "modified"
+      }
+      
+      checkFields();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+    }
+
+    function validateServerIface (csg_index) {
+      let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
+
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
+
+      csg.server_ifaceError = false;
+      csg.server_ifaceUnsaved = false;
+      csg.server_ifaceHelp = ''
+
+      if (csg.server_iface.trim() == ''){
+        csg.server_ifaceHelp = 'required';
+        csg.server_ifaceError = true;
+      } else if (!(csg.server_iface.match(numRegex) && csg.server_iface.match(numRegex)[0] === csg.server_iface)) {
+        csg.server_ifaceHelp = 'invalid - iface';
+        csg.server_ifaceError = true;
+      } else if (csg.server_iface != savedCsg.server_iface) {
+        csg.server_ifaceUnsaved = true;
+        csg.server_ifaceHelp = "modified"
+      }
+      
+      checkFields();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+    }
+
+    function validateProtocol (csg_index) {
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
+      
+      if (csg.server_ssl === savedCsg.server_ssl) {
+        csg.server_sslUnsaved = false;
+        csg.server_sslHelp = "";
+      } else {
+        csg.server_sslUnsaved = true;
+        csg.server_sslHelp = "modified";
       }
 
       checkFields();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
     }
-
-    function validateServerIface () {
-      let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
-
-      Profile.serverIfaceError = false;
-      Profile.serverIfaceUnsaved = false;
-      Profile.serverIfaceHelp = ''
-
-      if (Profile.ServerIface.trim() == ''){
-        Profile.serverIfaceHelp = 'required';
-        Profile.serverIfaceError = true;
-      } else if (!(Profile.ServerIface.match(numRegex) && Profile.ServerIface.match(numRegex)[0] === Profile.ServerIface)){
-        Profile.serverIfaceHelp = 'invalid - node:port';
-        Profile.serverIfaceError = true;
-      } else if (Profile.ServerIface != SavedProfile.ServerIface){
-        Profile.serverIfaceUnsaved = true;
-        Profile.serverIfaceHelp = "modified"
-      }
-
-      checkFields();
-    }
-
+    
+    
     function checkFields() {
 
       Profile.markUnsavedFields = Profile.transactionsUnsaved 
@@ -201,17 +261,28 @@
                     || Profile.serverIfaceError;
 
       for (const csg of Profile.cs_groups) {
-        if (csg.fieldAttention == 'mark-delete') {
+        if (csg.fieldAttention == 'mark-delete' 
+              || csg.fieldAttention == 'new-csg') {
           Profile.markUnsavedFields = true;
           continue;
         }
 
         csg.fieldAttention = '';
-        if (csg.client_ipsError) {
+        if (csg.client_ipsError
+            || csg.client_ifaceError
+            || csg.server_ifaceError
+            ) 
+        {
           Profile.markErrorFields = true;
           csg.fieldAttention = 'field-update';
         }
-        if (csg.client_ipsUnsaved) {
+
+        if (csg.client_ipsUnsaved
+            || csg.client_ifaceUnsaved
+            || csg.server_ifaceUnsaved
+            || csg.server_sslUnsaved
+            )
+        {
           Profile.markUnsavedFields = true;
           csg.fieldAttention = 'field-update';
         }
@@ -225,11 +296,14 @@
       validateCps ();
       validateDataLength ();
       validateMaxPipeline ();
-      validateClientIface ();
-      validateServerIface ();
+
 
       for (let i=0; i < Profile.cs_groups.length; i++) {
-        validateClientIPs (i)
+        validateClientIPs (i);
+        validateServerIP (i);
+        validateClientIface (i);
+        validateServerIface (i);
+        validateProtocol (i);
       }
     }
 
@@ -651,10 +725,18 @@
           if (isJson) {
             if (json.status == 0){
               const csg = json.data;
-              csg.id = csg.app_id;
-              csg.client_ips = csg.client_ips.join(',');
+              const csg2 = JSON.parse(JSON.stringify(csg));
+
+              csgCanonical (csg);
+
+              csg.fieldAttention = 'new-csg';
+
               Profile.cs_groups.push (csg);
               Profile.cs_groups = [...Profile.cs_groups];
+
+              SavedProfile.cs_groups.push (csg2);
+              SavedProfile.cs_groups = [...SavedProfile.cs_groups];
+
               Profile.markUnsavedFields = true;
             } else {
               console.log(json);
@@ -710,13 +792,13 @@
       if (Profile.isRunning) {     
         await onStop();
         if (Profile.isCapturing) {
-          await onStopCapture();
+          // await onStopCapture();
         }
       } else {
         if (Profile.markUnsavedFields || Profile.markErrorFields) {
           await onSave();
         } else {
-          await onStartCapture();
+          // await onStartCapture();
           await onStart();
         }
       }
@@ -724,9 +806,9 @@
 
     async function onCaptureAction () {
       if (Profile.isCapturing) {
-        await onStopCapture();
+        // await onStopCapture();
       } else {
-        await onStartCapture();
+        // await onStartCapture();
       }
     }
 
@@ -765,6 +847,29 @@
       {key: 'Server', value: 'Server'}
     ];
 
+  function csgCanonical (csg) {
+    csg.id = csg.app_id;
+    csg.client_ips = csg.client_ips.join(',');
+
+    csg.client_ipsError = false;
+    csg.client_ipsUnsaved = false;
+    csg.client_ipsHelp = ''
+
+    csg.server_ipError = false;
+    csg.server_ipUnsaved = false;
+    csg.server_ipHelp = '';
+
+    csg.client_ifaceError = false;
+    csg.client_ifaceUnsaved = false;
+    csg.client_ifaceHelp = ''
+
+    csg.server_ifaceError = false;
+    csg.server_ifaceUnsaved = false;
+    csg.server_ifaceHelp = ''
+
+    csg.server_ssl = csg.server_ssl.toString();
+  }
+
   function profileCanonical (p) {
 
     const p2 = JSON.parse(JSON.stringify(p));
@@ -777,8 +882,7 @@
 
     //for table header and row
     for (const csg of p2.cs_groups) {
-      csg.id = csg.app_id;
-      csg.client_ips = csg.client_ips.join(',');
+      csgCanonical (csg);
     }
 
     return p2;
@@ -823,11 +927,14 @@
       csg2.client_ips = csg.client_ips.split(',');
       csg2.server_ip = csg.server_ip;
 
+      csg2.client_iface = csg.client_iface;
+      csg2.server_iface = csg.server_iface;
+
       csg2.app_id = "CSG" + csg_index.toString();
       csg2.app_gid = csg.app_gid;
 
       csg2.server_port = csg.server_port;
-      csg2.server_ssl = csg.server_ssl;
+      csg2.server_ssl = parseInt(csg.server_ssl);
       csg2.server_key = csg.server_key;
       csg2.server_cert = csg.server_cert;
 
@@ -1232,116 +1339,35 @@
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
+
         <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <section>
               <div class="columns is-multiline is-mobile start_stop_border">
-                <div class="column is-one-third">
+                <div class="column is-half">
                   <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label">Transactions</label>
                     <div class="control">
-                      <input class="input {(Profile.transactionsError || Profile.transactionsUnsaved) ? 'is-danger' : ''}" 
-                        type="text" 
-                        placeholder=""
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        bind:value={Profile.Transactions}
-                        on:input={validateTransactions}
-                      >
-                      <p class="help msg_border">{Profile.transactionsHelp}</p>
+                      <Textfield bind:value={Profile.Transactions} 
+                        label="Transactions"
+                        invalid={(Profile.transactionsError || Profile.transactionsUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={validateTransactions}>
+                        <HelperText persistent slot="helper">{Profile.transactionsHelp}</HelperText>
+                      </Textfield>
                     </div>
                   </div>
                 </div>
       
-                <div class="column is-one-third">
+                <div class="column is-half">
                   <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label">CPS</label>
                     <div class="control">
-                      <input class="input {(Profile.cpsError || Profile.cpsUnsaved) ? 'is-danger' : ''}" 
-                        type="text" 
-                        placeholder=""
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        bind:value={Profile.CPS}
-                        on:input={validateCps}
-                      >
-                      <p class="help msg_border">{Profile.cpsHelp}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="column is-one-third">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label">DataLength</label>
-                    <div class="control">
-                      <input class="input {(Profile.dataLengthError || Profile.dataLengthUnsaved) ? 'is-danger' : ''}" 
-                        type="text" 
-                        placeholder=""
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        bind:value={Profile.DataLength}
-                        on:input={validateDataLength}
-                      >
-                      <p class="help msg_border">{Profile.dataLengthHelp}</p>
-                    </div>
-                  </div>
-                </div>
-      
-                <div class="column is-one-third">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label">MaxPipeline</label>
-                    <div class="control">
-                      <input class="input {(Profile.maxPipelineError || Profile.maxPipelineUnsaved) ? 'is-danger' : ''}" 
-                        type="text" 
-                        placeholder=""
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        bind:value={Profile.MaxPipeline}
-                        on:input={validateMaxPipeline}
-                      >
-                      <p class="help msg_border">{Profile.maxPipelineHelp}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="column is-one-third">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label">C-Iface <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
-                    <div class="control">
-                      <input class="input {(Profile.clientIfaceError || Profile.clientIfaceUnsaved) ? 'is-danger' : ''}"
-                        bind:value={Profile.ClientIface}
-                        type=""
-                        placeholder=""
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        on:input={validateClientIface}
-                      >
-                      <p class="help msg_border">
-                        {#if Profile.clientIfaceHelp}
-                          {Profile.clientIfaceHelp}
-                        {/if}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-      
-                <div class="column is-one-third">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">S-Iface <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}"> &#8595</a></label>
-                    <div class="control">
-                      <input class="input {(Profile.serverIfaceError || Profile.serverIfaceUnsaved) ? 'is-danger' : ''}"
-                        bind:value={Profile.ServerIface}
-                        type=""
-                        placeholder=""
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        on:input={validateServerIface}
-                      >
-                      <p class="help msg_border">
-                        {#if Profile.serverIfaceHelp}
-                          {Profile.serverIfaceHelp}
-                        {/if}
-                      </p>
+                      <Textfield bind:value={Profile.CPS} 
+                        label="CPS"
+                        invalid={(Profile.cpsError || Profile.cpsUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={validateCps}>
+                        <HelperText persistent slot="helper">{Profile.cpsHelp}</HelperText>
+                      </Textfield>
                     </div>
                   </div>
                 </div>
@@ -1349,7 +1375,7 @@
 
               <div class="field has-text-centered">
                 <div class="control has-text-centered" >
-                  <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-info'}" 
+                  <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-dark'}" 
                     disabled={Profile.isTransient || (!Profile.isRunning && Profile.markErrorFields)}
                     on:click={onProfileAction} > 
                       {#if Profile.isRunning}
@@ -1363,7 +1389,7 @@
                       {/if}
                   </button>
 
-                  <button class="button is-light is-info" 
+                  <button class="button is-light is-dark" 
                     disabled={Profile.isTransient || (!Profile.isRunning)}
                     on:click={onCaptureAction} > 
                       {#if Profile.isCapturing}
@@ -1378,29 +1404,33 @@
 
           </div>
         </div>
+
         <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <DataTable
-            size="short"
+            size="compact"
             headers={topStatsHeaders}
             rows={Profile.connStats}
             zebra
             />
           </div>
         </div>
+
         <div class="tile is-4 is-parent">
           <div class="tile is-child my-border">
             <DataTable
-            size="short"
+            size="compact"
             headers={latencyStatsHeaders}
             rows={Profile.latencyStats}
             zebra
             />
           </div>
         </div>
+
       </div>
     </div>
 
+        
     <div class="column is-12">
       {#if Profile.isProgress}
         <div class="field">
@@ -1420,6 +1450,7 @@
         </div>          
       {/if}
     </div>  
+
 
     <div class="column is-12">
       <div class="tile is-ancestor is-mobile">
@@ -1460,19 +1491,48 @@
 
 
                 <div class="column is-half">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">Client Iface</label>
+                    <div class="control">
+                      <input class="input {(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved) ? 'is-danger' : '' }"
+                        bind:value={Profile.cs_groups[row.index].client_iface}
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        on:input={() => validateClientIface (row.index)}
+                        >
+                        <p class="help">{Profile.cs_groups[row.index].client_ifaceHelp}</p>
+                    </div>
+                  </div>
+                </div>
+  
+                <div class="column is-half">
+                  <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">Server Iface</label>
+                    <div class="control">
+                      <input class="input {(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved) ? 'is-danger' : '' }"
+                        bind:value={Profile.cs_groups[row.index].server_iface}
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        on:input={() => validateServerIface (row.index)}
+                        >
+                        <p class="help">{Profile.cs_groups[row.index].server_ifaceHelp}</p>
+                    </div>
+                  </div>
+                </div>                
+
+
+                <div class="column is-full">
 
                   <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Client IPs</label>
                     <div class="control">
-                      <input class="input {(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved) ? 'is-danger' : ''}" 
-                        type="text" 
-                        placeholder=""
-                        readonly={Profile.isTransient || Profile.isRunning}
+                      <input class="input {(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved) ? 'is-danger' : '' }"
                         bind:value={Profile.cs_groups[row.index].client_ips}
+                        readonly={Profile.isTransient || Profile.isRunning}
                         on:input={() => validateClientIPs(row.index)}
-                      >
-                      <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
+                        >
+                        <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
                     </div>
                   </div>
               
@@ -1481,38 +1541,22 @@
               
               <div class="column is-half">
               
-                  <div class="field">
+                <div class="field">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label ">Server IP</label>
                     <div class="control">
-                      <input class="input " 
-                      type="text" 
-                      placeholder=""
-                      bind:value={Profile.cs_groups[row.index].server_ip}
-                      >
+                      <input class="input {(Profile.cs_groups[row.index].server_ipError || Profile.cs_groups[row.index].server_ipUnsaved) ? 'is-danger' : '' }"
+                        bind:value={Profile.cs_groups[row.index].server_ip}
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        on:input={() => validateServerIP(row.index)}
+                        >
+                        <p class="help">{Profile.cs_groups[row.index].server_ipHelp}</p>
                     </div>
-                  </div>
+                </div>
               
               </div>
               
-              
-              <div class="column is-half">
-              
-                  <div class="field">
-                      <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Protocol</label>
-                      <div class="select is-fullwidth ">
-                        <select class="">
-                          <option>TLS</option>
-                          <option>TCP</option>
-                        </select>
-                      </div>
-                  </div>
-              
-              </div>
-              
-              
-              
+                  
               <div class="column is-half">
               
                   <div class="field">
@@ -1617,6 +1661,8 @@
               <p><strong class="errmsg">x</strong></p>
             {:else if cell.value == 'field-update'}
               <p><strong class="errmsg">!</strong></p>
+            {:else if cell.value == 'new-csg'}
+              <p><strong class="errmsg">*</strong></p>
             {:else}
               <p><strong class="okmsg">&#10003;</strong></p>
             {/if}

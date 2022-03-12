@@ -68,7 +68,7 @@ IiTeT4+t5dboeDFh3HNsLqlh9w==
 
 import random
 
-def get_new_csg (csg_index, group, name):
+def get_new_csg (csg_index, prof_j):
 
   ipstr = str(random.randint(1,254)) + '.' + str(random.randint(1,254)) + '.' + str(random.randint(1,254))
 
@@ -79,7 +79,7 @@ def get_new_csg (csg_index, group, name):
     "server_ip": ipstr + '.201/16',
 
     "app_id": "CSG" + str(csg_index+1),
-    "app_gid": group + '-' + name,
+    "app_gid": prof_j['Group'] + '-' + prof_j['Name'],
     
     "server_port": 443,
     "server_ssl": 1,
@@ -101,7 +101,10 @@ def get_new_csg (csg_index, group, name):
     "tcp_snd_buff_len": 0,
 
     "read_chunk_len": 4096,
-    "write_chunk_len": 512
+    "write_chunk_len": 512,
+
+    "client_iface" : prof_j["ClientIface"],
+    "server_iface" : prof_j["ServerIface"]
   }
 
   return csg
@@ -112,13 +115,11 @@ def set_profile_defaults (prof_j):
     prof_j["CPS"] = 20
     prof_j["DataLength"] = 1
     prof_j["MaxPipeline"] = 20
-    prof_j["ClientIface"] = ""
-    prof_j["ServerIface"] = ""
 
     prof_j['cs_groups'] = []
     for csg_index in range(0, csg_count):
 
-        csg = get_new_csg (csg_index, prof_j['Group'], prof_j['Name'])
+        csg = get_new_csg (csg_index, prof_j)
 
         csg["cs_data_len"] = prof_j["DataLength"]
         csg["sc_data_len"] = prof_j["DataLength"]
@@ -234,10 +235,10 @@ def start (group, name, stats_addr):
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
-            'ServerNodeLabel': profile["ServerIface"].split(':')[0],
-            'ClientNodeLabel': profile["ClientIface"].split(':')[0],
-            'ServerInterfaceName': profile["ServerIface"].split(':')[1],
-            'ClientInterfaceName': profile["ClientIface"].split(':')[1]
+            'ServerNodeLabel': csg["server_iface"].split(':')[0],
+            'ClientNodeLabel': csg["client_iface"].split(':')[0],
+            'ServerInterfaceName': csg["server_iface"].split(':')[1],
+            'ClientInterfaceName': csg["client_iface"].split(':')[1]
         }
 
         server_cmap = kubernetes.client.V1ConfigMap()

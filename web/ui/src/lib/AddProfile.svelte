@@ -1,13 +1,32 @@
 <script>
+
+import { createEventDispatcher, beforeUpdate} from "svelte";
+
+
     import { selectedNode } from '$lib/store.js';
     import { profileTreeRoot } from '$lib/store.js';
     import { ProgressBar } from "carbon-components-svelte";
+    
+    import Textfield from '@smui/textfield';
+    import HelperText from '@smui/textfield/helper-text';
+    import Select, { Option } from '@smui/select';
+
 
     export let isActive;
+
+    let Type;
 
     let Name;
     let nameError;
     let nameHelp;
+
+    let ClientIface;
+    let clientIfaceError;
+    let clientIfaceHelp;
+
+    let ServerIface;
+    let serverIfaceError;
+    let serverIfaceHelp;
 
     let isError;
     let errorMsg;
@@ -20,6 +39,12 @@
     function resetState() {
       Name = '';
       nameError = false;
+
+      ClientIface = '';
+      clientIfaceError = false;
+
+      ServerIface = '';
+      serverIfaceError = false;
       
       isError = false;
       isProgress = false;
@@ -28,8 +53,6 @@
     }
 
     resetState();   
-
-    import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher ();
 
@@ -48,7 +71,38 @@
         nameHelp = 'already exist';
         nameError = true; 
       } else {
+        nameHelp = '';
         nameError = false;
+      }
+    }
+
+    function validateClientIface () {
+      let clientIfaceRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
+
+      if (ClientIface.trim() == ''){
+        clientIfaceHelp = 'required';
+        clientIfaceError = true;
+      } else if (!clientIfaceRegex.test(ClientIface)){
+        clientIfaceHelp = 'invalid - iface';
+        clientIfaceError = true;
+      } else {
+        clientIfaceHelp = '';
+        clientIfaceError = false;
+      }
+    }
+
+    function validateServerIface () {
+      let serverIfaceRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
+
+      if (ServerIface.trim() == ''){
+        serverIfaceHelp = 'required';
+        serverIfaceError = true;
+      } else if (!serverIfaceRegex.test(ServerIface)){
+        serverIfaceHelp = 'invalid - iface';
+        serverIfaceError = true;
+      } else {
+        serverIfaceHelp = '';
+        serverIfaceError = false;
       }
     }
 
@@ -73,11 +127,18 @@
       }
     }
 
+    function validateFields() {
+      validateName ();
+      validateClientIface ();
+      validateServerIface ();
+    }
+
     async function onAddProfileOk () {
 
-      validateName ();
+      validateFields ();
 
-      if (!nameError) {
+      if (!nameError && !clientIfaceError && !serverIfaceError) {
+
         controller = new AbortController();
         signal = controller.signal;
 
@@ -91,6 +152,8 @@
             body: JSON.stringify({
               Name,
               Type : 'TlsClientServer',
+              ClientIface,
+              ServerIface,
               Group : $selectedNode.Name
             })
           });
@@ -130,6 +193,10 @@
       }
     }
 
+    beforeUpdate ( async () => {
+      validateFields();
+    });
+
 </script>
 
 <div class="modal {isActive ? 'is-active' : ''}">
@@ -140,37 +207,67 @@
       </header>
       <section class="modal-card-body">
         <div class="columns is-multiline is-mobile">
-          <div class="column is-half">
+
+          <!-- <div class="column is-full">
             <div class="field">
-              <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label class="label ">Name</label>
+              <div>
+                <Select bind:value={Type} 
+                  label="Type" 
+                  style="width: 100%"
+                  >
+                  <Option value="TlsClientServer">TlsClientServer</Option>
+                </Select>
+              </div>
+            </div>
+          </div> -->
+          
+          
+          <div class="column is-full">
+            <div class="field">              
               <div class="control">
-                <input class="input {nameError ? 'is-danger' : 'is-info' }"
-                type="text"
-                placeholder=""
-                bind:value={Name}
-                on:input={validateName}
-                >
-                {#if nameError}
-                  <p class="help">{nameHelp}</p>
-                {/if}
+                <Textfield bind:value={Name} 
+                  label="Name"
+                  invalid={nameError}
+                  on:input={validateName}
+                  style="width: 100%"
+                  >
+                  <HelperText persistent slot="helper">{nameHelp}</HelperText>
+                </Textfield>
               </div>
             </div>
           </div>
 
-          <div class="column is-half">
+
+          <div class="column is-full">
             <div class="field">
-              <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label class="label ">Type</label>
-              <div class="select is-fullwidth ">
-                <select class="">
-                  <option>TlsClientServer</option>
-                </select>
+              <div class="control">
+                <Textfield bind:value={ClientIface} 
+                  label="Client Iface"
+                  invalid={clientIfaceError}
+                  on:input={validateClientIface}
+                  style="width: 100%"
+                  >
+                  <HelperText persistent slot="helper">{clientIfaceHelp}</HelperText>
+                </Textfield>
+              </div>
+            </div>
+          </div>
+  
+          <div class="column is-full">
+            <div class="field">
+              <div class="control">
+                <Textfield bind:value={ServerIface} 
+                  label="Server Iface"
+                  invalid={serverIfaceError}
+                  on:input={validateServerIface}
+                  style="width: 100%"
+                  >
+                  <HelperText persistent slot="helper">{serverIfaceHelp}</HelperText>
+                </Textfield>
               </div>
             </div>
           </div>
         </div>
-
 
         {#if isProgress}
           <div class="field">

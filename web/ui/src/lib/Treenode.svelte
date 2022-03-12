@@ -104,7 +104,7 @@
   li {
       border-bottom: solid 0px grey;
       margin: 0 0;
-      padding: 0.50rem;
+      padding: 0.60rem;
       display: flex;
       cursor: pointer;
       vertical-align: middle;

@@ -199,7 +199,7 @@ async def api_get_profiles(request):
             
             if newcsg:
                 csg_index = int(newcsg)
-                new_csg = TlsClientServer.get_new_csg(csg_index, group, name)
+                new_csg = TlsClientServer.get_new_csg(csg_index, profile)
                 return web.json_response({'status': 0, 'data': new_csg})
             else:
                 return web.json_response({'status': 0, 'data': profile})
