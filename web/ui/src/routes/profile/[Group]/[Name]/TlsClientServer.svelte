@@ -173,46 +173,56 @@
       checkFields();
     }
 
-    function validateClientIface () {
+    function validateClientIface (csg_index) {
       let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
 
-      Profile.clientIfaceError = false;
-      Profile.clientIfaceUnsaved = false;
-      Profile.clientIfaceHelp = ''
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
 
-      if (Profile.ClientIface.trim() == ''){
-        Profile.clientIfaceHelp = 'required';
-        Profile.clientIfaceError = true;
-      } else if (!(Profile.ClientIface.match(numRegex) && Profile.ClientIface.match(numRegex)[0] === Profile.ClientIface)){
-        Profile.clientIfaceHelp = 'invalid - node:port';
-        Profile.clientIfaceError = true;
-      } else if (Profile.ClientIface != SavedProfile.ClientIface){
-        Profile.clientIfaceUnsaved = true;
-        Profile.clientIfaceHelp = "modified"
+      csg.client_ifaceError = false;
+      csg.client_ifaceUnsaved = false;
+      csg.client_ifaceHelp = ''
+
+      if (csg.client_iface.trim() == ''){
+        csg.client_ifaceHelp = 'required';
+        csg.client_ifaceError = true;
+      } else if (!(csg.client_iface.match(numRegex) && csg.client_iface.match(numRegex)[0] === csg.client_iface)) {
+        csg.client_ifaceHelp = 'invalid - iface';
+        csg.client_ifaceError = true;
+      } else if (csg.client_iface != savedCsg.client_iface) {
+        csg.client_ifaceUnsaved = true;
+        csg.client_ifaceHelp = "modified"
       }
-
+      
       checkFields();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
     }
 
-    function validateServerIface () {
+    function validateServerIface (csg_index) {
       let numRegex = new RegExp('^[a-z0-9]+:[a-z0-9]+$', 'i');
 
-      Profile.serverIfaceError = false;
-      Profile.serverIfaceUnsaved = false;
-      Profile.serverIfaceHelp = ''
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
 
-      if (Profile.ServerIface.trim() == ''){
-        Profile.serverIfaceHelp = 'required';
-        Profile.serverIfaceError = true;
-      } else if (!(Profile.ServerIface.match(numRegex) && Profile.ServerIface.match(numRegex)[0] === Profile.ServerIface)){
-        Profile.serverIfaceHelp = 'invalid - node:port';
-        Profile.serverIfaceError = true;
-      } else if (Profile.ServerIface != SavedProfile.ServerIface){
-        Profile.serverIfaceUnsaved = true;
-        Profile.serverIfaceHelp = "modified"
+      csg.server_ifaceError = false;
+      csg.server_ifaceUnsaved = false;
+      csg.server_ifaceHelp = ''
+
+      if (csg.server_iface.trim() == ''){
+        csg.server_ifaceHelp = 'required';
+        csg.server_ifaceError = true;
+      } else if (!(csg.server_iface.match(numRegex) && csg.server_iface.match(numRegex)[0] === csg.server_iface)) {
+        csg.server_ifaceHelp = 'invalid - iface';
+        csg.server_ifaceError = true;
+      } else if (csg.server_iface != savedCsg.server_iface) {
+        csg.server_ifaceUnsaved = true;
+        csg.server_ifaceHelp = "modified"
       }
-
+      
       checkFields();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
     }
 
     function checkFields() {
@@ -239,11 +249,20 @@
         }
 
         csg.fieldAttention = '';
-        if (csg.client_ipsError) {
+        if (csg.client_ipsError
+            || csg.client_ifaceError
+            || csg.server_ifaceError
+            ) 
+        {
           Profile.markErrorFields = true;
           csg.fieldAttention = 'field-update';
         }
-        if (csg.client_ipsUnsaved) {
+
+        if (csg.client_ipsUnsaved
+            || csg.client_ifaceUnsaved
+            || csg.server_ifaceUnsaved
+            )
+        {
           Profile.markUnsavedFields = true;
           csg.fieldAttention = 'field-update';
         }
@@ -257,12 +276,13 @@
       validateCps ();
       validateDataLength ();
       validateMaxPipeline ();
-      validateClientIface ();
-      validateServerIface ();
+
 
       for (let i=0; i < Profile.cs_groups.length; i++) {
         validateClientIPs (i);
         validateServerIP (i);
+        validateClientIface (i);
+        validateServerIface (i);
       }
     }
 
@@ -687,6 +707,7 @@
               const csg2 = JSON.parse(JSON.stringify(csg));
 
               csgCanonical (csg);
+
               csg.fieldAttention = 'new-csg';
 
               Profile.cs_groups.push (csg);
@@ -750,13 +771,13 @@
       if (Profile.isRunning) {     
         await onStop();
         if (Profile.isCapturing) {
-          await onStopCapture();
+          // await onStopCapture();
         }
       } else {
         if (Profile.markUnsavedFields || Profile.markErrorFields) {
           await onSave();
         } else {
-          await onStartCapture();
+          // await onStartCapture();
           await onStart();
         }
       }
@@ -764,9 +785,9 @@
 
     async function onCaptureAction () {
       if (Profile.isCapturing) {
-        await onStopCapture();
+        // await onStopCapture();
       } else {
-        await onStartCapture();
+        // await onStartCapture();
       }
     }
 
@@ -816,6 +837,14 @@
     csg.server_ipError = false;
     csg.server_ipUnsaved = false;
     csg.server_ipHelp = '';
+
+    csg.client_ifaceError = false;
+    csg.client_ifaceUnsaved = false;
+    csg.client_ifaceHelp = ''
+
+    csg.server_ifaceError = false;
+    csg.server_ifaceUnsaved = false;
+    csg.server_ifaceHelp = ''
   }
 
   function profileCanonical (p) {
@@ -874,6 +903,9 @@
 
       csg2.client_ips = csg.client_ips.split(',');
       csg2.server_ip = csg.server_ip;
+
+      csg2.client_iface = csg.client_iface;
+      csg2.server_iface = csg.server_iface;
 
       csg2.app_id = "CSG" + csg_index.toString();
       csg2.app_gid = csg.app_gid;
@@ -1472,6 +1504,38 @@
               
               </div>
               
+
+              <div class="column is-half">
+                <div class="field">
+                  <div class="control">
+                    <Textfield bind:value={Profile.cs_groups[row.index].client_iface}
+                      label="Client Iface"
+                      invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                      disabled={Profile.isTransient || Profile.isRunning}
+                      on:input={() => validateClientIface (row.index)}
+                      style="width: 100%"
+                      >
+                      <HelperText persistent slot="helper">{Profile.cs_groups[row.index].client_ifaceHelp}</HelperText>
+                    </Textfield>
+                  </div>
+                </div>
+              </div>
+
+              <div class="column is-half">
+                <div class="field">
+                  <div class="control">
+                    <Textfield bind:value={Profile.cs_groups[row.index].server_iface}
+                      label="Server Iface"
+                      invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                      disabled={Profile.isTransient || Profile.isRunning}
+                      on:input={() => validateServerIface (row.index)}
+                      style="width: 100%"
+                      >
+                      <HelperText persistent slot="helper">{Profile.cs_groups[row.index].server_ifaceHelp}</HelperText>
+                    </Textfield>
+                  </div>
+                </div>
+              </div>
               
               <div class="column is-half">
               

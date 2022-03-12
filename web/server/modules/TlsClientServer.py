@@ -112,8 +112,6 @@ def set_profile_defaults (prof_j):
     prof_j["CPS"] = 20
     prof_j["DataLength"] = 1
     prof_j["MaxPipeline"] = 20
-    prof_j["ClientIface"] = ""
-    prof_j["ServerIface"] = ""
 
     prof_j['cs_groups'] = []
     for csg_index in range(0, csg_count):
@@ -126,6 +124,9 @@ def set_profile_defaults (prof_j):
         csg["cps"] = int (prof_j["CPS"]/csg_count) 
         csg["max_active_conn_count"] = int (prof_j["MaxPipeline"]/csg_count)
         csg["total_conn_count"] = int (prof_j["Transactions"]/csg_count)
+
+        csg["client_iface"] = prof_j[ClientIface]
+        csg["server_iface"] = prof_j[ServerIface]
 
         prof_j['cs_groups'].append(csg)
 
@@ -234,10 +235,10 @@ def start (group, name, stats_addr):
             'Transactions': csg["total_conn_count"],
             'MaxPipeline': csg["max_active_conn_count"],
 
-            'ServerNodeLabel': profile["ServerIface"].split(':')[0],
-            'ClientNodeLabel': profile["ClientIface"].split(':')[0],
-            'ServerInterfaceName': profile["ServerIface"].split(':')[1],
-            'ClientInterfaceName': profile["ClientIface"].split(':')[1]
+            'ServerNodeLabel': csg["server_iface"].split(':')[0],
+            'ClientNodeLabel': csg["client_iface"].split(':')[0],
+            'ServerInterfaceName': csg["server_iface"].split(':')[1],
+            'ClientInterfaceName': csg["client_iface"].split(':')[1]
         }
 
         server_cmap = kubernetes.client.V1ConfigMap()
