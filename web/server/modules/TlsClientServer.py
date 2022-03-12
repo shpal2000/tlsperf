@@ -68,7 +68,7 @@ IiTeT4+t5dboeDFh3HNsLqlh9w==
 
 import random
 
-def get_new_csg (csg_index, group, name):
+def get_new_csg (csg_index, prof_j):
 
   ipstr = str(random.randint(1,254)) + '.' + str(random.randint(1,254)) + '.' + str(random.randint(1,254))
 
@@ -79,7 +79,7 @@ def get_new_csg (csg_index, group, name):
     "server_ip": ipstr + '.201/16',
 
     "app_id": "CSG" + str(csg_index+1),
-    "app_gid": group + '-' + name,
+    "app_gid": prof_j['Group'] + '-' + prof_j['Name'],
     
     "server_port": 443,
     "server_ssl": 1,
@@ -101,7 +101,10 @@ def get_new_csg (csg_index, group, name):
     "tcp_snd_buff_len": 0,
 
     "read_chunk_len": 4096,
-    "write_chunk_len": 512
+    "write_chunk_len": 512,
+
+    "client_iface" : prof_j["ClientIface"],
+    "server_iface" : prof_j["ServerIface"]
   }
 
   return csg
@@ -116,7 +119,7 @@ def set_profile_defaults (prof_j):
     prof_j['cs_groups'] = []
     for csg_index in range(0, csg_count):
 
-        csg = get_new_csg (csg_index, prof_j['Group'], prof_j['Name'])
+        csg = get_new_csg (csg_index, prof_j)
 
         csg["cs_data_len"] = prof_j["DataLength"]
         csg["sc_data_len"] = prof_j["DataLength"]
@@ -124,9 +127,6 @@ def set_profile_defaults (prof_j):
         csg["cps"] = int (prof_j["CPS"]/csg_count) 
         csg["max_active_conn_count"] = int (prof_j["MaxPipeline"]/csg_count)
         csg["total_conn_count"] = int (prof_j["Transactions"]/csg_count)
-
-        csg["client_iface"] = prof_j["ClientIface"]
-        csg["server_iface"] = prof_j["ServerIface"]
 
         prof_j['cs_groups'].append(csg)
 

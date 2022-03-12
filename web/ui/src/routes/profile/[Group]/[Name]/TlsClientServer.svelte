@@ -15,7 +15,8 @@
 
     import Textfield from '@smui/textfield';
     import HelperText from '@smui/textfield/helper-text';
-    import Select from '@smui/select';
+    import Select, { Option } from '@smui/select';
+import { select_option } from "svelte/internal";
 
     let isLoading = false;
 
@@ -225,6 +226,24 @@
       Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
     }
 
+    function validateProtocol (csg_index) {
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
+      
+      if (csg.server_ssl === savedCsg.server_ssl) {
+        csg.server_sslUnsaved = false;
+        csg.server_sslHelp = "";
+      } else {
+        csg.server_sslUnsaved = true;
+        csg.server_sslHelp = "modified";
+      }
+
+      checkFields();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+    }
+    
+    
     function checkFields() {
 
       Profile.markUnsavedFields = Profile.transactionsUnsaved 
@@ -261,6 +280,7 @@
         if (csg.client_ipsUnsaved
             || csg.client_ifaceUnsaved
             || csg.server_ifaceUnsaved
+            || csg.server_sslUnsaved
             )
         {
           Profile.markUnsavedFields = true;
@@ -283,6 +303,7 @@
         validateServerIP (i);
         validateClientIface (i);
         validateServerIface (i);
+        validateProtocol (i);
       }
     }
 
@@ -845,6 +866,8 @@
     csg.server_ifaceError = false;
     csg.server_ifaceUnsaved = false;
     csg.server_ifaceHelp = ''
+
+    csg.server_ssl = csg.server_ssl.toString();
   }
 
   function profileCanonical (p) {
@@ -911,7 +934,7 @@
       csg2.app_gid = csg.app_gid;
 
       csg2.server_port = csg.server_port;
-      csg2.server_ssl = csg.server_ssl;
+      csg2.server_ssl = parseInt(csg.server_ssl);
       csg2.server_key = csg.server_key;
       csg2.server_cert = csg.server_cert;
 
@@ -1468,6 +1491,39 @@
 
 
                 <div class="column is-half">
+                  <div class="field">
+                    <div class="control">
+                      <Textfield bind:value={Profile.cs_groups[row.index].client_iface}
+                        label="Client Iface"
+                        invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={() => validateClientIface (row.index)}
+                        style="width: 100%"
+                        >
+                        <HelperText persistent slot="helper">{Profile.cs_groups[row.index].client_ifaceHelp}</HelperText>
+                      </Textfield>
+                    </div>
+                  </div>
+                </div>
+  
+                <div class="column is-half">
+                  <div class="field">
+                    <div class="control">
+                      <Textfield bind:value={Profile.cs_groups[row.index].server_iface}
+                        label="Server Iface"
+                        invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                        disabled={Profile.isTransient || Profile.isRunning}
+                        on:input={() => validateServerIface (row.index)}
+                        style="width: 100%"
+                        >
+                        <HelperText persistent slot="helper">{Profile.cs_groups[row.index].server_ifaceHelp}</HelperText>
+                      </Textfield>
+                    </div>
+                  </div>
+                </div>                
+
+
+                <div class="column is-half">
 
                   <div class="field">
                     <div class="control">
@@ -1504,49 +1560,21 @@
               
               </div>
               
-
-              <div class="column is-half">
-                <div class="field">
-                  <div class="control">
-                    <Textfield bind:value={Profile.cs_groups[row.index].client_iface}
-                      label="Client Iface"
-                      invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                      disabled={Profile.isTransient || Profile.isRunning}
-                      on:input={() => validateClientIface (row.index)}
-                      style="width: 100%"
-                      >
-                      <HelperText persistent slot="helper">{Profile.cs_groups[row.index].client_ifaceHelp}</HelperText>
-                    </Textfield>
-                  </div>
-                </div>
-              </div>
-
-              <div class="column is-half">
-                <div class="field">
-                  <div class="control">
-                    <Textfield bind:value={Profile.cs_groups[row.index].server_iface}
-                      label="Server Iface"
-                      invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                      disabled={Profile.isTransient || Profile.isRunning}
-                      on:input={() => validateServerIface (row.index)}
-                      style="width: 100%"
-                      >
-                      <HelperText persistent slot="helper">{Profile.cs_groups[row.index].server_ifaceHelp}</HelperText>
-                    </Textfield>
-                  </div>
-                </div>
-              </div>
               
               <div class="column is-half">
               
                   <div class="field">
-                      <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Protocol</label>
-                      <div class="select is-fullwidth ">
-                        <select class="">
-                          <option>TLS</option>
-                          <option>TCP</option>
-                        </select>
+                      <div>
+                        <Select bind:value={Profile.cs_groups[row.index].server_ssl}
+                          on:change={() => alert('here')}
+                          label="Protocol"
+                          style="width: 100%"
+                          invalid={Profile.cs_groups[row.index].server_sslUnsaved}
+                          >
+                          <Option value="1">TLS</Option>
+                          <Option value="0">TCP</Option>
+                          <svelte:fragment slot="helperText">{Profile.cs_groups[row.index].server_sslHelp}</svelte:fragment>
+                        </Select>
                       </div>
                   </div>
               
