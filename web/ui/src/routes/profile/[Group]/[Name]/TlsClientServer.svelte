@@ -1492,50 +1492,47 @@ import { select_option } from "svelte/internal";
 
                 <div class="column is-half">
                   <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">Client Iface</label>
                     <div class="control">
-                      <Textfield bind:value={Profile.cs_groups[row.index].client_iface}
-                        label="Client Iface"
-                        invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                        disabled={Profile.isTransient || Profile.isRunning}
+                      <input class="input {(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved) ? 'is-danger' : '' }"
+                        bind:value={Profile.cs_groups[row.index].client_iface}
+                        readonly={Profile.isTransient || Profile.isRunning}
                         on:input={() => validateClientIface (row.index)}
-                        style="width: 100%"
                         >
-                        <HelperText persistent slot="helper">{Profile.cs_groups[row.index].client_ifaceHelp}</HelperText>
-                      </Textfield>
+                        <p class="help">{Profile.cs_groups[row.index].client_ifaceHelp}</p>
                     </div>
                   </div>
                 </div>
   
                 <div class="column is-half">
                   <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">Server Iface</label>
                     <div class="control">
-                      <Textfield bind:value={Profile.cs_groups[row.index].server_iface}
-                        label="Server Iface"
-                        invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                        disabled={Profile.isTransient || Profile.isRunning}
+                      <input class="input {(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved) ? 'is-danger' : '' }"
+                        bind:value={Profile.cs_groups[row.index].server_iface}
+                        readonly={Profile.isTransient || Profile.isRunning}
                         on:input={() => validateServerIface (row.index)}
-                        style="width: 100%"
                         >
-                        <HelperText persistent slot="helper">{Profile.cs_groups[row.index].server_ifaceHelp}</HelperText>
-                      </Textfield>
+                        <p class="help">{Profile.cs_groups[row.index].server_ifaceHelp}</p>
                     </div>
                   </div>
                 </div>                
 
 
-                <div class="column is-half">
+                <div class="column is-full">
 
                   <div class="field">
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">Client IPs</label>
                     <div class="control">
-                      <Textfield bind:value={Profile.cs_groups[row.index].client_ips}
-                        label="Client IPs"
-                        invalid={(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved)}
-                        disabled={Profile.isTransient || Profile.isRunning}
+                      <input class="input {(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved) ? 'is-danger' : '' }"
+                        bind:value={Profile.cs_groups[row.index].client_ips}
+                        readonly={Profile.isTransient || Profile.isRunning}
                         on:input={() => validateClientIPs(row.index)}
-                        style="width: 100%"
                         >
-                        <HelperText persistent slot="helper">{Profile.cs_groups[row.index].client_ipsHelp}</HelperText>
-                      </Textfield>
+                        <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
                     </div>
                   </div>
               
@@ -1545,43 +1542,21 @@ import { select_option } from "svelte/internal";
               <div class="column is-half">
               
                 <div class="field">
-                  <div class="control">
-                    <Textfield bind:value={Profile.cs_groups[row.index].server_ip}
-                      label="Server IPs"
-                      invalid={(Profile.cs_groups[row.index].server_ipError || Profile.cs_groups[row.index].server_ipUnsaved)}
-                      disabled={Profile.isTransient || Profile.isRunning}
-                      on:input={() => validateServerIP(row.index)}
-                      style="width: 100%"
-                      >
-                      <HelperText persistent slot="helper">{Profile.cs_groups[row.index].server_ipHelp}</HelperText>
-                    </Textfield>
-                  </div>
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label ">Server IP</label>
+                    <div class="control">
+                      <input class="input {(Profile.cs_groups[row.index].server_ipError || Profile.cs_groups[row.index].server_ipUnsaved) ? 'is-danger' : '' }"
+                        bind:value={Profile.cs_groups[row.index].server_ip}
+                        readonly={Profile.isTransient || Profile.isRunning}
+                        on:input={() => validateServerIP(row.index)}
+                        >
+                        <p class="help">{Profile.cs_groups[row.index].server_ipHelp}</p>
+                    </div>
                 </div>
               
               </div>
               
-              
-              <div class="column is-half">
-              
-                  <div class="field">
-                      <div>
-                        <Select bind:value={Profile.cs_groups[row.index].server_ssl}
-                          on:change={() => alert('here')}
-                          label="Protocol"
-                          style="width: 100%"
-                          invalid={Profile.cs_groups[row.index].server_sslUnsaved}
-                          >
-                          <Option value="1">TLS</Option>
-                          <Option value="0">TCP</Option>
-                          <svelte:fragment slot="helperText">{Profile.cs_groups[row.index].server_sslHelp}</svelte:fragment>
-                        </Select>
-                      </div>
-                  </div>
-              
-              </div>
-              
-              
-              
+                  
               <div class="column is-half">
               
                   <div class="field">
