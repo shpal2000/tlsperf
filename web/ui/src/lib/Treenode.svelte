@@ -97,7 +97,7 @@
 <style>
 
   .selected {
-    background-color: grey;
+    background-color: #4482b8;
     color: white;
   }
 

@@ -1110,61 +1110,61 @@ import { select_option } from "svelte/internal";
 
   let cpsChartDataSet = [{
     fill: false,
-    borderWidth: 2,
+    borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(89, 112, 115)',
+    borderColor: 'rgb(255, 165, 0)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 2,
-    lineTension: 0.2,
-    borderColor: 'rgb(114, 137, 218)',
+    borderWidth: 1.5,
+    lineTension: 0.1,
+    borderColor: 'rgb(255, 165, 0)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 2,
-    lineTension: 0.3,
-    borderColor: 'rgb(186, 225, 255)',
+    borderWidth: 1.5,
+    lineTension: 0.1,
+    borderColor: 'rgb(255, 165, 0)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 2,
-    lineTension: 0.4,
-    borderColor: 'rgb(255, 204, 92)',
+    borderWidth: 1.5,
+    lineTension: 0.1,
+    borderColor: 'rgb(255, 165, 0)',
     data: []
   }];
 
 
   let clntThptChartDataSet = [{
     fill: true,
-    borderWidth: 2,
+    borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(89, 112, 115)',
+    borderColor: 'rgb(255, 165, 0)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 2,
-    lineTension: 0.2,
-    borderColor: 'rgb(114, 137, 218)',
+    borderWidth: 1.5,
+    lineTension: 0.1,
+    borderColor: 'rgb(255, 165, 0)',
     data: []
   },
   {
     fill: false,
-    borderWidth: 2,
-    lineTension: 0.3,
-    borderColor: 'rgb(186, 225, 255)',
+    borderWidth: 1.5,
+    lineTension: 0.1,
+    borderColor: 'rgb(255, 165, 0)',
     data: []
   }];
 
   let srvrThptChartDataSet = [{
     fill: true,
-    borderWidth: 2,
+    borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(255, 204, 92)',
+    borderColor: 'rgb(255, 165, 0)',
     data: []
   }];
   
@@ -1344,23 +1344,27 @@ import { select_option } from "svelte/internal";
           <div class="tile is-child my-border">
             <section>
               <div class="columns is-multiline is-mobile start_stop_border">
+                
+                
                 <div class="column is-full">
-                  <FormGroup>
-                    <TextInput size="sm" light inline bind:value={Profile.Transactions} 
-                      labelText="Sess"
-                      invalidText= "{Profile.transactionsHelp}"
-                      invalid={(Profile.transactionsError || Profile.transactionsUnsaved)}
+                  <TextInput inline size="sm" bind:value={Profile.Transactions} 
+                  labelText="Sessions"
+                  invalidText= "{Profile.transactionsHelp}"
+                  invalid={(Profile.transactionsError || Profile.transactionsUnsaved)}
+                  disabled={Profile.isTransient || Profile.isRunning}
+                  on:input={validateTransactions} />
+                </div>
+
+                <div class="column is-full">
+                    <TextInput inline size="sm" bind:value={Profile.CPS} 
+                    labelText="CPS"
+                      invalid={(Profile.cpsError || Profile.cpsUnsaved)}
+                      invalidText="{Profile.cpsHelp}"
                       disabled={Profile.isTransient || Profile.isRunning}
-                      on:input={validateTransactions} />
-
-                      <TextInput size="sm" light inline bind:value={Profile.CPS} 
-                      labelText="CPS"
-                        invalid={(Profile.cpsError || Profile.cpsUnsaved)}
-                        invalidText="{Profile.cpsHelp}"
-                        disabled={Profile.isTransient || Profile.isRunning}
-                        on:input={validateCps}/>
-                  </FormGroup>
-
+                      on:input={validateCps}/>
+                </div>          
+                
+                <div class="column is-full">
                   <div class="field has-text-centered">
                     <div class="control has-text-centered" >
                       <button class="button {Profile.isRunning ? 'is-danger is-light' : 'is-dark'}" 
@@ -1377,7 +1381,7 @@ import { select_option } from "svelte/internal";
                           {/if}
                       </button>
     
-                      <button class="button is-light is-dark" 
+                      <!-- <button class="button is-light is-dark" 
                         disabled={Profile.isTransient || (!Profile.isRunning)}
                         on:click={onCaptureAction} > 
                           {#if Profile.isCapturing}
@@ -1385,11 +1389,12 @@ import { select_option } from "svelte/internal";
                           {:else}
                             Start Capture
                           {/if}
-                      </button>
+                      </button> -->
                     </div>
                   </div>
-
                 </div>
+
+
               </div>
             </section> 
 
