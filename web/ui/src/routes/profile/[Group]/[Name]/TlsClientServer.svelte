@@ -10,7 +10,7 @@
     import {goto} from "$app/navigation";
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
-    import { ProgressBar, Loading, TextInput, FormGroup} from "carbon-components-svelte";
+    import { ProgressBar, Loading, TextInput, FormGroup, Grid, Row, Column} from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
     import Textfield from '@smui/textfield';
@@ -1352,7 +1352,7 @@ import { select_option } from "svelte/internal";
                   invalidText= "{Profile.transactionsHelp}"
                   invalid={(Profile.transactionsError || Profile.transactionsUnsaved)}
                   disabled={Profile.isTransient || Profile.isRunning}
-                  on:input={validateTransactions} />
+                  on:keyup={validateTransactions} />
                 </div>
 
                 <div class="column is-full">
@@ -1361,7 +1361,7 @@ import { select_option } from "svelte/internal";
                       invalid={(Profile.cpsError || Profile.cpsUnsaved)}
                       invalidText="{Profile.cpsHelp}"
                       disabled={Profile.isTransient || Profile.isRunning}
-                      on:input={validateCps}/>
+                      on:keyup={validateCps}/>
                 </div>          
                 
                 <div class="column is-full">
@@ -1479,174 +1479,208 @@ import { select_option } from "svelte/internal";
         >
         <div slot="expanded-row" let:row>
           <div class="columns is-multiline is-mobile">
-            <div class="column is-2">
+            <div class="column">
             </div>
 
-            <div class="column is-8">
-              <div class="columns is-multiline is-mobile">
+            <div class="column is-three-fifths">
+              <br>
+              <FormGroup legendText="Traffic Ports">
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                labelText="Client"
+                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateClientIface (row.index)} />
 
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />                  
+              </FormGroup>
 
-                <div class="column is-half">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Client Iface</label>
-                    <div class="control">
-                      <input class="input {(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved) ? 'is-danger' : '' }"
-                        bind:value={Profile.cs_groups[row.index].client_iface}
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        on:input={() => validateClientIface (row.index)}
-                        >
-                        <p class="help">{Profile.cs_groups[row.index].client_ifaceHelp}</p>
-                    </div>
-                  </div>
-                </div>
-  
-                <div class="column is-half">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Server Iface</label>
-                    <div class="control">
-                      <input class="input {(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved) ? 'is-danger' : '' }"
-                        bind:value={Profile.cs_groups[row.index].server_iface}
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        on:input={() => validateServerIface (row.index)}
-                        >
-                        <p class="help">{Profile.cs_groups[row.index].server_ifaceHelp}</p>
-                    </div>
-                  </div>
-                </div>                
+              <FormGroup legendText="IP, Ports">
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                labelText="Client IPs"
+                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateClientIface (row.index)} />
 
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server IP"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />   
 
-                <div class="column is-full">
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server Port"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />   
+              </FormGroup>
 
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Client IPs</label>
-                    <div class="control">
-                      <input class="input {(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved) ? 'is-danger' : '' }"
-                        bind:value={Profile.cs_groups[row.index].client_ips}
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        on:input={() => validateClientIPs(row.index)}
-                        >
-                        <p class="help">{Profile.cs_groups[row.index].client_ipsHelp}</p>
-                    </div>
-                  </div>
-              
-              </div>
-              
-              
-              <div class="column is-half">
-              
-                <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Server IP</label>
-                    <div class="control">
-                      <input class="input {(Profile.cs_groups[row.index].server_ipError || Profile.cs_groups[row.index].server_ipUnsaved) ? 'is-danger' : '' }"
-                        bind:value={Profile.cs_groups[row.index].server_ip}
-                        readonly={Profile.isTransient || Profile.isRunning}
-                        on:input={() => validateServerIP(row.index)}
-                        >
-                        <p class="help">{Profile.cs_groups[row.index].server_ipHelp}</p>
-                    </div>
-                </div>
-              
-              </div>
-              
-                  
-              <div class="column is-half">
-              
-                  <div class="field">
-                      <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Server Port</label>
-                      <div class="control">
-                        <input class="input " 
-                        type="text" 
-                        placeholder=""
-                        bind:value={Profile.cs_groups[row.index].server_port}
-                        >
-                      </div>
-                  </div>
-              
-              </div>
-              
-              
-              
-              <div class="column is-half">
-              
-                  <div class="field">
-                      <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">TLS Version</label>
-                      <div class="select is-fullwidth ">
-                        <select class="">
-                          <option>All</option>
-                        </select>
-                      </div>
-                  </div>
-              
-              </div>
-              
-              
-              
-              
-              <div class="column is-half">
-              
-                  <div class="field">
-                      <!-- svelte-ignore a11y-label-has-associated-control -->
-                      <label class="label ">Ciphers</label>
-                      <div class="select is-fullwidth ">
-                        <select class="">
-                          <option>All</option>
-                        </select>
-                      </div>
-                  </div>
-              
-              </div>
+              <FormGroup legendText="TCP Options">
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                labelText="Client Close"
+                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateClientIface (row.index)} />
 
-                <div class="column is-full">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Server Cert</label>
-                    <div class="control">
-                      <textarea class="textarea cert-margin" rows="4"
-                      placeholder=""
-                      bind:value={Profile.cs_groups[row.index].server_cert}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server Close"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />   
 
-                <div class="column is-full">
-                  <div class="field">
-                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                    <label class="label ">Server Key</label>
-                    <div class="control">
-                      <textarea class="textarea cert-margin" rows="4"
-                      placeholder=""
-                      bind:value={Profile.cs_groups[row.index].server_key}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Client RcvBuffer"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />
 
-                <div class="column is-half">
-                  <div class="field is-grouped">
-                    <button class="button is-small is-danger is-outlined" 
-                    disabled={Profile.isTransient || Profile.isRunning || (Profile.isLastCSG && Profile.cs_groups[row.index].fieldAttention!='mark-delete') }
-                    on:click={onMarkUnmarkDelete (row.index)} >
-                    {#if Profile.cs_groups[row.index].fieldAttention=='mark-delete'}
-                      Unmark Delete
-                    {:else}
-                      Mark Delete
-                    {/if}
-                    </button> 
-                  </div>
-                </div>
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server RcvBuffer"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />   
+              </FormGroup>
 
-                <div class="column is-full"></div>
-              </div>
+              <FormGroup legendText="TLS Options">
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                labelText="Client Version"
+                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateClientIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                labelText="Server Version"
+                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateClientIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Client Ciphers"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server Ciphers"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Client Resumption"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server Resumption"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Client CloseNotify"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} /> 
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server CloseNotify"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} /> 
+
+              </FormGroup>
+
+              <FormGroup legendText="App Options">
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                labelText="Client DataLen"
+                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateClientIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server DataLen"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                labelText="Client StartTls"
+                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateClientIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server StartTls"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                labelText="Client ReadChunk"
+                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateClientIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server ReadChunk"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />                  
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                labelText="Client WriteChunk"
+                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateClientIface (row.index)} />
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Server WriteChunk"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />                  
+
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                labelText="Emulation"
+                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                disabled={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />                  
+
+              </FormGroup>
+
             </div>
 
-            <div class="column is-2">
+            <div class="column">
             </div>
           </div>
         </div>
