@@ -237,7 +237,6 @@ def start (group, name, stats_addr):
             'ServerTlsVersion': csg['server_tls_version'],
             'ClientTlsCipher': csg['client_tls_cipher'],
             'ServerTlsCipher': csg['server_tls_cipher'],
-            'TlsCipher': csg['tls_cipher'],
             'ClientTcpCloseType': csg['client_tcp_close_type'],
             'ServerTcpCloseType': csg['server_tcp_close_type'],
             'ClientTlsCloseType': csg['client_tls_close_type'],
