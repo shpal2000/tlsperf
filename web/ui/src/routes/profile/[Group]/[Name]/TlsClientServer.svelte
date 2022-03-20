@@ -297,10 +297,12 @@
 
 
       for (let i=0; i < Profile.cs_groups.length; i++) {
-        validateClientIPs (i);
-        validateServerIP (i);
         validateClientIface (i);
         validateServerIface (i);
+        
+        validateClientIPs (i);
+        validateServerIP (i);
+
         validateProtocol (i);
       }
     }
@@ -846,9 +848,6 @@
     ];
 
   function csgCanonical (csg) {
-    
-    // p2.DataLength = p2.DataLength.toString();
-    // p2.MaxPipeline = p2.MaxPipeline.toString();
 
     csg.id = csg.app_id;
 
@@ -875,6 +874,32 @@
     csg.server_portUnsaved = false;
     csg.server_portHelp = '';
 
+    
+    if (csg.server_ssl == 0) {
+      csg.server_ssl = 'TCP';
+    } else {
+      csg.server_ssl = 'SSL';
+    }
+    csg.server_sslError = false;
+    csg.server_sslUnsaved = false;
+    csg.server_sslHelp = '';
+
+    csg.client_tls_versionError = false;
+    csg.client_tls_versionUnsaved = false;
+    csg.client_tls_versionHelp = '';
+
+    csg.server_tls_versionError = false;
+    csg.server_tls_versionUnsaved = false;
+    csg.server_tls_versionHelp = '';
+
+    csg.client_tls_cipherError = false;
+    csg.client_tls_cipherUnsaved = false;
+    csg.client_tls_cipherHelp = '';
+
+    csg.server_tls_cipherError = false;
+    csg.server_tls_cipherUnsaved = false;
+    csg.server_tls_cipherHelp = '';
+
     csg.client_tcp_close_typeError = false;
     csg.client_tcp_close_typeUnsaved = false;
     csg.client_tcp_close_typeHelp = '';
@@ -883,8 +908,96 @@
     csg.server_tcp_close_typeUnsaved = false;
     csg.server_tcp_close_typeHelp = '';
 
-    csg.server_ssl = csg.server_ssl.toString();
+    csg.client_tls_close_typeError = false;
+    csg.client_tls_close_typeUnsaved = false;
+    csg.client_tls_close_typeHelp = '';
 
+    csg.server_tls_close_typeError = false;
+    csg.server_tls_close_typeUnsaved = false;
+    csg.server_tls_close_typeHelp = '';
+
+    csg.client_resumption_count = csg.client_resumption_count.toString();
+    csg.client_resumption_countError = false;
+    csg.client_resumption_countUnsaved = false;
+    csg.client_resumption_countHelp = '';
+
+    csg.server_resumption_count = csg.server_resumption_count.toString();
+    csg.server_resumption_countError = false;
+    csg.server_resumption_countUnsaved = false;
+    csg.server_resumption_countHelp = '';
+
+    csg.client_resumption_typeError = false;
+    csg.client_resumption_typeUnsaved = false;
+    csg.client_resumption_typeHelp = '';
+
+    csg.server_resumption_typeError = false;
+    csg.server_resumption_typeUnsaved = false;
+    csg.server_resumption_typeHelp = '';
+
+    csg.max_active_conn_count = csg.max_active_conn_count.toString();
+    csg.max_active_conn_countError = false;
+    csg.max_active_conn_countUnsaved = false;
+    csg.max_active_conn_countHelp = '';
+
+    csg.cs_data_len = csg.cs_data_len.toString();
+    csg.cs_data_lenError = false;
+    csg.cs_data_lenUnsaved = false;
+    csg.cs_data_lenHelp = '';
+
+    csg.sc_data_len = csg.sc_data_len.toString();
+    csg.sc_data_lenError = false;
+    csg.sc_data_lenUnsaved = false;
+    csg.sc_data_lenHelp = '';
+
+    csg.cs_starttls_len = csg.cs_starttls_len.toString();
+    csg.cs_starttls_lenError = false;
+    csg.cs_starttls_lenUnsaved = false;
+    csg.cs_starttls_lenHelp = '';
+
+    csg.sc_starttls_len = csg.sc_starttls_len.toString();
+    csg.sc_starttls_lenError = false;
+    csg.sc_starttls_lenUnsaved = false;
+    csg.sc_starttls_lenHelp = '';
+
+    csg.client_tcp_rcv_buff_len = csg.client_tcp_rcv_buff_len.toString();
+    csg.client_tcp_rcv_buff_lenError = false;
+    csg.client_tcp_rcv_buff_lenUnsaved = false;
+    csg.client_tcp_rcv_buff_lenHelp = '';
+
+    csg.server_tcp_rcv_buff_len = csg.server_tcp_rcv_buff_len.toString();
+    csg.server_tcp_rcv_buff_lenError = false;
+    csg.server_tcp_rcv_buff_lenUnsaved = false;
+    csg.server_tcp_rcv_buff_lenHelp = '';
+
+    csg.client_tcp_snd_buff_len = csg.client_tcp_snd_buff_len.toString();
+    csg.client_tcp_snd_buff_lenError = false;
+    csg.client_tcp_snd_buff_lenUnsaved = false;
+    csg.client_tcp_snd_buff_lenHelp = '';
+
+    csg.server_tcp_snd_buff_len = csg.server_tcp_snd_buff_len.toString();
+    csg.server_tcp_snd_buff_lenError = false;
+    csg.server_tcp_snd_buff_lenUnsaved = false;
+    csg.server_tcp_snd_buff_lenHelp = '';
+
+    csg.client_read_chunk_len = csg.client_read_chunk_len.toString();
+    csg.client_read_chunk_lenError = false;
+    csg.client_read_chunk_lenUnsaved = false;
+    csg.client_read_chunk_lenHelp = '';
+
+    csg.server_read_chunk_len = csg.server_read_chunk_len.toString();
+    csg.server_read_chunk_lenError = false;
+    csg.server_read_chunk_lenUnsaved = false;
+    csg.server_read_chunk_lenHelp = '';
+
+    csg.client_write_chunk_len = csg.client_write_chunk_len.toString();
+    csg.client_write_chunk_lenError = false;
+    csg.client_write_chunk_lenUnsaved = false;
+    csg.client_write_chunk_lenHelp = '';
+
+    csg.server_write_chunk_len = csg.server_write_chunk_len.toString();
+    csg.server_write_chunk_lenError = false;
+    csg.server_write_chunk_lenUnsaved = false;
+    csg.server_write_chunk_lenHelp = '';
   }
 
   function profileCanonical (p) {

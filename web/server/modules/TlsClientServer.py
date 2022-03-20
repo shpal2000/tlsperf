@@ -75,12 +75,12 @@ def get_new_csg (csg_index, prof_j):
   csg = {
     "index": csg_index,
 
+    "app_id": "CSG" + str(csg_index+1),
+    "app_gid": prof_j['Group'] + '-' + prof_j['Name'],
+
     "client_ips" : [ipstr + '.1/16'],
     "server_ip": ipstr + '.201/16',
 
-    "app_id": "CSG" + str(csg_index+1),
-    "app_gid": prof_j['Group'] + '-' + prof_j['Name'],
-    
     "server_port": 443,
     "server_ssl": 1,
     "server_key": default_key.strip(),
