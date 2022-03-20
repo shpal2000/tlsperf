@@ -10,13 +10,11 @@
     import {goto} from "$app/navigation";
     import { DataTable } from "carbon-components-svelte";
     import "carbon-components-svelte/css/white.css";
-    import { ProgressBar, Loading, TextInput, FormGroup, Grid, Row, Column} from "carbon-components-svelte";
+    import { ProgressBar, Loading, TextInput, FormGroup, Select, SelectItem, Grid, Row, Column} from "carbon-components-svelte";
     import Chart from 'chart.js/auto';
 
     import Textfield from '@smui/textfield';
     import HelperText from '@smui/textfield/helper-text';
-    import Select, { Option } from '@smui/select';
-import { select_option } from "svelte/internal";
 
     let isLoading = false;
 
@@ -294,8 +292,8 @@ import { select_option } from "svelte/internal";
     function validateAllFields() {
       validateTransactions ();
       validateCps ();
-      validateDataLength ();
-      validateMaxPipeline ();
+      // validateDataLength ();
+      // validateMaxPipeline ();
 
 
       for (let i=0; i < Profile.cs_groups.length; i++) {
@@ -848,16 +846,11 @@ import { select_option } from "svelte/internal";
     ];
 
   function csgCanonical (csg) {
+    
+    // p2.DataLength = p2.DataLength.toString();
+    // p2.MaxPipeline = p2.MaxPipeline.toString();
+
     csg.id = csg.app_id;
-    csg.client_ips = csg.client_ips.join(',');
-
-    csg.client_ipsError = false;
-    csg.client_ipsUnsaved = false;
-    csg.client_ipsHelp = ''
-
-    csg.server_ipError = false;
-    csg.server_ipUnsaved = false;
-    csg.server_ipHelp = '';
 
     csg.client_ifaceError = false;
     csg.client_ifaceUnsaved = false;
@@ -867,19 +860,40 @@ import { select_option } from "svelte/internal";
     csg.server_ifaceUnsaved = false;
     csg.server_ifaceHelp = ''
 
+
+    csg.client_ips = csg.client_ips.join(',');
+    csg.client_ipsError = false;
+    csg.client_ipsUnsaved = false;
+    csg.client_ipsHelp = ''
+
+    csg.server_ipError = false;
+    csg.server_ipUnsaved = false;
+    csg.server_ipHelp = '';
+
+    csg.server_port = csg.server_port.toString();
+    csg.server_portError = false;
+    csg.server_portUnsaved = false;
+    csg.server_portHelp = '';
+
+    csg.client_tcp_close_typeError = false;
+    csg.client_tcp_close_typeUnsaved = false;
+    csg.client_tcp_close_typeHelp = '';
+
+    csg.server_tcp_close_typeError = false;
+    csg.server_tcp_close_typeUnsaved = false;
+    csg.server_tcp_close_typeHelp = '';
+
     csg.server_ssl = csg.server_ssl.toString();
+
   }
 
   function profileCanonical (p) {
 
     const p2 = JSON.parse(JSON.stringify(p));
 
-    //all number field to string
     p2.Transactions = p2.Transactions.toString();
     p2.CPS = p2.CPS.toString();
-    p2.DataLength = p2.DataLength.toString();
-    p2.MaxPipeline = p2.MaxPipeline.toString();
-
+    
     //for table header and row
     for (const csg of p2.cs_groups) {
       csgCanonical (csg);
@@ -898,10 +912,14 @@ import { select_option } from "svelte/internal";
 
     p2.Transactions = parseInt(p.Transactions);
     p2.CPS = parseInt(p.CPS);
-    p2.DataLength = parseInt(p.DataLength);
-    p2.MaxPipeline = parseInt(p.MaxPipeline);
+
     p2.ClientIface = p.ClientIface;
     p2.ServerIface = p.ServerIface;
+
+    p2.DataLength = parseInt(p.DataLength);
+
+    p2.MaxPipeline = parseInt(p.MaxPipeline);
+
 
     let csg_count = 0;
     for (const csg of p.cs_groups) {
@@ -1112,28 +1130,28 @@ import { select_option } from "svelte/internal";
     fill: false,
     borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(255, 165, 0)',
+    borderColor: 'rgb(255, 116, 65)',
     data: []
   },
   {
     fill: false,
     borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(255, 165, 0)',
+    borderColor: 'rgb(255, 116, 65)',
     data: []
   },
   {
     fill: false,
     borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(255, 165, 0)',
+    borderColor: 'rgb(255, 116, 65)',
     data: []
   },
   {
     fill: false,
     borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(255, 165, 0)',
+    borderColor: 'rgb(255, 116, 65)',
     data: []
   }];
 
@@ -1142,21 +1160,21 @@ import { select_option } from "svelte/internal";
     fill: true,
     borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(255, 165, 0)',
+    borderColor: 'rgb(255, 116, 65)',
     data: []
   },
   {
     fill: false,
     borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(255, 165, 0)',
+    borderColor: 'rgb(255, 116, 65)',
     data: []
   },
   {
     fill: false,
     borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(255, 165, 0)',
+    borderColor: 'rgb(255, 116, 65)',
     data: []
   }];
 
@@ -1164,7 +1182,7 @@ import { select_option } from "svelte/internal";
     fill: true,
     borderWidth: 1.5,
     lineTension: 0.1,
-    borderColor: 'rgb(255, 165, 0)',
+    borderColor: 'rgb(255, 116, 65)',
     data: []
   }];
   
@@ -1351,7 +1369,7 @@ import { select_option } from "svelte/internal";
                   labelText="Sessions"
                   invalidText= "{Profile.transactionsHelp}"
                   invalid={(Profile.transactionsError || Profile.transactionsUnsaved)}
-                  disabled={Profile.isTransient || Profile.isRunning}
+                  readonly={Profile.isTransient || Profile.isRunning}
                   on:keyup={validateTransactions} />
                 </div>
 
@@ -1360,7 +1378,7 @@ import { select_option } from "svelte/internal";
                     labelText="CPS"
                       invalid={(Profile.cpsError || Profile.cpsUnsaved)}
                       invalidText="{Profile.cpsHelp}"
-                      disabled={Profile.isTransient || Profile.isRunning}
+                      readonly={Profile.isTransient || Profile.isRunning}
                       on:keyup={validateCps}/>
                 </div>          
                 
@@ -1489,14 +1507,14 @@ import { select_option } from "svelte/internal";
                 labelText="Client"
                 invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateClientIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />                  
               </FormGroup>
 
@@ -1505,51 +1523,44 @@ import { select_option } from "svelte/internal";
                 labelText="Client IPs"
                 invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateClientIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server IP"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />   
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server Port"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />   
               </FormGroup>
 
               <FormGroup legendText="TCP Options">
-                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
-                labelText="Client Close"
-                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
-                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
-                on:keyup={() => validateClientIface (row.index)} />
-
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
-                labelText="Server Close"
+                labelText="Client Close"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />   
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Client RcvBuffer"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server RcvBuffer"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />   
               </FormGroup>
 
@@ -1558,56 +1569,56 @@ import { select_option } from "svelte/internal";
                 labelText="Client Version"
                 invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateClientIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
                 labelText="Server Version"
                 invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateClientIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Client Ciphers"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server Ciphers"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Client Resumption"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server Resumption"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Client CloseNotify"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} /> 
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server CloseNotify"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} /> 
 
               </FormGroup>
@@ -1617,64 +1628,64 @@ import { select_option } from "svelte/internal";
                 labelText="Client DataLen"
                 invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateClientIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server DataLen"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
                 labelText="Client StartTls"
                 invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateClientIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server StartTls"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
                 labelText="Client ReadChunk"
                 invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateClientIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server ReadChunk"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />                  
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
                 labelText="Client WriteChunk"
                 invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateClientIface (row.index)} />
 
                 <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Server WriteChunk"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
+                readonly={Profile.isTransient || Profile.isRunning}
                 on:keyup={() => validateServerIface (row.index)} />                  
 
-                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                <!-- <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
                 labelText="Emulation"
                 invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
                 invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
-                disabled={Profile.isTransient || Profile.isRunning}
-                on:keyup={() => validateServerIface (row.index)} />                  
+                readonly={Profile.isTransient || Profile.isRunning}
+                on:keyup={() => validateServerIface (row.index)} />                   -->
 
               </FormGroup>
 
@@ -1723,8 +1734,8 @@ import { select_option } from "svelte/internal";
   <style>
     .profile-margin {
       margin-top: 0px;
-      margin-left: 1rem;
-      margin-right: 1rem;
+      margin-left: 4rem;
+      margin-right: 4rem;
     }
 
     .my-border {
@@ -1746,11 +1757,6 @@ import { select_option } from "svelte/internal";
 
     .okmsg {
       color: green;
-    }
-
-    .cert-margin {
-      padding-top: 0;
-      padding-bottom: 0;
     }
 
     .start_stop_border {
