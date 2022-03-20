@@ -1029,11 +1029,6 @@
     p2.ClientIface = p.ClientIface;
     p2.ServerIface = p.ServerIface;
 
-    p2.DataLength = parseInt(p.DataLength);
-
-    p2.MaxPipeline = parseInt(p.MaxPipeline);
-
-
     let csg_count = 0;
     for (const csg of p.cs_groups) {
       if (csg.fieldAttention == 'mark-delete') {
@@ -1055,45 +1050,98 @@
       csg2.index = csg_index;
       csg_index += 1;
 
-      csg2.client_ips = csg.client_ips.split(',');
-      csg2.server_ip = csg.server_ip;
+      csg2.app_id = "CSG" + csg_index.toString();
+      csg2.app_gid = csg.app_gid;
 
       csg2.client_iface = csg.client_iface;
       csg2.server_iface = csg.server_iface;
 
-      csg2.app_id = "CSG" + csg_index.toString();
-      csg2.app_gid = csg.app_gid;
+      csg2.client_ips = csg.client_ips.split(',');
+      csg2.server_ip = csg.server_ip;
 
-      csg2.server_port = csg.server_port;
-      csg2.server_ssl = parseInt(csg.server_ssl);
+      csg2.server_port = parseInt(csg.server_port);
+
+      if (csg.server_ssl == 'TCP') {
+        csg2.server_ssl = 0;
+      } else {
+        csg2.server_ssl = 1;
+      }
+
       csg2.server_key = csg.server_key;
       csg2.server_cert = csg.server_cert;
 
-      csg2.tls_version = csg.tls_version;
-      csg2.tls_cipher = csg.tls_cipher;
-      csg2.tcp_close_type = csg.tcp_close_type;
-      csg2.tls_close_type = csg.tls_close_type;
+      csg2.client_tls_version = csg.client_tls_version;
+      csg2.server_tls_version = csg.server_tls_version;
 
-      csg2.resumption_count = csg.resumption_count;
-      csg2.resumption_type = csg.resumption_type;
+      csg2.client_tls_cipher = csg.client_tls_cipher;
+      csg2.server_tls_cipher = csg.server_tls_cipher;
 
-      csg2.tcp_rcv_buff_len = csg.tcp_rcv_buff_len;
-      csg2.tcp_snd_buff_len = csg.tcp_snd_buff_len;
+      csg2.client_tcp_close_type = csg.client_tcp_close_type;
+      csg2.server_tcp_close_type = csg.server_tcp_close_type;
 
-      csg2.read_chunk_len = csg.read_chunk_len;
-      csg2.write_chunk_len = csg.write_chunk_len;
+      csg2.client_tls_close_type = csg.client_tls_close_type;
+      csg2.server_tls_close_type = csg.server_tls_close_type;
 
-      csg2.cs_data_len = p2.DataLength;
-      csg2.sc_data_len = p2.DataLength;
+      csg2.client_resumption_count = parseInt(csg.client_resumption_count);
+      csg2.server_resumption_count = parseInt(csg.server_resumption_count);
 
-      csg2.cs_starttls_len = csg.cs_starttls_len;
-      csg2.sc_starttls_len = csg.sc_starttls_len;
+      csg2.client_resumption_type = csg.client_resumption_type;
+      csg2.server_resumption_type = csg.server_resumption_type;
+
+      csg2.max_active_conn_count = parseInt(csg.max_active_conn_count);
+
+      csg2.client_tcp_rcv_buff_len = parseInt(csg.client_tcp_rcv_buff_len);
+      csg2.server_tcp_rcv_buff_len = parseInt(csg.server_tcp_rcv_buff_len);
+
+      csg2.client_tcp_snd_buff_len = parseInt(csg.client_tcp_snd_buff_len);
+      csg2.server_tcp_snd_buff_len = parseInt(csg.server_tcp_snd_buff_len);
+
+      csg2.client_read_chunk_len = parseInt(csg.client_read_chunk_len);
+      csg2.server_read_chunk_len = parseInt(csg.server_read_chunk_len);
+
+      csg2.client_write_chunk_len = parseInt(csg.client_write_chunk_len);
+      csg2.server_write_chunk_len = parseInt(csg.server_write_chunk_len);
+
+      csg2.cs_data_len = parseInt(csg.cs_data_len);
+      csg2.sc_data_len = parseInt(csg.sc_data_len);
+      csg2.cs_starttls_len = parseInt(csg.cs_starttls_len);
+      csg2.sc_starttls_len = parseInt(csg.sc_starttls_len);
       
       csg2.cps = Math.floor (p2.CPS / csg_count); 
-      csg2.max_active_conn_count = Math.floor (p2.MaxPipeline / csg_count);
       csg2.total_conn_count = Math.floor (p2.Transactions / csg_count);
 
       p2.cs_groups.push (csg2);
+    }
+
+    if (p2.CPS % csg_count) {
+      let cpsReminder = p2.CPS % csg_count;
+      while (cpsReminder > 0) {
+        for (const csg2 of p2.cs_groups) {
+
+          csg2.cps += 1;
+          cpsReminder -= 1;
+
+          if (cpsReminder == 0) {
+            break;
+          }
+        }
+      }
+    }
+
+
+    if (p2.Transactions % csg_count) {
+      let transactionReminder = p2.Transactions % csg_count;
+      while (transactionReminder > 0) {
+        for (const csg2 of p2.cs_groups) {
+          
+          csg2.total_conn_count += 1;
+          transactionReminder -= 1;
+
+          if (transactionReminder == 0) {
+            break;
+          }
+        }
+      }
     }
 
     return p2;
