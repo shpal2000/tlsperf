@@ -87,6 +87,32 @@
       Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
     }
 
+    function validateServerPort (csg_index) {
+      let numRegex = new RegExp('^[0-9]+$', 'i');
+      
+      const csg = Profile.cs_groups[csg_index];
+      const savedCsg = SavedProfile.cs_groups[csg_index];
+
+      csg.server_portError = false;
+      csg.server_portUnsaved = false;
+      csg.server_portHelp = ''
+
+      if (csg.server_port.trim() == ''){
+        csg.server_portHelp = 'required';
+        csg.server_portError = true;
+      } else if (!(csg.server_port.match(numRegex) && csg.server_port.match(numRegex)[0] === csg.server_port)) {
+        csg.server_portHelp = 'invalid - ip/cidr';
+        csg.server_portError = true;
+      } else if (csg.server_port != savedCsg.server_port) {
+        csg.server_portUnsaved = true;
+        csg.server_portHelp = "modified"
+      }
+      
+      checkFields();
+
+      Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+    }
+
     function validateTransactions () {
       let numRegex = new RegExp('^[0-9]+$', 'i');
 
@@ -269,6 +295,8 @@
         if (csg.client_ipsError
             || csg.client_ifaceError
             || csg.server_ifaceError
+            || csg.server_ipError
+            || csg.server_portError
             ) 
         {
           Profile.markErrorFields = true;
@@ -278,7 +306,8 @@
         if (csg.client_ipsUnsaved
             || csg.client_ifaceUnsaved
             || csg.server_ifaceUnsaved
-            || csg.server_sslUnsaved
+            || csg.server_ipUnsaved
+            || csg.server_portUnsaved
             )
         {
           Profile.markUnsavedFields = true;
@@ -302,6 +331,7 @@
         
         validateClientIPs (i);
         validateServerIP (i);
+        validateServerPort (i);
 
         validateProtocol (i);
       }
@@ -1680,26 +1710,26 @@
               </FormGroup>
 
               <FormGroup legendText="IP, Ports">
-                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_iface} 
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].client_ips} 
                 labelText="Client IPs"
-                invalidText= "{Profile.cs_groups[row.index].client_ifaceHelp}"
-                invalid={(Profile.cs_groups[row.index].client_ifaceError || Profile.cs_groups[row.index].client_ifaceUnsaved)}
+                invalidText= "{Profile.cs_groups[row.index].client_ipsHelp}"
+                invalid={(Profile.cs_groups[row.index].client_ipsError || Profile.cs_groups[row.index].client_ipsUnsaved)}
                 readonly={Profile.isTransient || Profile.isRunning}
-                on:keyup={() => validateClientIface (row.index)} />
+                on:keyup={() => validateClientIPs (row.index)} />
 
-                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_ip} 
                 labelText="Server IP"
-                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
-                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                invalidText= "{Profile.cs_groups[row.index].server_ipHelp}"
+                invalid={(Profile.cs_groups[row.index].server_ipError || Profile.cs_groups[row.index].server_ipUnsaved)}
                 readonly={Profile.isTransient || Profile.isRunning}
-                on:keyup={() => validateServerIface (row.index)} />   
+                on:keyup={() => validateServerIP (row.index)} />   
 
-                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_iface} 
+                <TextInput inline size="sm" bind:value={Profile.cs_groups[row.index].server_port} 
                 labelText="Server Port"
-                invalidText= "{Profile.cs_groups[row.index].server_ifaceHelp}"
-                invalid={(Profile.cs_groups[row.index].server_ifaceError || Profile.cs_groups[row.index].server_ifaceUnsaved)}
+                invalidText= "{Profile.cs_groups[row.index].server_portHelp}"
+                invalid={(Profile.cs_groups[row.index].server_portError || Profile.cs_groups[row.index].server_portUnsaved)}
                 readonly={Profile.isTransient || Profile.isRunning}
-                on:keyup={() => validateServerIface (row.index)} />   
+                on:keyup={() => validateServerPort (row.index)} />   
               </FormGroup>
 
               <FormGroup legendText="TCP Options">
