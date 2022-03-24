@@ -426,6 +426,292 @@
     Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
   }  
 
+  function validateMaxActiveConn (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.max_active_conn_countError = false;
+    csg.max_active_conn_countUnsaved = false;
+    csg.max_active_conn_countHelp = ''
+
+    if (csg.max_active_conn_count.trim() == ''){
+      csg.max_active_conn_countHelp = 'required';
+      csg.max_active_conn_countError = true;
+    } else if (!(csg.max_active_conn_count.match(numRegex) && csg.max_active_conn_count.match(numRegex)[0] === csg.max_active_conn_count)) {
+      csg.max_active_conn_countHelp = 'invalid - number only';
+      csg.max_active_conn_countError = true;
+    } else if (csg.max_active_conn_count != savedCsg.max_active_conn_count) {
+      csg.max_active_conn_countUnsaved = true;
+      csg.max_active_conn_countHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }  
+
+
+  function validateClientDataLen (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.cs_data_lenError = false;
+    csg.cs_data_lenUnsaved = false;
+    csg.cs_data_lenHelp = ''
+
+    if (csg.cs_data_len.trim() == ''){
+      csg.cs_data_lenHelp = 'required';
+      csg.cs_data_lenError = true;
+    } else if (!(csg.cs_data_len.match(numRegex) && csg.cs_data_len.match(numRegex)[0] === csg.cs_data_len)) {
+      csg.cs_data_lenHelp = 'invalid - number only';
+      csg.cs_data_lenError = true;
+    } else if (csg.cs_data_len != savedCsg.cs_data_len) {
+      csg.cs_data_lenUnsaved = true;
+      csg.cs_data_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
+
+  function validateServerDataLen (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.sc_data_lenError = false;
+    csg.sc_data_lenUnsaved = false;
+    csg.sc_data_lenHelp = ''
+
+    if (csg.sc_data_len.trim() == ''){
+      csg.sc_data_lenHelp = 'required';
+      csg.sc_data_lenError = true;
+    } else if (!(csg.sc_data_len.match(numRegex) && csg.sc_data_len.match(numRegex)[0] === csg.sc_data_len)) {
+      csg.sc_data_lenHelp = 'invalid - number only';
+      csg.sc_data_lenError = true;
+    } else if (csg.sc_data_len != savedCsg.sc_data_len) {
+      csg.sc_data_lenUnsaved = true;
+      csg.sc_data_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
+
+  function validateClientStartTlsLen (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.cs_starttls_lenError = false;
+    csg.cs_starttls_lenUnsaved = false;
+    csg.cs_starttls_lenHelp = ''
+
+    if (csg.cs_starttls_len.trim() == ''){
+      csg.cs_starttls_lenHelp = 'required';
+      csg.cs_starttls_lenError = true;
+    } else if (!(csg.cs_starttls_len.match(numRegex) && csg.cs_starttls_len.match(numRegex)[0] === csg.cs_starttls_len)) {
+      csg.cs_starttls_lenHelp = 'invalid - number only';
+      csg.cs_starttls_lenError = true;
+    } else if (csg.cs_starttls_len != savedCsg.cs_starttls_len) {
+      csg.cs_starttls_lenUnsaved = true;
+      csg.cs_starttls_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
+
+  function validateServerStartTlsLen (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.sc_starttls_lenError = false;
+    csg.sc_starttls_lenUnsaved = false;
+    csg.sc_starttls_lenHelp = ''
+
+    if (csg.sc_starttls_len.trim() == ''){
+      csg.sc_starttls_lenHelp = 'required';
+      csg.sc_starttls_lenError = true;
+    } else if (!(csg.sc_starttls_len.match(numRegex) && csg.sc_starttls_len.match(numRegex)[0] === csg.sc_starttls_len)) {
+      csg.sc_starttls_lenHelp = 'invalid - number only';
+      csg.sc_starttls_lenError = true;
+    } else if (csg.sc_starttls_len != savedCsg.sc_starttls_len) {
+      csg.sc_starttls_lenUnsaved = true;
+      csg.sc_starttls_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
+
+  function validateClientReadChunk (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.client_read_chunk_lenError = false;
+    csg.client_read_chunk_lenUnsaved = false;
+    csg.client_read_chunk_lenHelp = ''
+
+    if (csg.client_read_chunk_len.trim() == ''){
+      csg.client_read_chunk_lenHelp = 'required';
+      csg.client_read_chunk_lenError = true;
+    } else if (!(csg.client_read_chunk_len.match(numRegex) && csg.client_read_chunk_len.match(numRegex)[0] === csg.client_read_chunk_len)) {
+      csg.client_read_chunk_lenHelp = 'invalid - number only';
+      csg.client_read_chunk_lenError = true;
+    } else if (csg.client_read_chunk_len != savedCsg.client_read_chunk_len) {
+      csg.client_read_chunk_lenUnsaved = true;
+      csg.client_read_chunk_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
+
+  function validateServerReadChunk (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.server_read_chunk_lenError = false;
+    csg.server_read_chunk_lenUnsaved = false;
+    csg.server_read_chunk_lenHelp = ''
+
+    if (csg.server_read_chunk_len.trim() == ''){
+      csg.server_read_chunk_lenHelp = 'required';
+      csg.server_read_chunk_lenError = true;
+    } else if (!(csg.server_read_chunk_len.match(numRegex) && csg.server_read_chunk_len.match(numRegex)[0] === csg.server_read_chunk_len)) {
+      csg.server_read_chunk_lenHelp = 'invalid - number only';
+      csg.server_read_chunk_lenError = true;
+    } else if (csg.server_read_chunk_len != savedCsg.server_read_chunk_len) {
+      csg.server_read_chunk_lenUnsaved = true;
+      csg.server_read_chunk_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
+
+  function validateClientWriteChunk (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.client_write_chunk_lenError = false;
+    csg.client_write_chunk_lenUnsaved = false;
+    csg.client_write_chunk_lenHelp = ''
+
+    if (csg.client_write_chunk_len.trim() == ''){
+      csg.client_write_chunk_lenHelp = 'required';
+      csg.client_write_chunk_lenError = true;
+    } else if (!(csg.client_write_chunk_len.match(numRegex) && csg.client_write_chunk_len.match(numRegex)[0] === csg.client_write_chunk_len)) {
+      csg.client_write_chunk_lenHelp = 'invalid - number only';
+      csg.client_write_chunk_lenError = true;
+    } else if (csg.client_write_chunk_len != savedCsg.client_write_chunk_len) {
+      csg.client_write_chunk_lenUnsaved = true;
+      csg.client_write_chunk_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
+
+  function validateServerWriteChunk (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.server_write_chunk_lenError = false;
+    csg.server_write_chunk_lenUnsaved = false;
+    csg.server_write_chunk_lenHelp = ''
+
+    if (csg.server_write_chunk_len.trim() == ''){
+      csg.server_write_chunk_lenHelp = 'required';
+      csg.server_write_chunk_lenError = true;
+    } else if (!(csg.server_write_chunk_len.match(numRegex) && csg.server_write_chunk_len.match(numRegex)[0] === csg.server_write_chunk_len)) {
+      csg.server_write_chunk_lenHelp = 'invalid - number only';
+      csg.server_write_chunk_lenError = true;
+    } else if (csg.server_write_chunk_len != savedCsg.server_write_chunk_len) {
+      csg.server_write_chunk_lenUnsaved = true;
+      csg.server_write_chunk_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
+
+  function validateClientResCount (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.client_resumption_countError = false;
+    csg.client_resumption_countUnsaved = false;
+    csg.client_resumption_countHelp = ''
+
+    if (csg.client_resumption_count.trim() == ''){
+      csg.client_resumption_countHelp = 'required';
+      csg.client_resumption_countError = true;
+    } else if (!(csg.client_resumption_count.match(numRegex) && csg.client_resumption_count.match(numRegex)[0] === csg.client_resumption_count)) {
+      csg.client_resumption_countHelp = 'invalid - number only';
+      csg.client_resumption_countError = true;
+    } else if (csg.client_resumption_count != savedCsg.client_resumption_count) {
+      csg.client_resumption_countUnsaved = true;
+      csg.client_resumption_countHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
+
+  function validateServerResCount (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.server_resumption_countError = false;
+    csg.server_resumption_countUnsaved = false;
+    csg.server_resumption_countHelp = ''
+
+    if (csg.server_resumption_count.trim() == ''){
+      csg.server_resumption_countHelp = 'required';
+      csg.server_resumption_countError = true;
+    } else if (!(csg.server_resumption_count.match(numRegex) && csg.server_resumption_count.match(numRegex)[0] === csg.server_resumption_count)) {
+      csg.server_resumption_countHelp = 'invalid - number only';
+      csg.server_resumption_countError = true;
+    } else if (csg.server_resumption_count != savedCsg.server_resumption_count) {
+      csg.server_resumption_countUnsaved = true;
+      csg.server_resumption_countHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  } 
 
   function checkFields() {
 
@@ -468,6 +754,7 @@
           || csg.server_resumption_countError
           || csg.client_tls_close_typeError
           || csg.server_tls_close_typeError
+          || csg.max_active_conn_countError
           || csg.cs_data_lenError
           || csg.sc_data_lenError
           || csg.cs_starttls_lenError
@@ -505,6 +792,7 @@
           || csg.server_resumption_countUnsaved
           || csg.client_tls_close_typeUnsaved
           || csg.server_tls_close_typeUnsaved
+          || csg.max_active_conn_countUnsaved
           || csg.cs_data_lenUnsaved
           || csg.sc_data_lenUnsaved
           || csg.cs_starttls_lenUnsaved
