@@ -321,7 +321,112 @@
 
     Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
   }
+
+  function validateClientSndBuffer (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.client_tcp_snd_buff_lenError = false;
+    csg.client_tcp_snd_buff_lenUnsaved = false;
+    csg.client_tcp_snd_buff_lenHelp = ''
+
+    if (csg.client_tcp_snd_buff_len.trim() == ''){
+      csg.client_tcp_snd_buff_lenHelp = 'required';
+      csg.client_tcp_snd_buff_lenError = true;
+    } else if (!(csg.client_tcp_snd_buff_len.match(numRegex) && csg.client_tcp_snd_buff_len.match(numRegex)[0] === csg.client_tcp_snd_buff_len)) {
+      csg.client_tcp_snd_buff_lenHelp = 'invalid - number only';
+      csg.client_tcp_snd_buff_lenError = true;
+    } else if (csg.client_tcp_snd_buff_len != savedCsg.client_tcp_snd_buff_len) {
+      csg.client_tcp_snd_buff_lenUnsaved = true;
+      csg.client_tcp_snd_buff_lenHelp = "modified"
+    }
     
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
+
+  function validateServerSndBuffer (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.server_tcp_snd_buff_lenError = false;
+    csg.server_tcp_snd_buff_lenUnsaved = false;
+    csg.server_tcp_snd_buff_lenHelp = ''
+
+    if (csg.server_tcp_snd_buff_len.trim() == ''){
+      csg.server_tcp_snd_buff_lenHelp = 'required';
+      csg.server_tcp_snd_buff_lenError = true;
+    } else if (!(csg.server_tcp_snd_buff_len.match(numRegex) && csg.server_tcp_snd_buff_len.match(numRegex)[0] === csg.server_tcp_snd_buff_len)) {
+      csg.server_tcp_snd_buff_lenHelp = 'invalid - number only';
+      csg.server_tcp_snd_buff_lenError = true;
+    } else if (csg.server_tcp_snd_buff_len != savedCsg.server_tcp_snd_buff_len) {
+      csg.server_tcp_snd_buff_lenUnsaved = true;
+      csg.server_tcp_snd_buff_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
+
+  function validateClientRcvBuffer (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.client_tcp_rcv_buff_lenError = false;
+    csg.client_tcp_rcv_buff_lenUnsaved = false;
+    csg.client_tcp_rcv_buff_lenHelp = ''
+
+    if (csg.client_tcp_rcv_buff_len.trim() == ''){
+      csg.client_tcp_rcv_buff_lenHelp = 'required';
+      csg.client_tcp_rcv_buff_lenError = true;
+    } else if (!(csg.client_tcp_rcv_buff_len.match(numRegex) && csg.client_tcp_rcv_buff_len.match(numRegex)[0] === csg.client_tcp_rcv_buff_len)) {
+      csg.client_tcp_rcv_buff_lenHelp = 'invalid - number only';
+      csg.client_tcp_rcv_buff_lenError = true;
+    } else if (csg.client_tcp_rcv_buff_len != savedCsg.client_tcp_rcv_buff_len) {
+      csg.client_tcp_rcv_buff_lenUnsaved = true;
+      csg.client_tcp_rcv_buff_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }  
+
+  function validateServerRcvBuffer (csg_index) {
+    let numRegex = new RegExp('^[0-9]+$', 'i');
+
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+
+    csg.server_tcp_rcv_buff_lenError = false;
+    csg.server_tcp_rcv_buff_lenUnsaved = false;
+    csg.server_tcp_rcv_buff_lenHelp = ''
+
+    if (csg.server_tcp_rcv_buff_len.trim() == ''){
+      csg.server_tcp_rcv_buff_lenHelp = 'required';
+      csg.server_tcp_rcv_buff_lenError = true;
+    } else if (!(csg.server_tcp_rcv_buff_len.match(numRegex) && csg.server_tcp_rcv_buff_len.match(numRegex)[0] === csg.server_tcp_rcv_buff_len)) {
+      csg.server_tcp_rcv_buff_lenHelp = 'invalid - number only';
+      csg.server_tcp_rcv_buff_lenError = true;
+    } else if (csg.server_tcp_rcv_buff_len != savedCsg.server_tcp_rcv_buff_len) {
+      csg.server_tcp_rcv_buff_lenUnsaved = true;
+      csg.server_tcp_rcv_buff_lenHelp = "modified"
+    }
+    
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }  
+
+
   function checkFields() {
 
     Profile.markUnsavedFields = Profile.transactionsUnsaved 
