@@ -661,6 +661,33 @@
     Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
   } 
 
+  function validateClientResType (csg_index) {
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+    
+    csg.client_resumption_typeError = false;
+    csg.client_resumption_typeUnsaved = false;
+    csg.client_resumption_typeHelp = ''
+
+    if (csg.client_resumption_type.trim() == ''){
+      csg.client_resumption_typeHelp = 'required';
+      csg.client_resumption_typeError = true;
+    } else if (!(csg.client_resumption_type == 'SESSID'
+                || csg.client_resumption_type == 'TICKET'
+                || csg.client_resumption_type == 'ALL'
+                || csg.client_resumption_type == 'NONE')) {
+      csg.client_resumption_typeHelp = 'options - SESSID | TICKET | ALL | NONE';
+      csg.client_resumption_typeError = true;
+    } else if (csg.client_resumption_type != savedCsg.client_resumption_type) {
+      csg.client_resumption_typeUnsaved = true;
+      csg.client_resumption_typeHelp = "modified";
+    }
+
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
+
   function validateClientResCount (csg_index) {
     let numRegex = new RegExp('^[0-9]+$', 'i');
 
@@ -686,6 +713,33 @@
 
     Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
   } 
+
+  function validateServerResType (csg_index) {
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+    
+    csg.server_resumption_typeError = false;
+    csg.server_resumption_typeUnsaved = false;
+    csg.server_resumption_typeHelp = ''
+
+    if (csg.server_resumption_type.trim() == ''){
+      csg.server_resumption_typeHelp = 'required';
+      csg.server_resumption_typeError = true;
+    } else if (!(csg.server_resumption_type == 'SESSID'
+                || csg.server_resumption_type == 'TICKET'
+                || csg.server_resumption_type == 'ALL'
+                || csg.server_resumption_type == 'NONE')) {
+      csg.server_resumption_typeHelp = 'options - SESSID | TICKET | ALL | NONE';
+      csg.server_resumption_typeError = true;
+    } else if (csg.server_resumption_type != savedCsg.server_resumption_type) {
+      csg.server_resumption_typeUnsaved = true;
+      csg.server_resumption_typeHelp = "modified";
+    }
+
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
 
   function validateServerResCount (csg_index) {
     let numRegex = new RegExp('^[0-9]+$', 'i');
@@ -1460,10 +1514,28 @@ function csgCanonical (csg) {
   csg.server_resumption_countUnsaved = false;
   csg.server_resumption_countHelp = '';
 
+  if (csg.client_resumption_type == 'session_id') {
+    csg.client_resumption_type = 'SESSID';
+  } else if (csg.client_resumption_type == 'session_ticket') {
+    csg.client_resumption_type = 'TICKET';
+  } else if (csg.client_resumption_type == 'session_ticket_and_id') {
+    csg.client_resumption_type = 'ALL';
+  } else {
+    csg.client_resumption_type = 'NONE';
+  }
   csg.client_resumption_typeError = false;
   csg.client_resumption_typeUnsaved = false;
   csg.client_resumption_typeHelp = '';
 
+  if (csg.server_resumption_type == 'session_id') {
+    csg.server_resumption_type = 'SESSID';
+  } else if (csg.server_resumption_type == 'session_ticket') {
+    csg.server_resumption_type = 'TICKET';
+  } else if (csg.server_resumption_type == 'session_ticket_and_id') {
+    csg.server_resumption_type = 'ALL';
+  } else {
+    csg.server_resumption_type = 'NONE';
+  }
   csg.server_resumption_typeError = false;
   csg.server_resumption_typeUnsaved = false;
   csg.server_resumption_typeHelp = '';
@@ -1624,12 +1696,29 @@ function profileNormalize (p) {
 
     csg2.client_tls_close_type = csg.client_tls_close_type;
     csg2.server_tls_close_type = csg.server_tls_close_type;
+    
+    if (csg.client_resumption_type == 'SESSID') {
+      csg2.client_resumption_type = 'session_id';
+    } else if (csg.client_resumption_type == 'TICKET') {
+      csg2.client_resumption_type = 'session_ticket';
+    } else if (csg.client_resumption_type == 'ALL') {
+      csg2.client_resumption_type = 'session_ticket_and_id';
+    } else {
+      csg2.client_resumption_type = 'session_none';
+    }
+
+    if (csg.server_resumption_type == 'SESSID') {
+      csg2.server_resumption_type = 'session_id';
+    } else if (csg.server_resumption_type == 'TICKET') {
+      csg2.server_resumption_type = 'session_ticket';
+    } else if (csg.server_resumption_type == 'ALL') {
+      csg2.server_resumption_type = 'session_ticket_and_id';
+    } else {
+      csg2.server_resumption_type = 'session_none';
+    }
 
     csg2.client_resumption_count = parseInt(csg.client_resumption_count);
     csg2.server_resumption_count = parseInt(csg.server_resumption_count);
-
-    csg2.client_resumption_type = csg.client_resumption_type;
-    csg2.server_resumption_type = csg.server_resumption_type;
 
     csg2.max_active_conn_count = parseInt(csg.max_active_conn_count);
 
