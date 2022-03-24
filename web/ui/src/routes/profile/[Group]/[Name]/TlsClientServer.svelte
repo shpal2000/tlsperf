@@ -274,78 +274,62 @@
     Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
   }
   
-  
+  function validateClientTcpClose (csg_index) {
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+    
+    csg.client_tcp_close_typeError = false;
+    csg.client_tcp_close_typeUnsaved = false;
+    csg.client_tcp_close_typeHelp = ''
+
+    if (csg.client_tcp_close_type.trim() == ''){
+      csg.client_tcp_close_typeHelp = 'required';
+      csg.client_tcp_close_typeError = true;
+    } else if (!(csg.client_tcp_close_type == 'FIN' || csg.client_tcp_close_type == 'RST')) {
+      csg.client_tcp_close_typeHelp = 'options - FIN | RST';
+      csg.client_tcp_close_typeError = true;
+    } else if (csg.client_tcp_close_type != savedCsg.client_tcp_close_type) {
+      csg.client_tcp_close_typeUnsaved = true;
+      csg.client_tcp_close_typeHelp = "modified";
+    }
+
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
+
+  function validateServerTcpClose (csg_index) {
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+    
+    csg.server_tcp_close_typeError = false;
+    csg.server_tcp_close_typeUnsaved = false;
+    csg.server_tcp_close_typeHelp = ''
+
+    if (csg.server_tcp_close_type.trim() == ''){
+      csg.server_tcp_close_typeHelp = 'required';
+      csg.server_tcp_close_typeError = true;
+    } else if (!(csg.server_tcp_close_type == 'FIN' || csg.server_tcp_close_type == 'RST')) {
+      csg.server_tcp_close_typeHelp = 'options - FIN | RST';
+      csg.server_tcp_close_typeError = true;
+    } else if (csg.server_tcp_close_type != savedCsg.server_tcp_close_type) {
+      csg.server_tcp_close_typeUnsaved = true;
+      csg.server_tcp_close_typeHelp = "modified";
+    }
+
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
+    
   function checkFields() {
 
     Profile.markUnsavedFields = Profile.transactionsUnsaved 
-                  || Profile.cpsUnsaved
-                  || Profile.dataLengthUnsaved
-                  || Profile.maxPipelineUnsaved
-                  || Profile.clientIfaceUnsaved
-                  || Profile.serverIfaceUnsaved
-                  || Profile.client_ipsUnsaved
-                  || Profile.server_ipUnsaved
-                  || Profile.server_portUnsaved
-                  || Profile.server_sslUnsaved
-                  || Profile.client_tcp_close_typeUnsaved
-                  || Profile.server_tcp_close_typeUnsaved
-                  || Profile.client_tcp_snd_buff_lenUnsaved
-                  || Profile.server_tcp_snd_buff_lenUnsaved
-                  || Profile.client_tcp_rcv_buff_lenUnsaved
-                  || Profile.server_tcp_rcv_buff_lenUnsaved
-                  || Profile.client_tls_versionUnsaved
-                  || Profile.server_tls_versionUnsaved
-                  || Profile.client_tls_cipherUnsaved
-                  || Profile.server_tls_cipherUnsaved
-                  || Profile.client_resumption_typeUnsaved
-                  || Profile.client_resumption_countUnsaved
-                  || Profile.server_resumption_typeUnsaved
-                  || Profile.server_resumption_countUnsaved
-                  || Profile.client_tls_close_typeUnsaved
-                  || Profile.server_tls_close_typeUnsaved
-                  || Profile.cs_data_lenUnsaved
-                  || Profile.sc_data_lenUnsaved
-                  || Profile.cs_starttls_lenUnsaved
-                  || Profile.sc_starttls_lenUnsaved
-                  || Profile.client_read_chunk_lenUnsaved
-                  || Profile.server_read_chunk_lenUnsaved
-                  || Profile.client_write_chunk_lenUnsaved
-                  || Profile.server_write_chunk_lenUnsaved;
+                  || Profile.cpsUnsaved;
+
 
     Profile.markErrorFields = Profile.transactionsError 
-                  || Profile.cpsError
-                  || Profile.dataLengthError
-                  || Profile.maxPipelineError
-                  || Profile.clientIfaceError
-                  || Profile.serverIfaceError
-                  || Profile.client_ipsError
-                  || Profile.server_ipError
-                  || Profile.server_portError
-                  || Profile.server_sslError
-                  || Profile.client_tcp_close_typeError
-                  || Profile.server_tcp_close_typeError
-                  || Profile.client_tcp_snd_buff_lenError
-                  || Profile.server_tcp_snd_buff_lenError
-                  || Profile.client_tcp_rcv_buff_lenError
-                  || Profile.server_tcp_rcv_buff_lenError
-                  || Profile.client_tls_versionError
-                  || Profile.server_tls_versionError
-                  || Profile.client_tls_cipherError
-                  || Profile.server_tls_cipherError
-                  || Profile.client_resumption_typeError
-                  || Profile.client_resumption_countError
-                  || Profile.server_resumption_typeError
-                  || Profile.server_resumption_countError
-                  || Profile.client_tls_close_typeError
-                  || Profile.server_tls_close_typeError
-                  || Profile.cs_data_lenError
-                  || Profile.sc_data_lenError
-                  || Profile.cs_starttls_lenError
-                  || Profile.sc_starttls_lenError
-                  || Profile.client_read_chunk_lenError
-                  || Profile.server_read_chunk_lenError
-                  || Profile.client_write_chunk_lenError
-                  || Profile.server_write_chunk_lenError;
+                  || Profile.cpsError;
 
     let csg_index = 0;
     for (const csg of Profile.cs_groups) {
@@ -359,9 +343,34 @@
       if (csg.client_ipsError
           || csg.client_ifaceError
           || csg.server_ifaceError
+          || csg.client_ipsError
           || csg.server_ipError
           || csg.server_portError
           || csg.server_sslError
+          || csg.client_tcp_close_typeError
+          || csg.server_tcp_close_typeError
+          || csg.client_tcp_snd_buff_lenError
+          || csg.server_tcp_snd_buff_lenError
+          || csg.client_tcp_rcv_buff_lenError
+          || csg.server_tcp_rcv_buff_lenError
+          || csg.client_tls_versionError
+          || csg.server_tls_versionError
+          || csg.client_tls_cipherError
+          || csg.server_tls_cipherError
+          || csg.client_resumption_typeError
+          || csg.client_resumption_countError
+          || csg.server_resumption_typeError
+          || csg.server_resumption_countError
+          || csg.client_tls_close_typeError
+          || csg.server_tls_close_typeError
+          || csg.cs_data_lenError
+          || csg.sc_data_lenError
+          || csg.cs_starttls_lenError
+          || csg.sc_starttls_lenError
+          || csg.client_read_chunk_lenError
+          || csg.server_read_chunk_lenError
+          || csg.client_write_chunk_lenError
+          || csg.server_write_chunk_lenError
           ) 
       {
         Profile.markErrorFields = true;
@@ -371,9 +380,34 @@
       if (csg.client_ipsUnsaved
           || csg.client_ifaceUnsaved
           || csg.server_ifaceUnsaved
+          || csg.client_ipsUnsaved
           || csg.server_ipUnsaved
           || csg.server_portUnsaved
           || csg.server_sslUnsaved
+          || csg.client_tcp_close_typeUnsaved
+          || csg.server_tcp_close_typeUnsaved
+          || csg.client_tcp_snd_buff_lenUnsaved
+          || csg.server_tcp_snd_buff_lenUnsaved
+          || csg.client_tcp_rcv_buff_lenUnsaved
+          || csg.server_tcp_rcv_buff_lenUnsaved
+          || csg.client_tls_versionUnsaved
+          || csg.server_tls_versionUnsaved
+          || csg.client_tls_cipherUnsaved
+          || csg.server_tls_cipherUnsaved
+          || csg.client_resumption_typeUnsaved
+          || csg.client_resumption_countUnsaved
+          || csg.server_resumption_typeUnsaved
+          || csg.server_resumption_countUnsaved
+          || csg.client_tls_close_typeUnsaved
+          || csg.server_tls_close_typeUnsaved
+          || csg.cs_data_lenUnsaved
+          || csg.sc_data_lenUnsaved
+          || csg.cs_starttls_lenUnsaved
+          || csg.sc_starttls_lenUnsaved
+          || csg.client_read_chunk_lenUnsaved
+          || csg.server_read_chunk_lenUnsaved
+          || csg.client_write_chunk_lenUnsaved
+          || csg.server_write_chunk_lenUnsaved
           )
       {
         Profile.markUnsavedFields = true;
@@ -995,6 +1029,18 @@ function csgCanonical (csg) {
   csg.server_tls_cipherUnsaved = false;
   csg.server_tls_cipherHelp = '';
 
+  if (csg.client_tcp_close_type == 'close_fin') {
+    csg.client_tcp_close_type = 'FIN';
+  } else {
+    csg.client_tcp_close_type = 'RST';
+  }
+
+  if (csg.server_tcp_close_type == 'close_fin') {
+    csg.server_tcp_close_type = 'FIN';
+  } else {
+    csg.server_tcp_close_type = 'RST';
+  }
+
   csg.client_tcp_close_typeError = false;
   csg.client_tcp_close_typeUnsaved = false;
   csg.client_tcp_close_typeHelp = '';
@@ -1171,8 +1217,17 @@ function profileNormalize (p) {
     csg2.client_tls_cipher = csg.client_tls_cipher;
     csg2.server_tls_cipher = csg.server_tls_cipher;
 
-    csg2.client_tcp_close_type = csg.client_tcp_close_type;
-    csg2.server_tcp_close_type = csg.server_tcp_close_type;
+    if (csg.client_tcp_close_type == 'FIN') {
+      csg2.client_tcp_close_type = 'close_fin';
+    } else {
+      csg2.client_tcp_close_type = 'close_reset';
+    }
+
+    if (csg.server_tcp_close_type == 'FIN') {
+      csg2.server_tcp_close_type = 'close_fin';
+    } else {
+      csg2.server_tcp_close_type = 'close_reset';
+    }
 
     csg2.client_tls_close_type = csg.client_tls_close_type;
     csg2.server_tls_close_type = csg.server_tls_close_type;
