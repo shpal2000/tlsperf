@@ -75,33 +75,54 @@ def get_new_csg (csg_index, prof_j):
   csg = {
     "index": csg_index,
 
+    "app_id": "CSG" + str(csg_index+1),
+    "app_gid": prof_j['Group'] + '-' + prof_j['Name'],
+
     "client_ips" : [ipstr + '.1/16'],
     "server_ip": ipstr + '.201/16',
 
-    "app_id": "CSG" + str(csg_index+1),
-    "app_gid": prof_j['Group'] + '-' + prof_j['Name'],
-    
     "server_port": 443,
     "server_ssl": 1,
     "server_key": default_key.strip(),
     "server_cert": default_cert.strip(),
 
-    "tls_version": "tls1_2",
-    "tls_cipher" : "AES128-SHA",
-    "tcp_close_type": "close_fin",
-    "tls_close_type": "close_notify_no_send",
+    "client_tls_version": "tls1_2",
+    "server_tls_version": "tls1_2",
+    
+    "client_tls_cipher" : "AES128-SHA",
+    "server_tls_cipher" : "AES128-SHA",
 
-    "resumption_count": 0,
-    "resumption_type": "session_none",
+    "client_tcp_close_type": "close_fin",
+    "server_tcp_close_type": "close_fin",
+    
+    "client_tls_close_type": "close_notify_no_send",
+    "server_tls_close_type": "close_notify_no_send",
+
+    "client_resumption_count": 0,
+    "server_resumption_count": 0,
+    
+    "client_resumption_type": "session_none",
+    "server_resumption_type": "session_none",
+
+    "max_active_conn_count": 0,
+    "cs_data_len": 1,
+    "sc_data_len": 1,
 
     "cs_starttls_len": 0,
     "sc_starttls_len": 0,
     
-    "tcp_rcv_buff_len": 0,
-    "tcp_snd_buff_len": 0,
+    "client_tcp_rcv_buff_len": 0,
+    "server_tcp_rcv_buff_len": 0,
 
-    "read_chunk_len": 4096,
-    "write_chunk_len": 512,
+
+    "client_tcp_snd_buff_len": 0,
+    "server_tcp_snd_buff_len": 0,
+
+    "client_read_chunk_len": 4096,
+    "server_read_chunk_len": 4096,
+
+    "client_write_chunk_len": 512,
+    "server_write_chunk_len": 512,
 
     "client_iface" : prof_j["ClientIface"],
     "server_iface" : prof_j["ServerIface"]
@@ -113,19 +134,13 @@ def set_profile_defaults (prof_j):
     csg_count = 4
     prof_j["Transactions"] = 1000
     prof_j["CPS"] = 20
-    prof_j["DataLength"] = 1
-    prof_j["MaxPipeline"] = 20
 
     prof_j['cs_groups'] = []
     for csg_index in range(0, csg_count):
 
         csg = get_new_csg (csg_index, prof_j)
 
-        csg["cs_data_len"] = prof_j["DataLength"]
-        csg["sc_data_len"] = prof_j["DataLength"]
-
         csg["cps"] = int (prof_j["CPS"]/csg_count) 
-        csg["max_active_conn_count"] = int (prof_j["MaxPipeline"]/csg_count)
         csg["total_conn_count"] = int (prof_j["Transactions"]/csg_count)
 
         prof_j['cs_groups'].append(csg)
@@ -218,16 +233,26 @@ def start (group, name, stats_addr):
             'ServerToClientDataLen': csg["sc_data_len"],
             'ClientToServerStartTlsLen': csg["cs_starttls_len"],
             'ServerToClientStartTlsLen': csg["sc_starttls_len"],
-            'TlsVersion': csg['tls_version'],
-            'TlsCipher': csg['tls_cipher'],
-            'TcpCloseType': csg['tcp_close_type'],
-            'TlsCloseType': csg['tls_close_type'],
-            'ResumptionCount': csg['resumption_count'],
-            'ResumptionType': csg['resumption_type'],
-            'TcpRcvBuffLen': csg['tcp_rcv_buff_len'],
-            'TcpSndBuffLen': csg['tcp_snd_buff_len'],
-            'ReadChunkLen': csg['read_chunk_len'],
-            'WriteChunkLen': csg['write_chunk_len'],
+            'ClientTlsVersion': csg['client_tls_version'],
+            'ServerTlsVersion': csg['server_tls_version'],
+            'ClientTlsCipher': csg['client_tls_cipher'],
+            'ServerTlsCipher': csg['server_tls_cipher'],
+            'ClientTcpCloseType': csg['client_tcp_close_type'],
+            'ServerTcpCloseType': csg['server_tcp_close_type'],
+            'ClientTlsCloseType': csg['client_tls_close_type'],
+            'ServerTlsCloseType': csg['server_tls_close_type'],
+            'ClientResumptionCount': csg['client_resumption_count'],
+            'ServerResumptionCount': csg['server_resumption_count'],
+            'ClientResumptionType': csg['client_resumption_type'],
+            'ServerResumptionType': csg['server_resumption_type'],
+            'ClientTcpRcvBuffLen': csg['client_tcp_rcv_buff_len'],
+            'ServerTcpRcvBuffLen': csg['server_tcp_rcv_buff_len'],
+            'ClientTcpSndBuffLen': csg['client_tcp_snd_buff_len'],
+            'ServerTcpSndBuffLen': csg['server_tcp_snd_buff_len'],
+            'ClientReadChunkLen': csg['client_read_chunk_len'],
+            'ServerReadChunkLen': csg['server_read_chunk_len'],
+            'ClientWriteChunkLen': csg['client_write_chunk_len'],
+            'ServerWriteChunkLen': csg['server_write_chunk_len'],
 
             'CPS': csg["cps"],
             'ClientIPsAnno': cips,
@@ -260,19 +285,19 @@ def start (group, name, stats_addr):
           "cs_starttls_len" : {ClientToServerStartTlsLen},
           "sc_starttls_len" : {ServerToClientStartTlsLen},
 
-          "tls_version": "{TlsVersion}",
-          "tls_cipher": "{TlsCipher}",
-          "tcp_close_type": "{TcpCloseType}",
-          "tls_close_type": "{TlsCloseType}",
+          "tls_version": "{ServerTlsVersion}",
+          "tls_cipher": "{ServerTlsCipher}",
+          "tcp_close_type": "{ServerTcpCloseType}",
+          "tls_close_type": "{ServerTlsCloseType}",
 
-          "resumption_count": {ResumptionCount},
-          "resumption_type": "{ResumptionType}",
+          "resumption_count": {ServerResumptionCount},
+          "resumption_type": "{ServerResumptionType}",
 
-          "tcp_rcv_buff_len": {TcpRcvBuffLen},
-          "tcp_snd_buff_len": {TcpSndBuffLen},
+          "tcp_rcv_buff_len": {ServerTcpRcvBuffLen},
+          "tcp_snd_buff_len": {ServerTcpSndBuffLen},
 
-          "read_chunk_len": {ReadChunkLen},
-          "write_chunk_len": {WriteChunkLen}
+          "read_chunk_len": {ServerReadChunkLen},
+          "write_chunk_len": {ServerWriteChunkLen}
         }}'''.format(**input_map)
         server_cmap.data['key.pem'] = '{ServerKey}'.format(**input_map)
         server_cmap.data['cert.pem'] = '{ServerCert}'.format(**input_map)
@@ -304,19 +329,19 @@ def start (group, name, stats_addr):
           "max_active_conn_count" : {MaxPipeline},
 
 
-          "tls_version": "{TlsVersion}",
-          "tls_cipher": "{TlsCipher}",
-          "tcp_close_type": "{TcpCloseType}",
-          "tls_close_type": "{TlsCloseType}",
+          "tls_version": "{ClientTlsVersion}",
+          "tls_cipher": "{ClientTlsCipher}",
+          "tcp_close_type": "{ClientTcpCloseType}",
+          "tls_close_type": "{ClientTlsCloseType}",
 
-          "resumption_count": {ResumptionCount},
-          "resumption_type": "{ResumptionType}",
+          "resumption_count": {ClientResumptionCount},
+          "resumption_type": "{ClientResumptionType}",
 
-          "tcp_rcv_buff_len": {TcpRcvBuffLen},
-          "tcp_snd_buff_len": {TcpSndBuffLen},
+          "tcp_rcv_buff_len": {ClientTcpRcvBuffLen},
+          "tcp_snd_buff_len": {ClientTcpSndBuffLen},
 
-          "read_chunk_len": {ReadChunkLen},
-          "write_chunk_len": {WriteChunkLen}
+          "read_chunk_len": {ClientReadChunkLen},
+          "write_chunk_len": {ClientWriteChunkLen}
         }}'''.format(**input_map)
 
         server_pod = kubernetes.client.V1Pod()
