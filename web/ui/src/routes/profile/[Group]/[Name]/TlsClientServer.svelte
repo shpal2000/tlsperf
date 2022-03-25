@@ -670,7 +670,7 @@
     csg.client_resumption_typeHelp = ''
 
     if (csg.client_resumption_type.trim() == ''){
-      csg.client_resumption_typeHelp = 'required';
+      csg.client_resumption_typeHelp = 'required - SESSID | TICKET | ALL | NONE';
       csg.client_resumption_typeError = true;
     } else if (!(csg.client_resumption_type == 'SESSID'
                 || csg.client_resumption_type == 'TICKET'
@@ -723,7 +723,7 @@
     csg.server_resumption_typeHelp = ''
 
     if (csg.server_resumption_type.trim() == ''){
-      csg.server_resumption_typeHelp = 'required';
+      csg.server_resumption_typeHelp = 'required - SESSID | TICKET | ALL | NONE';
       csg.server_resumption_typeError = true;
     } else if (!(csg.server_resumption_type == 'SESSID'
                 || csg.server_resumption_type == 'TICKET'
@@ -766,6 +766,58 @@
 
     Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
   } 
+
+  function validateClientCloseNotify (csg_index) {
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+    
+    csg.client_tls_close_typeError = false;
+    csg.client_tls_close_typeUnsaved = false;
+    csg.client_tls_close_typeHelp = ''
+
+    if (csg.client_tls_close_type.trim() == ''){
+      csg.client_tls_close_typeHelp = 'required - SEND | SNDRCV | NONE';
+      csg.client_tls_close_typeError = true;
+    } else if (!(csg.client_tls_close_type == 'SEND'
+                || csg.client_tls_close_type == 'SNDRCV'
+                || csg.client_tls_close_type == 'NONE')) {
+      csg.client_tls_close_typeHelp = 'options - SEND | SNDRCV | NONE';
+      csg.client_tls_close_typeError = true;
+    } else if (csg.client_tls_close_type != savedCsg.client_tls_close_type) {
+      csg.client_tls_close_typeUnsaved = true;
+      csg.client_tls_close_typeHelp = "modified";
+    }
+
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
+
+  function validateServerCloseNotify (csg_index) {
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+    
+    csg.server_tls_close_typeError = false;
+    csg.server_tls_close_typeUnsaved = false;
+    csg.server_tls_close_typeHelp = ''
+
+    if (csg.server_tls_close_type.trim() == ''){
+      csg.server_tls_close_typeHelp = 'required - SEND | SNDRCV | NONE';
+      csg.server_tls_close_typeError = true;
+    } else if (!(csg.server_tls_close_type == 'SEND'
+                || csg.server_tls_close_type == 'SNDRCV'
+                || csg.server_tls_close_type == 'NONE')) {
+      csg.server_tls_close_typeHelp = 'options - SEND | SNDRCV | NONE';
+      csg.server_tls_close_typeError = true;
+    } else if (csg.server_tls_close_type != savedCsg.server_tls_close_type) {
+      csg.server_tls_close_typeUnsaved = true;
+      csg.server_tls_close_typeHelp = "modified";
+    }
+
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
 
   function checkFields() {
 
@@ -1496,10 +1548,24 @@ function csgCanonical (csg) {
   csg.server_tcp_close_typeUnsaved = false;
   csg.server_tcp_close_typeHelp = '';
 
+  if (csg.client_tls_close_type == 'close_notify_send') {
+    csg.client_tls_close_type = 'SEND';
+  } else if (csg.client_tls_close_type == 'close_notify_send_recv') {
+    csg.client_tls_close_type = 'SNDRCV'
+  } else {
+    csg.client_tls_close_type = 'NONE'
+  } 
   csg.client_tls_close_typeError = false;
   csg.client_tls_close_typeUnsaved = false;
   csg.client_tls_close_typeHelp = '';
 
+  if (csg.server_tls_close_type == 'close_notify_send') {
+    csg.server_tls_close_type = 'SEND';
+  } else if (csg.server_tls_close_type == 'close_notify_send_recv') {
+    csg.server_tls_close_type = 'SNDRCV'
+  } else {
+    csg.server_tls_close_type = 'NONE'
+  }
   csg.server_tls_close_typeError = false;
   csg.server_tls_close_typeUnsaved = false;
   csg.server_tls_close_typeHelp = '';
@@ -1694,9 +1760,22 @@ function profileNormalize (p) {
       csg2.server_tcp_close_type = 'close_reset';
     }
 
-    csg2.client_tls_close_type = csg.client_tls_close_type;
-    csg2.server_tls_close_type = csg.server_tls_close_type;
-    
+    if (csg.client_tls_close_type == 'SEND') {
+      csg2.client_tls_close_type = 'close_notify_send';
+    } else if (csg.client_tls_close_type == 'SNDRCV') {
+      csg2.client_tls_close_type = 'close_notify_send_recv';
+    } else {
+      csg2.client_tls_close_type = 'close_notify_no_send';
+    }
+
+    if (csg.server_tls_close_type == 'SEND') {
+      csg2.server_tls_close_type = 'close_notify_send';
+    } else if (csg.server_tls_close_type == 'SNDRCV') {
+      csg2.server_tls_close_type = 'close_notify_send_recv';
+    } else {
+      csg2.server_tls_close_type = 'close_notify_no_send';
+    }
+
     if (csg.client_resumption_type == 'SESSID') {
       csg2.client_resumption_type = 'session_id';
     } else if (csg.client_resumption_type == 'TICKET') {
