@@ -2705,6 +2705,18 @@ onDestroy ( () => {
               on:keyup={() => validateServerWriteChunk (row.index)} />                  
             </FormGroup>
 
+            <FormGroup>
+              <button class="button is-small is-danger is-outlined" 
+              disabled={Profile.isTransient || Profile.isRunning}
+              on:click={() => onMarkUnmarkDelete(row.index)} >
+              {#if Profile.cs_groups[row.index].fieldAttention==''}
+                Mark Delete
+              {:else}
+                UnMark Delete
+              {/if }
+              </button>     
+            </FormGroup>
+
           </div>
 
           <div class="column">
