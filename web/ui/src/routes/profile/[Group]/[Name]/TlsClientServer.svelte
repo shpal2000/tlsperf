@@ -10,7 +10,7 @@
   import {goto} from "$app/navigation";
   import { DataTable } from "carbon-components-svelte";
   import "carbon-components-svelte/css/white.css";
-  import { ProgressBar, Loading, TextInput, FormGroup, Select, SelectItem, Grid, Row, Column} from "carbon-components-svelte";
+  import { ProgressBar, Loading, TextInput, FormGroup, TextArea} from "carbon-components-svelte";
   import Chart from 'chart.js/auto';
 
   import Textfield from '@smui/textfield';
@@ -920,6 +920,48 @@
     Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
   }
 
+  function validateServerCert (csg_index) {
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+    
+    csg.server_certError = false;
+    csg.server_certUnsaved = false;
+    csg.server_certHelp = ''
+
+    if (csg.server_cert.trim() == ''){
+      csg.server_certHelp = 'required';
+      csg.server_certError = true;
+    } else if (csg.server_cert != savedCsg.server_cert) {
+      csg.server_certUnsaved = true;
+      csg.server_certHelp = "modified";
+    }
+
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
+
+  function validateServerKey (csg_index) {
+    const csg = Profile.cs_groups[csg_index];
+    const savedCsg = SavedProfile.cs_groups[csg_index];
+    
+    csg.server_keyError = false;
+    csg.server_keyUnsaved = false;
+    csg.server_keyHelp = ''
+
+    if (csg.server_key.trim() == ''){
+      csg.server_keyHelp = 'required';
+      csg.server_keyError = true;
+    } else if (csg.server_key != savedCsg.server_key) {
+      csg.server_keyUnsaved = true;
+      csg.server_keyHelp = "modified";
+    }
+
+    checkFields();
+
+    Profile.cs_groups[csg_index] = Profile.cs_groups[csg_index];
+  }
+
   function checkFields() {
 
     Profile.markUnsavedFields = Profile.transactionsUnsaved 
@@ -970,6 +1012,8 @@
           || csg.server_read_chunk_lenError
           || csg.client_write_chunk_lenError
           || csg.server_write_chunk_lenError
+          || csg.server_certError
+          || csg.server_keyError
           ) 
       {
         Profile.markErrorFields = true;
@@ -1008,6 +1052,8 @@
           || csg.server_read_chunk_lenUnsaved
           || csg.client_write_chunk_lenUnsaved
           || csg.server_write_chunk_lenUnsaved
+          || csg.server_certUnsaved
+          || csg.server_keyUnsaved
           )
       {
         Profile.markUnsavedFields = true;
@@ -1021,9 +1067,6 @@
   function validateAllFields() {
     validateTransactions ();
     validateCps ();
-    // validateDataLength ();
-    // validateMaxPipeline ();
-
 
     for (let i=0; i < Profile.cs_groups.length; i++) {
       validateClientIface (i);
@@ -1509,12 +1552,12 @@
 
   function onMarkUnmarkDelete (row_index) {
     if (Profile.cs_groups[row_index].fieldAttention == 'mark-delete') {
-      Profile.cs_groups[row_index].fieldAttention = '';
-      checkFields();
-    } else if (!checkLastCSG()) {
-      Profile.cs_groups[row_index].fieldAttention = 'mark-delete';
-      Profile.markUnsavedFields = true;
-    }
+        Profile.cs_groups[row_index].fieldAttention = '';
+        checkFields();
+      } else if (!checkLastCSG()) {
+        Profile.cs_groups[row_index].fieldAttention = 'mark-delete';
+        Profile.markUnsavedFields = true;
+      }
   }
 
   async function onProfileAction () {
@@ -1771,6 +1814,14 @@ function csgCanonical (csg) {
   csg.server_write_chunk_lenError = false;
   csg.server_write_chunk_lenUnsaved = false;
   csg.server_write_chunk_lenHelp = '';
+
+  csg.server_certError = false;
+  csg.server_certUnsaved = false;
+  csg.server_certHelp = '';
+
+  csg.server_keyError = false;
+  csg.server_keyUnsaved = false;
+  csg.server_keyHelp = '';
 }
 
 function profileCanonical (p) {
@@ -2706,15 +2757,35 @@ onDestroy ( () => {
             </FormGroup>
 
             <FormGroup>
+              <TextArea light labelText="Server Cert"
+                placeholder="Enter server certificate in PEM format..."
+                readonly={Profile.isTransient || Profile.isRunning}
+                bind:value={Profile.cs_groups[row.index].server_cert}
+                on:keyup={() => validateServerCert (row.index)}
+                invalid={(Profile.cs_groups[row.index].server_certError || Profile.cs_groups[row.index].server_certUnsaved)}
+                invalidText="{Profile.cs_groups[row.index].server_certHelp}"
+              />
+            </FormGroup>
+            <FormGroup>
+              <TextArea light labelText="Server Key"
+                placeholder="Enter server key in PEM format..."
+                readonly={Profile.isTransient || Profile.isRunning}
+                bind:value={Profile.cs_groups[row.index].server_key}
+                on:keyup={() => validateServerKey (row.index)}
+                invalidText="{Profile.cs_groups[row.index].server_keyHelp}"
+              />
+            </FormGroup>
+
+            <FormGroup>
               <button class="button is-small is-danger is-outlined" 
               disabled={Profile.isTransient || Profile.isRunning}
-              on:click={() => onMarkUnmarkDelete(row.index)} >
-              {#if Profile.cs_groups[row.index].fieldAttention==''}
-                Mark Delete
-              {:else}
-                UnMark Delete
-              {/if }
-              </button>     
+              on:click={() => { onMarkUnmarkDelete(row.index) } } >
+                {#if Profile.cs_groups[row.index].fieldAttention=='mark-delete'}
+                  UnMark Delete
+                {:else}
+                  Mark Delete
+                {/if }
+              </button>
             </FormGroup>
 
           </div>
