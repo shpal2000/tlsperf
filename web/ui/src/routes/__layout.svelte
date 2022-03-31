@@ -19,7 +19,8 @@
 
     let nodeMenuItems = [{'Name': 'Remove Node ...', 'Event': 'removeNode', 'EventCtx': {}}];
 
-    let profileMenuItems = [{'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
+    let profileMenuItems = [{'Name': 'Export Profile ...', 'Event': 'exportProfile', 'EventCtx': {}},
+                            {'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
 
 	async function getStorePopulated() {
 		const nodeGroups = await fetch ('/api/node_groups.json');
