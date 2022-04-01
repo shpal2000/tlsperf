@@ -1670,6 +1670,7 @@
     serverCertKeyChecked = is_checked;
   }
 
+
   function onAllPropsChecked () {
     allPropsChecked = !allPropsChecked;
 
@@ -1694,7 +1695,13 @@
     csgCheckedList = [];
 
     for (let i=0; i < Profile.cs_groups.length; i++) {
-      csgCheckedList.push({'Name' : Profile.cs_groups[i].app_id, 'isChecked': false});
+      if (i == applyIndex) {
+        continue;
+      }
+
+      csgCheckedList.push({'Name' : Profile.cs_groups[i].app_id
+                            , 'isChecked': false
+                            , 'index': i});
     }
 
     setPropsChecked (false);
@@ -1709,10 +1716,14 @@
   function onApply () {
     const defCsg = Profile.cs_groups[applyIndex];
 
-    for (let i=0; i < Profile.cs_groups.length; i++) {
-      if (i == applyIndex) {
+    let i;
+
+    for (const selectedCsg of csgCheckedList) {
+      if (!selectedCsg.isChecked) {
         continue;
       }
+
+      i = selectedCsg.index;
 
       if (clientInterfaceChecked){
         Profile.cs_groups[i].client_iface = defCsg.client_iface;
@@ -3131,7 +3142,7 @@ onDestroy ( () => {
 
         <div class="column is-three-fifths">
           <FormGroup legendText="All Props">
-            <Checkbox labelText="" on:change={onAllPropsChecked} />
+            <Checkbox labelText="" checked={allPropsChecked} on:change={onAllPropsChecked} />
           </FormGroup>
 
           <FormGroup legendText="Interface">
@@ -3183,7 +3194,7 @@ onDestroy ( () => {
           </FormGroup>
 
           <FormGroup legendText="Selected CSGs">
-            <Checkbox labelText="All" on:change={onAllCsgChecked} />
+            <Checkbox labelText="All" checked={allCsgChecked} on:change={onAllCsgChecked} />
             {#each csgCheckedList as csgCheck}
               <Checkbox labelText="{csgCheck.Name}" bind:checked={csgCheck.isChecked} />
             {/each}
