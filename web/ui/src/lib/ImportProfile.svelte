@@ -1,10 +1,22 @@
 <script>
 
+import { createEventDispatcher, beforeUpdate} from "svelte";
+
+
     import { selectedNode } from '$lib/store.js';
+    import { profileTreeRoot } from '$lib/store.js';
     import { ProgressBar } from "carbon-components-svelte";
+    
+    import Textfield from '@smui/textfield';
+    import HelperText from '@smui/textfield/helper-text';
+
     export let isActive;
 
-    let JProfile;
+    let Name;
+    let nameError;
+    let nameHelp;
+
+    let ProfileTxt;
 
     let isError;
     let errorMsg;
@@ -15,8 +27,11 @@
     let signal = null;
 
     function resetState() {
-      JProfile = '';
-
+      Name = '';
+      nameError = false;
+      
+      ProfileTxt = '';
+      
       isError = false;
       isProgress = false;
 
@@ -24,6 +39,28 @@
     }
 
     resetState();   
+
+    const dispatch = createEventDispatcher ();
+
+
+    function validateName () {
+      let nameRegex = new RegExp('^[a-z0-9]+$', 'i');
+      let profileGroup = $profileTreeRoot.children.find (pg => $selectedNode.Name==pg.Name);
+
+      if (Name.trim() == ''){
+        nameHelp = 'required';
+        nameError = true;
+      } else if (!nameRegex.test(Name)){
+        nameHelp = 'invalid - alphanumeric only';
+        nameError = true;
+      } else if (profileGroup.children.find (n => n.Name==Name)){
+        nameHelp = 'already exist';
+        nameError = true; 
+      } else {
+        nameHelp = '';
+        nameError = false;
+      }
+    }
 
     function setErrorMsg(msg) {
       let lineRegex = new RegExp('\r?\n');
@@ -38,7 +75,7 @@
         isError = true;
     }
 
-    async function onExportClose () {
+    async function onAddNodeCancel () {
       resetState ();
 
       if (controller) {
@@ -46,20 +83,33 @@
       }
     }
 
-    async function onExportFetch() {
-      let Name = $selectedNode.Name;
-      let Group = $selectedNode.ParentName;
+    function validateFields() {
+      validateName ();
+    }
 
-      controller = new AbortController();
-      signal = controller.signal;
+    async function onAddProfileOk () {
 
-      try {
+      validateFields ();
+
+      if (!nameError) {
+
+        controller = new AbortController();
+        signal = controller.signal;
+
+        try {
           errorMsg = '';
           isError = false;
           isProgress = true;
-          const res = await fetch (`/api/profiles.json?group=${Group}&name=${Name}`, {
+          
+          let jProfile = JSON.parse (ProfileTxt);
+
+          jProfile.Group = $selectedNode.Name;
+          jProfile.Name = Name;
+
+          const res = await fetch ('/api/profiles.json?cloned=1', {
             signal,
-            method: 'GET'
+            method: 'POST',
+            body: JSON.stringify(jProfile)
           });
           isProgress = false;
 
@@ -75,12 +125,14 @@
 
             if (isJson) {
               if (json.status == 0){
-                JProfile = JSON.stringify(json.data);
+                dispatch ('addProfileSuccess', {Name: Name});
+                resetState();
               } else {
                 console.log(json);
                 setErrorMsg (json.message);
               }
             } else {
+              isProgress = false;
               setErrorMsg (text); 
             }
           } else {
@@ -91,7 +143,13 @@
           isProgress = false;
           setErrorMsg (e.toString()); 
         }
+
+      }
     }
+
+    beforeUpdate ( async () => {
+      validateFields();
+    });
 
 </script>
 
@@ -99,15 +157,31 @@
     <div class="modal-background"></div>
     <div class="modal-card box ">
       <header>
-        <p class="modal-card-title ">Profile Json</p>
+        <p class="modal-card-title ">Import Profile</p>
       </header>
       <section class="modal-card-body">
         <div class="columns is-multiline is-mobile">
+          
+          <div class="column is-full">
+            <div class="field">              
+              <div class="control">
+                <Textfield bind:value={Name} 
+                  label="Name"
+                  invalid={nameError}
+                  on:input={validateName}
+                  style="width: 100%"
+                  >
+                  <HelperText persistent slot="helper">{nameHelp}</HelperText>
+                </Textfield>
+              </div>
+            </div>
+          </div>
+
 
           <div class="column is-full">
             <div class="field">              
               <div class="control">
-                <textarea class="textarea" placeholder="" rows="10" bind:value={JProfile} readonly/>
+                <textarea class="textarea" placeholder="" rows="10" bind:value={ProfileTxt} />
               </div>
             </div>
           </div>
@@ -134,10 +208,10 @@
 
         <div class="field is-grouped">
           <div class="control">
-            <button class="button  is-info" on:click={onExportFetch}>Fetch</button>
+            <button class="button  is-info" on:click={onAddProfileOk}>Add</button>
           </div>
           <div class="control">
-            <button class="button  is-light" on:click={onExportClose}>Close</button>
+            <button class="button  is-light" on:click={onAddNodeCancel}>Cancel</button>
           </div>
         </div>
 
@@ -145,7 +219,6 @@
       </section>
     </div>
 </div>
-
 
 <style>
   .errmsg {
