@@ -10,13 +10,52 @@
   import {goto} from "$app/navigation";
   import { DataTable } from "carbon-components-svelte";
   import "carbon-components-svelte/css/white.css";
-  import { ProgressBar, Loading, TextInput, FormGroup, TextArea} from "carbon-components-svelte";
+  import { ProgressBar, Loading, TextInput, FormGroup, TextArea, Checkbox} from "carbon-components-svelte";
   import Chart from 'chart.js/auto';
 
   import Textfield from '@smui/textfield';
   import HelperText from '@smui/textfield/helper-text';
 
   let isLoading = false;
+  let showApplyDefault = false;
+  let applyDefaultIndex = 0;
+
+  let clientInterface;
+  let serverInterface;
+
+  let serverPortChecked;
+  let protocolChecked;
+
+  let clientCloseChecked;
+  let serverCloseChecked;
+  let clientSndBufferChecked;
+  let serverSndBufferChecked;
+  let clientRcvBufferChecked;
+  let serverRcvBufferChecked;
+
+  let clientVersionChecked;
+  let serverVersionChecked;
+  let clientCiphersChecked;
+  let serverCiphersChecked;
+  let clientResTypeChecked;
+  let serverResTypeChecked;
+  let clientResCountChecked;
+  let serverResCountChecked;
+  let clientCloseNotifyChecked;
+  let serverCloseNotifyChecked;
+
+  let maxActionChecked;
+  let clientDataLenChecked;
+  let serverDataLenChecked;
+  let clientStartTlsChecked;
+  let serverStartTlsChecked;
+  let clientReadChunkChecked;
+  let serverReadChunkChecked;
+  let clientWriteChunkChecked;
+  let serverWriteChunkChecked;
+
+  let serverCertKeyChecked;
+
 
   function setErrorMsg(action, msg) {
     let lineRegex = new RegExp('\r?\n');
@@ -1560,6 +1599,57 @@
       }
   }
 
+  function onApplyDefault (row_index) {
+    applyDefaultIndex = row_index;
+
+    clientInterface = false;
+    serverInterface = false;
+
+    serverPortChecked = false;
+    protocolChecked = false;
+
+    clientCloseChecked = false;
+    serverCloseChecked = false;
+    clientSndBufferChecked = false;
+    serverSndBufferChecked = false;
+    clientRcvBufferChecked = false;
+    serverRcvBufferChecked = false;
+
+    clientVersionChecked = false;
+    serverVersionChecked = false;
+    clientCiphersChecked = false;
+    serverCiphersChecked = false;
+    clientResTypeChecked = false;
+    serverResTypeChecked = false;
+    clientResCountChecked = false;
+    serverResCountChecked = false;
+    clientCloseNotifyChecked = false;
+    serverCloseNotifyChecked = false;
+
+    maxActionChecked = false;
+    clientDataLenChecked = false;
+    serverDataLenChecked = false;
+    clientStartTlsChecked = false;
+    serverStartTlsChecked = false;
+    clientReadChunkChecked = false;
+    serverReadChunkChecked = false;
+    clientWriteChunkChecked = false;
+    serverWriteChunkChecked = false;
+
+    serverCertKeyChecked = false;
+
+    showApplyDefault = true;
+  }
+
+  function onClose () {
+    showApplyDefault = false;
+  }
+
+  function onApply () {
+
+    showApplyDefault = false;
+  }
+
   async function onProfileAction () {
     if (Profile.isRunning) {     
       await onStop();
@@ -2786,6 +2876,13 @@ onDestroy ( () => {
                   Mark Delete
                 {/if }
               </button>
+
+              <button class="button is-small is-danger is-outlined" 
+              disabled={Profile.isTransient || Profile.isRunning}
+              on:click={() => { onApplyDefault(row.index) } } >
+                Apply Default
+              </button>
+ 
             </FormGroup>
 
           </div>
@@ -2827,6 +2924,85 @@ onDestroy ( () => {
   <div class="column is-12">
   </div>
 
+</div>
+
+<div class="modal {showApplyDefault ? 'is-active' : ''}">
+  <div class="modal-background"></div>
+  <div class="modal-card box ">
+    <header>
+      <p class="modal-card-title ">Group Edit</p>
+    </header>
+    <section class="modal-card-body">
+      <div class="columns is-multiline is-mobile">
+        <div class="column"></div>
+
+        <div class="column is-three-fifths">
+          <FormGroup legendText="Interface">
+            <Checkbox labelText="Client" bind:checked={clientInterface} />
+            <Checkbox labelText="Server" bind:checked={serverInterface} />
+          </FormGroup>
+
+          <FormGroup legendText="Transport">
+            <Checkbox labelText="Server Port" bind:checked={serverPortChecked} />
+            <Checkbox labelText="Protocol" bind:checked={protocolChecked} />
+          </FormGroup>
+          
+          <FormGroup legendText="TCP">
+            <Checkbox labelText="Client Close" bind:checked={clientCloseChecked} />
+            <Checkbox labelText="Server Close" bind:checked={serverCloseChecked} />
+            <Checkbox labelText="Client SndBuffer" bind:checked={clientSndBufferChecked} />
+            <Checkbox labelText="Server SndBuffer" bind:checked={serverSndBufferChecked} />
+            <Checkbox labelText="Client RcvBuffer" bind:checked={clientRcvBufferChecked} />
+            <Checkbox labelText="Server RcvBuffer" bind:checked={serverRcvBufferChecked} />
+          </FormGroup>
+
+          <FormGroup legendText="TLS">
+            <Checkbox labelText="Client Version" bind:checked={clientVersionChecked} />
+            <Checkbox labelText="Server Version" bind:checked={serverVersionChecked} />
+            <Checkbox labelText="Client Ciphers" bind:checked={clientCiphersChecked} />
+            <Checkbox labelText="Server Ciphers" bind:checked={serverCiphersChecked} />
+            <Checkbox labelText="Client ResType" bind:checked={clientResTypeChecked} />
+            <Checkbox labelText="Client ResCount" bind:checked={clientResCountChecked} />
+            <Checkbox labelText="Server ResType" bind:checked={serverResTypeChecked} />
+            <Checkbox labelText="Server ResCount" bind:checked={serverResCountChecked} />
+            <Checkbox labelText="Client CloseNotify" bind:checked={clientCloseNotifyChecked} />
+            <Checkbox labelText="Server CloseNotify" bind:checked={serverCloseNotifyChecked} />
+          </FormGroup>          
+
+          <FormGroup legendText="Session">
+            <Checkbox labelText="Max ActConn" bind:checked={maxActionChecked} />
+            <Checkbox labelText="Client DataLen" bind:checked={clientDataLenChecked} />
+            <Checkbox labelText="Server DataLen" bind:checked={serverDataLenChecked} />
+            <Checkbox labelText="Client StartTls" bind:checked={clientStartTlsChecked} />
+            <Checkbox labelText="Server StartTls" bind:checked={serverStartTlsChecked} />
+            <Checkbox labelText="Client ReadChunk" bind:checked={clientReadChunkChecked} />
+            <Checkbox labelText="Server ReadChunk" bind:checked={serverReadChunkChecked} />
+            <Checkbox labelText="Client WriteChunk" bind:checked={clientWriteChunkChecked} />
+            <Checkbox labelText="Server WriteChunk" bind:checked={serverWriteChunkChecked} />
+          </FormGroup>
+          
+          <FormGroup>
+            <Checkbox labelText="Server Cert, Key" bind:checked={serverCertKeyChecked} />
+          </FormGroup>
+
+        </div>
+        <div class="column"></div>
+      </div>
+
+
+
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button  is-info" disabled={Profile.markErrorFields} on:click={onApply}>Apply</button>
+        </div>
+        <div class="control">
+          <button class="button  is-light" on:click={onClose}>Cancel</button>
+        </div>
+      </div>
+
+
+    </section>
+  </div>
 </div>
 
 
