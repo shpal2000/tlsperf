@@ -18,10 +18,10 @@
 
   let isLoading = false;
   let showApplyDefault = false;
-  let applyDefaultIndex = 0;
+  let applyIndex = 0;
 
-  let clientInterface;
-  let serverInterface;
+  let clientInterfaceChecked;
+  let serverInterfaceChecked;
 
   let serverPortChecked;
   let protocolChecked;
@@ -1600,10 +1600,10 @@
   }
 
   function onApplyDefault (row_index) {
-    applyDefaultIndex = row_index;
+    applyIndex = row_index;
 
-    clientInterface = false;
-    serverInterface = false;
+    clientInterfaceChecked = false;
+    serverInterfaceChecked = false;
 
     serverPortChecked = false;
     protocolChecked = false;
@@ -1646,6 +1646,138 @@
   }
 
   function onApply () {
+    const defCsg = Profile.cs_groups[applyIndex];
+
+    for (let i=0; i < Profile.cs_groups.length; i++) {
+      if (i == applyIndex) {
+        continue;
+      }
+
+      if (clientInterfaceChecked){
+        Profile.cs_groups[i].client_iface = defCsg.client_iface;
+      }
+      
+      if (serverInterfaceChecked){
+        Profile.cs_groups[i].server_iface = defCsg.server_iface;
+      }
+      
+      if (serverPortChecked){
+        Profile.cs_groups[i].server_port = defCsg.server_port;
+      }
+
+      if (protocolChecked){
+        Profile.cs_groups[i].server_ssl = defCsg.server_ssl;
+      }
+
+      if (clientCloseChecked){
+        Profile.cs_groups[i].client_tcp_close_type = defCsg.client_tcp_close_type;
+      }
+
+      if (serverCloseChecked){
+        Profile.cs_groups[i].server_tcp_close_type = defCsg.server_tcp_close_type;
+      }
+
+      if (clientSndBufferChecked){
+        Profile.cs_groups[i].client_tcp_snd_buff_len = defCsg.client_tcp_snd_buff_len;
+      }
+
+      if (serverSndBufferChecked){
+        Profile.cs_groups[i].server_tcp_snd_buff_len = defCsg.server_tcp_snd_buff_len;
+      }
+
+      if (clientRcvBufferChecked){
+        Profile.cs_groups[i].client_tcp_rcv_buff_len = defCsg.client_tcp_rcv_buff_len;
+      }
+
+      if (serverRcvBufferChecked){
+        Profile.cs_groups[i].server_tcp_rcv_buff_len = defCsg.server_tcp_rcv_buff_len;
+      }
+
+      if (clientVersionChecked){
+        Profile.cs_groups[i].client_tls_version = defCsg.client_tls_version;
+      }
+
+      if (serverVersionChecked){
+        Profile.cs_groups[i].server_tls_version = defCsg.server_tls_version;
+      }
+
+      if (clientCiphersChecked){
+        Profile.cs_groups[i].client_tls_cipher = defCsg.client_tls_cipher;
+      }
+
+      if (serverCiphersChecked){
+        Profile.cs_groups[i].server_tls_cipher = defCsg.server_tls_cipher;
+      }
+
+      if (clientResTypeChecked){
+        Profile.cs_groups[i].client_resumption_type = defCsg.client_resumption_type;
+      }
+
+      if (clientResCountChecked){
+        Profile.cs_groups[i].client_resumption_count = defCsg.client_resumption_count;
+      }
+
+      if (serverResTypeChecked){
+        Profile.cs_groups[i].server_resumption_type = defCsg.server_resumption_type;
+      }
+
+      if (serverResCountChecked){
+        Profile.cs_groups[i].server_resumption_count = defCsg.server_resumption_count;
+      }
+
+      if (clientCloseNotifyChecked){
+        Profile.cs_groups[i].client_tls_close_type = defCsg.client_tls_close_type;
+      }
+
+      if (serverCloseNotifyChecked){
+        Profile.cs_groups[i].server_tls_close_type = defCsg.server_tls_close_type;
+      }
+
+      if (maxActionChecked){
+        Profile.cs_groups[i].max_active_conn_count = defCsg.max_active_conn_count;
+      }
+
+      if (clientDataLenChecked){
+        Profile.cs_groups[i].cs_data_len = defCsg.cs_data_len;
+      }
+
+      if (serverDataLenChecked){
+        Profile.cs_groups[i].sc_data_len = defCsg.sc_data_len;
+      }
+
+      if (clientStartTlsChecked){
+        Profile.cs_groups[i].cs_starttls_len = defCsg.cs_starttls_len;
+      }
+
+      if (serverStartTlsChecked){
+        Profile.cs_groups[i].sc_starttls_len = defCsg.sc_starttls_len;
+      }
+
+      if (clientReadChunkChecked){
+        Profile.cs_groups[i].client_read_chunk_len = defCsg.client_read_chunk_len;
+      }
+
+      if (serverReadChunkChecked){
+        Profile.cs_groups[i].server_read_chunk_len = defCsg.server_read_chunk_len;
+      }
+
+      if (clientWriteChunkChecked){
+        Profile.cs_groups[i].client_write_chunk_len = defCsg.client_write_chunk_len;
+      }
+
+      if (serverWriteChunkChecked){
+        Profile.cs_groups[i].server_write_chunk_len = defCsg.server_write_chunk_len;
+      }
+
+      if (serverCertKeyChecked){
+        Profile.cs_groups[i].server_cert = defCsg.server_cert;
+        Profile.cs_groups[i].server_key = defCsg.server_key;
+      }
+    }
+
+    Profile.cs_groups = [...Profile.cs_groups];
+
+    validateAllFields ();
 
     showApplyDefault = false;
   }
@@ -2938,8 +3070,8 @@ onDestroy ( () => {
 
         <div class="column is-three-fifths">
           <FormGroup legendText="Interface">
-            <Checkbox labelText="Client" bind:checked={clientInterface} />
-            <Checkbox labelText="Server" bind:checked={serverInterface} />
+            <Checkbox labelText="Client" bind:checked={clientInterfaceChecked} />
+            <Checkbox labelText="Server" bind:checked={serverInterfaceChecked} />
           </FormGroup>
 
           <FormGroup legendText="Transport">
