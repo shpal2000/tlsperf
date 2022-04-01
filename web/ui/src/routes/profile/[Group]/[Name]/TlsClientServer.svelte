@@ -13,9 +13,6 @@
   import { ProgressBar, Loading, TextInput, FormGroup, TextArea, Checkbox} from "carbon-components-svelte";
   import Chart from 'chart.js/auto';
 
-  import Textfield from '@smui/textfield';
-  import HelperText from '@smui/textfield/helper-text';
-
   let isLoading = false;
   let showApplyDefault = false;
   let applyIndex = 0;
@@ -55,6 +52,11 @@
   let serverWriteChunkChecked;
 
   let serverCertKeyChecked;
+
+  let allPropsChecked;
+
+  let allCsgChecked;
+  let csgCheckedList = [];
 
 
   function setErrorMsg(action, msg) {
@@ -1115,6 +1117,37 @@
       validateServerIP (i);
       validateServerPort (i);
       validateProtocol (i);
+
+      validateClientTcpClose(i);
+      validateServerTcpClose (i);
+      validateClientSndBuffer (i);
+      validateServerSndBuffer (i);
+      validateClientRcvBuffer (i);
+      validateServerRcvBuffer (i);
+
+      validateClientTlsVersion(i);
+      validateServerTlsVersion (i);
+      validateClientCipher (i);
+      validateServerCipher (i);
+      validateClientResType (i);
+      validateClientResCount (i);
+      validateServerResType (i);
+      validateServerResCount (i);
+      validateClientCloseNotify (i);
+      validateServerCloseNotify (i);
+
+      validateMaxActiveConn (i);
+      validateClientDataLen (i);
+      validateServerDataLen (i);
+      validateClientStartTlsLen (i);
+      validateServerStartTlsLen (i);
+      validateClientReadChunk (i);
+      validateServerReadChunk (i);
+      validateClientWriteChunk (i);
+      validateServerWriteChunk (i);
+
+      validateServerCert (i);
+      validateServerKey (i);
     }
   }
 
@@ -1536,9 +1569,8 @@
         if (isJson) {
           if (json.status == 0){
             const csg = json.data;
-            const csg2 = JSON.parse(JSON.stringify(csg));
-
             csgCanonical (csg);
+            const csg2 = JSON.parse(JSON.stringify(csg));
 
             csg.fieldAttention = 'new-csg';
 
@@ -1599,44 +1631,73 @@
       }
   }
 
+  function setPropsChecked (is_checked) {
+
+    clientInterfaceChecked = is_checked;
+    serverInterfaceChecked = is_checked;
+
+    serverPortChecked = is_checked;
+    protocolChecked = is_checked;
+
+    clientCloseChecked = is_checked;
+    serverCloseChecked = is_checked;
+    clientSndBufferChecked = is_checked;
+    serverSndBufferChecked = is_checked;
+    clientRcvBufferChecked = is_checked;
+    serverRcvBufferChecked = is_checked;
+
+    clientVersionChecked = is_checked;
+    serverVersionChecked = is_checked;
+    clientCiphersChecked = is_checked;
+    serverCiphersChecked = is_checked;
+    clientResTypeChecked = is_checked;
+    serverResTypeChecked = is_checked;
+    clientResCountChecked = is_checked;
+    serverResCountChecked = is_checked;
+    clientCloseNotifyChecked = is_checked;
+    serverCloseNotifyChecked = is_checked;
+
+    maxActionChecked = is_checked;
+    clientDataLenChecked = is_checked;
+    serverDataLenChecked = is_checked;
+    clientStartTlsChecked = is_checked;
+    serverStartTlsChecked = is_checked;
+    clientReadChunkChecked = is_checked;
+    serverReadChunkChecked = is_checked;
+    clientWriteChunkChecked = is_checked;
+    serverWriteChunkChecked = is_checked;
+
+    serverCertKeyChecked = is_checked;
+  }
+
+  function onAllPropsChecked () {
+    allPropsChecked = !allPropsChecked;
+
+    setPropsChecked (allPropsChecked);
+  }
+
+  function onAllCsgChecked () {
+    allCsgChecked = !allCsgChecked;
+
+    for (let i=0; i < Profile.cs_groups.length; i++) {
+      csgCheckedList[i].isChecked = allCsgChecked;
+    }
+
+    csgCheckedList = [...csgCheckedList];
+  }
+
   function onApplyDefault (row_index) {
     applyIndex = row_index;
 
-    clientInterfaceChecked = false;
-    serverInterfaceChecked = false;
+    allPropsChecked = false;
+    allCsgChecked = false;
+    csgCheckedList = [];
 
-    serverPortChecked = false;
-    protocolChecked = false;
+    for (let i=0; i < Profile.cs_groups.length; i++) {
+      csgCheckedList.push({'Name' : Profile.cs_groups[i].app_id, 'isChecked': false});
+    }
 
-    clientCloseChecked = false;
-    serverCloseChecked = false;
-    clientSndBufferChecked = false;
-    serverSndBufferChecked = false;
-    clientRcvBufferChecked = false;
-    serverRcvBufferChecked = false;
-
-    clientVersionChecked = false;
-    serverVersionChecked = false;
-    clientCiphersChecked = false;
-    serverCiphersChecked = false;
-    clientResTypeChecked = false;
-    serverResTypeChecked = false;
-    clientResCountChecked = false;
-    serverResCountChecked = false;
-    clientCloseNotifyChecked = false;
-    serverCloseNotifyChecked = false;
-
-    maxActionChecked = false;
-    clientDataLenChecked = false;
-    serverDataLenChecked = false;
-    clientStartTlsChecked = false;
-    serverStartTlsChecked = false;
-    clientReadChunkChecked = false;
-    serverReadChunkChecked = false;
-    clientWriteChunkChecked = false;
-    serverWriteChunkChecked = false;
-
-    serverCertKeyChecked = false;
+    setPropsChecked (false);
 
     showApplyDefault = true;
   }
@@ -3069,6 +3130,10 @@ onDestroy ( () => {
         <div class="column"></div>
 
         <div class="column is-three-fifths">
+          <FormGroup legendText="All Props">
+            <Checkbox labelText="" on:change={onAllPropsChecked} />
+          </FormGroup>
+
           <FormGroup legendText="Interface">
             <Checkbox labelText="Client" bind:checked={clientInterfaceChecked} />
             <Checkbox labelText="Server" bind:checked={serverInterfaceChecked} />
@@ -3113,8 +3178,15 @@ onDestroy ( () => {
             <Checkbox labelText="Server WriteChunk" bind:checked={serverWriteChunkChecked} />
           </FormGroup>
           
-          <FormGroup>
+          <FormGroup legendText="Certs, Keys">
             <Checkbox labelText="Server Cert, Key" bind:checked={serverCertKeyChecked} />
+          </FormGroup>
+
+          <FormGroup legendText="Selected CSGs">
+            <Checkbox labelText="All" on:change={onAllCsgChecked} />
+            {#each csgCheckedList as csgCheck}
+              <Checkbox labelText="{csgCheck.Name}" bind:checked={csgCheck.isChecked} />
+            {/each}
           </FormGroup>
 
         </div>
