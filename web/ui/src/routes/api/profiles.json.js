@@ -21,7 +21,7 @@ export async function get ({url}) {
     }    
 }
 
-export async function post ( {params, request} ) {
+export async function post ( {url, request} ) {
     const body = await request.json();
     const cloned = url.searchParams.get("cloned");
     
