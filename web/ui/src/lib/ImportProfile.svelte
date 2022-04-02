@@ -106,6 +106,10 @@ import { createEventDispatcher, beforeUpdate} from "svelte";
           jProfile.Group = $selectedNode.Name;
           jProfile.Name = Name;
 
+          for (const csg of jProfile.cs_groups) {
+            csg.app_gid = jProfile.Group + '-' + jProfile.Name
+          }
+
           const res = await fetch ('/api/profiles.json?cloned=1', {
             signal,
             method: 'POST',

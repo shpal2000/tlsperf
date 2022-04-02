@@ -1,7 +1,6 @@
 <script>
   import { createEventDispatcher,
    onMount,
-   afterUpdate,
    beforeUpdate, 
    onDestroy, 
    tick } from "svelte";
@@ -1352,23 +1351,6 @@
 
     Profile.latencyStats = getLatencyStats();
     SavedProfile.latencyStats = getLatencyStats();
-
-    // cpsChartDataSet[0].data = [];
-    // cpsChartDataSet[1].data = [];
-    // cpsChartDataSet[2].data = [];
-    // cpsChartDataSet[3].data = [];
-
-    // clntThptChartDataSet[0].data = [];
-    // clntThptChartDataSet[1].data = [];
-    // clntThptChartDataSet[2].data = [];
-
-    // srvrThptChartDataSet[0].data = [];
-    
-    // cpsChart.update();
-    // clntThptChart.update();
-    // srvrThptChart.update();
-
-    // await tick();
   }
 
   async function onStart () {
@@ -1680,7 +1662,7 @@
   function onAllCsgChecked () {
     allCsgChecked = !allCsgChecked;
 
-    for (let i=0; i < Profile.cs_groups.length; i++) {
+    for (let i=0; i < csgCheckedList.length; i++) {
       csgCheckedList[i].isChecked = allCsgChecked;
     }
 
@@ -2340,51 +2322,54 @@ async function restartWS () {
       Profile.isProgress = (task.Status == 'progress');
       Profile.progressText = task.Events.length ? task.Events[task.Events.length-1] : Profile.progressText;
       
-      if (Profile.Stats.TlsClient.sum.tci >=0 
-                && Profile.Stats.TlsServer.sum.tci >= 0) {
-        Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tci;
-        Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcis;
-        Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sci;
-        Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.scis;
-        Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tac;
-        Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcif + Profile.Stats.TlsClient.sum.scif;
+      if (!Profile.isProgress) {
+        await tick ();
+        if (Profile.Stats.TlsClient.sum.tci >=0 
+                  && Profile.Stats.TlsServer.sum.tci >= 0) {
+          Profile.connStats[0].Client = Profile.Stats.TlsClient.sum.tci;
+          Profile.connStats[1].Client = Profile.Stats.TlsClient.sum.tcis;
+          Profile.connStats[2].Client = Profile.Stats.TlsClient.sum.sci;
+          Profile.connStats[3].Client = Profile.Stats.TlsClient.sum.scis;
+          Profile.connStats[4].Client = Profile.Stats.TlsClient.sum.tac;
+          Profile.connStats[5].Client = Profile.Stats.TlsClient.sum.tcif + Profile.Stats.TlsClient.sum.scif;
 
-        Profile.connStats[0].Server = 0;
-        Profile.connStats[1].Server = Profile.Stats.TlsServer.sum.tas;
-        Profile.connStats[2].Server = 0;
-        Profile.connStats[3].Server = Profile.Stats.TlsServer.sum.sas;
-        Profile.connStats[4].Server = Profile.Stats.TlsServer.sum.tac;
-        Profile.connStats[5].Server = 0;
+          Profile.connStats[0].Server = 0;
+          Profile.connStats[1].Server = Profile.Stats.TlsServer.sum.tas;
+          Profile.connStats[2].Server = 0;
+          Profile.connStats[3].Server = Profile.Stats.TlsServer.sum.sas;
+          Profile.connStats[4].Server = Profile.Stats.TlsServer.sum.tac;
+          Profile.connStats[5].Server = 0;
 
-        Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcal;
-        Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.scal;
-        Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.adal;
-        Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.adbs;
-        Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.adbr;
-        Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.asprt;
+          Profile.latencyStats[0].Client = Profile.Stats.TlsClient.sum.tcal;
+          Profile.latencyStats[1].Client = Profile.Stats.TlsClient.sum.scal;
+          Profile.latencyStats[2].Client = Profile.Stats.TlsClient.sum.adal;
+          Profile.latencyStats[3].Client = Profile.Stats.TlsClient.sum.adbs;
+          Profile.latencyStats[4].Client = Profile.Stats.TlsClient.sum.adbr;
+          Profile.latencyStats[5].Client = Profile.Stats.TlsClient.sum.asprt;
 
-        Profile.latencyStats[0].Server = 0;
-        Profile.latencyStats[1].Server = 0;
-        Profile.latencyStats[2].Server = 0;
-        Profile.latencyStats[3].Server = Profile.Stats.TlsServer.sum.adbs;
-        Profile.latencyStats[4].Server = Profile.Stats.TlsServer.sum.adbr;
-        Profile.latencyStats[5].Server = Profile.Stats.TlsServer.sum.asprt;
+          Profile.latencyStats[0].Server = 0;
+          Profile.latencyStats[1].Server = 0;
+          Profile.latencyStats[2].Server = 0;
+          Profile.latencyStats[3].Server = Profile.Stats.TlsServer.sum.adbs;
+          Profile.latencyStats[4].Server = Profile.Stats.TlsServer.sum.adbr;
+          Profile.latencyStats[5].Server = Profile.Stats.TlsServer.sum.asprt;
 
 
-        cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcir);
-        cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcisr);
-        cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.scir);
-        cpsChartDataSet[3].data = Profile.Stats.tickStats.TlsClient.map(v => v.scisr);
+          cpsChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcir);
+          cpsChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.tcisr);
+          cpsChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.scir);
+          cpsChartDataSet[3].data = Profile.Stats.tickStats.TlsClient.map(v => v.scisr);
 
-        clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dt);
-        clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dst);
-        clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.drt);
+          clntThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dt);
+          clntThptChartDataSet[1].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.dst);
+          clntThptChartDataSet[2].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.drt);
 
-        srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.adal);
+          srvrThptChartDataSet[0].data = Profile.Stats.tickStats.TlsClient.map(v => v.sum.adal);
 
-        cpsChart.update();
-        clntThptChart.update();
-        srvrThptChart.update();
+          cpsChart.update();
+          clntThptChart.update();
+          srvrThptChart.update();
+        }
       }
     } catch (e) {
 
@@ -2431,18 +2416,6 @@ beforeUpdate ( async () => {
     restartWS();
   }
 });
-
-afterUpdate ( async () => {
-  // cpsChart.update();
-})
-
-
-// let cpsChartDataSet = [{
-//   barPercentage: 0.4,
-//   borderColor: 'rgb(89, 112, 115)',
-//   backgroundColor: 'rgb(89, 112, 115)',
-//   data: [0, 0, 0, 0]
-// }]
 
 let cpsChartDataSet = [{
   fill: false,
