@@ -11,6 +11,7 @@
   import "carbon-components-svelte/css/white.css";
   import { ProgressBar, Loading, TextInput, FormGroup, TextArea, Checkbox} from "carbon-components-svelte";
   import Chart from 'chart.js/auto';
+import Name from "src/routes/node/[Group]/[Name].svelte";
 
   let isLoading = false;
   let showApplyDefault = false;
@@ -1840,13 +1841,13 @@
     if (Profile.isRunning) {     
       await onStop();
       if (Profile.isCapturing) {
-        // await onStopCapture();
+        await onStopCapture();
       }
     } else {
       if (Profile.markUnsavedFields || Profile.markErrorFields) {
         await onSave();
       } else {
-        // await onStartCapture();
+        await onStartCapture();
         await onStart();
       }
     }
@@ -3094,7 +3095,13 @@ onDestroy ( () => {
     disabled={Profile.isTransient || Profile.isRunning}
     on:click={onAddTrafficPath} >
     Add Traffic Path
-    </button>      
+    </button>
+
+    <br>
+    <br>
+
+    <a href="/api/profile_tcpdump?group={Profile.Group}&name={Profile.Name}&iface={Profile.ClientIface}">Client PCAP</a>
+    <a href="/api/profile_tcpdump?group={Profile.Group}&name={Profile.Name}&iface={Profile.ServerIface}">Server PCAP</a>
     
   </div>
 

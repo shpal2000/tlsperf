@@ -288,18 +288,47 @@ void tlsclient_app::run_iter(bool tick_sec)
             m_app_ctx.m_clnt_addr_index = 0;
         }
 
-        u_short port = next_client_addr->m_portq->get_port();
-
-        if (port)
+        if (false)
         {
-            ev_socket::set_sockaddr_port(&next_client_addr->m_addr, port);
+            u_short port = next_client_addr->m_portq->get_port();
+            if (port)
+            {
+                ev_socket::set_sockaddr_port(&next_client_addr->m_addr, port);
+
+                tlsclient_socket* client_socket 
+                    = (tlsclient_socket*) 
+                    new_tcp_connect (&next_client_addr->m_addr
+                                    , &m_app_ctx.m_server_addr
+                                    , &m_app_ctx.m_stats_arr
+                                    , next_client_addr->m_portq
+                                    , &m_app_ctx.m_sock_opt);
+                
+                if (client_socket)
+                {
+                    m_curr_conn_count++;
+                    client_socket->m_app_ctx = &m_app_ctx;
+                    client_socket->m_grp_ctx = &m_grp_ctx;
+                }
+                else 
+                {
+                    next_client_addr->m_portq->return_port(port);
+                    //todo stats
+                }
+            }
+            else
+            {
+                //todo stats
+            }
+        } else 
+        {
+            ev_socket::set_sockaddr_port(&next_client_addr->m_addr, 0);
 
             tlsclient_socket* client_socket 
                 = (tlsclient_socket*) 
                 new_tcp_connect (&next_client_addr->m_addr
                                 , &m_app_ctx.m_server_addr
                                 , &m_app_ctx.m_stats_arr
-                                , next_client_addr->m_portq
+                                , NULL
                                 , &m_app_ctx.m_sock_opt);
             
             if (client_socket)
@@ -310,13 +339,8 @@ void tlsclient_app::run_iter(bool tick_sec)
             }
             else 
             {
-                next_client_addr->m_portq->return_port(port);
                 //todo stats
             }
-        }
-        else
-        {
-             //todo stats
         }
     }
 }
