@@ -9,6 +9,8 @@ tlsclient_socket::tlsclient_socket(bool is_udp)
     m_ssl = nullptr;
     m_bytes_read = 0;
     m_bytes_written = 0;
+    m_read_error = false;
+    m_write_error = false;
 }
 
 tlsclient_socket::~tlsclient_socket()
@@ -121,6 +123,8 @@ void tlsclient_socket::on_wstatus (int bytes_written, int write_status)
         }
         else
         {
+            m_write_error = true;
+            inc_tlsclient_stats (appDataWriteError);
             abort ();
         }
     }
@@ -150,6 +154,12 @@ void tlsclient_socket::on_rstatus (int bytes_read, int read_status)
             {
                 this->abort();
             }
+        } 
+        else if (bytes_read < 0) 
+        {
+            m_read_error = true;
+            inc_tlsclient_stats (appDataReadError);
+            this->abort();
         }
         else
         {
@@ -178,7 +188,10 @@ void tlsclient_socket::on_finish ()
                                          appDataMaxLatency,
                                          appDataAvgLatency,
                                          mic_elapsed);
-
+        if (m_read_error || m_write_error)
+        {
+            inc_tlsclient_stats (appSessionPartial);
+        }
     } else {
         inc_tlsclient_stats (appSessionPartial);
     }

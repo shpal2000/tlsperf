@@ -36,5 +36,7 @@ private:
 
     int m_bytes_read;
     int m_bytes_written;
+    bool m_read_error;
+    bool m_write_error;
 };
 #endif

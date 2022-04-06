@@ -10,6 +10,8 @@ struct tlsserver_stats_data : tlspack_app_stats
     uint64_t appDataBytesSent;
     uint64_t appDataBytesRcvd;
     uint64_t appSessionPartial;
+    uint64_t appDataReadError;
+    uint64_t appDataWriteError;
 
     virtual void tick_sec ()
     {
@@ -23,6 +25,8 @@ struct tlsserver_stats_data : tlspack_app_stats
         j["appDataBytesSent"] = appDataBytesSent;
         j["appDataBytesRcvd"] = appDataBytesRcvd;
         j["appSessionPartial"] = appSessionPartial;
+        j["appDataReadError"] = appDataReadError;
+        j["appDataWriteError"] = appDataWriteError;
     }
 
     virtual void dump_json_x (json &j)
@@ -32,6 +36,8 @@ struct tlsserver_stats_data : tlspack_app_stats
         j["adbs"] = appDataBytesSent;
         j["adbr"] = appDataBytesRcvd;
         j["asprt"] = appSessionPartial;
+        j["adrer"] = appDataReadError;
+        j["adwer"] = appDataWriteError;
     }
     
     virtual ~tlsserver_stats_data() {};

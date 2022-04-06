@@ -1305,7 +1305,7 @@
         Server: 0},
 
         {id: 6,
-        Name: 'ConnFail',
+        Name: 'ConnErr',
         Client: 0,
         Server: 0}
       ]));
@@ -1339,7 +1339,7 @@
         Server: 0},
 
         {id: 6,
-        Name: 'SessFail',
+        Name: 'SessErr',
         Client: 0,
         Server: 0}
       ]));
