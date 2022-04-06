@@ -14,12 +14,14 @@
 
 	let ProfileGroupRootMenuItems = [{'Name': 'Add Folder ...', 'Event': 'addProfileGroup', 'EventCtx': {}}];
 
-	let ProfileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}, 
+	let ProfileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}},
+                                    {'Name': 'Import Profile ...', 'Event': 'importProfile', 'EventCtx': {}},
                                     {'Name': 'Remove Folder ...', 'Event': 'removeProfileGroup', 'EventCtx': {}}];
 
     let nodeMenuItems = [{'Name': 'Remove Node ...', 'Event': 'removeNode', 'EventCtx': {}}];
 
-    let profileMenuItems = [{'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
+    let profileMenuItems = [{'Name': 'Export Profile ...', 'Event': 'exportProfile', 'EventCtx': {}},
+                            {'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
 
 	async function getStorePopulated() {
 		const nodeGroups = await fetch ('/api/node_groups.json');

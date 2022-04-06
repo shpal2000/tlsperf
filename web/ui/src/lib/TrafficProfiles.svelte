@@ -7,11 +7,14 @@
   import AddProfileGroup from "$lib/AddProfileGroup.svelte";
   import AddProfile from "$lib/AddProfile.svelte";
   import RemoveProfile from "$lib/RemoveProfile.svelte";
+  import ExportProfile from "$lib/ExportProfile.svelte";
+  import ImportProfile from "$lib/ImportProfile.svelte";
   import RemoveProfileGroup from "$lib/RemoveProfileGroup.svelte";
 
   function onAddProfileGroup (event) {
-    let profileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}}, 
-                              {'Name': 'Remove Folder ...', 'Event': 'removeProfileGroup', 'EventCtx': {}}];
+    let profileGroupMenuItems = [{'Name': 'Add Profile ...', 'Event': 'addProfile', 'EventCtx': {}},
+                                  {'Name': 'Import Profile ...', 'Event': 'importProfile', 'EventCtx': {}},
+                                  {'Name': 'Remove Folder ...', 'Event': 'removeProfileGroup', 'EventCtx': {}}];
 
     $profileTreeRoot.children.push({
                                   Name: event.detail.Name, 
@@ -30,7 +33,8 @@
   }
 
   function onAddProfile (event) {
-    let profileMenuItems = [{'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
+    let profileMenuItems = [{'Name': 'Export Profile ...', 'Event': 'exportProfile', 'EventCtx': {}},
+                            {'Name': 'Remove Profile ...', 'Event': 'removeProfile', 'EventCtx': {}}];
 
     let profileGroup = $profileTreeRoot.children.find (pg => pg.Name==$selectedNode.Name);
     let urlPath = '/profile/'+profileGroup.Name+'/' + event.detail.Name
@@ -87,6 +91,8 @@
   let showAddProfile = false;
   let showRemoveProfileGroup = false;
   let showRemoveProfile = false;
+  let showExportProfile = false;
+  let showImportProfile = false;
 </script>
 
 
@@ -110,6 +116,7 @@
           type='ProfileGroup'
           on:expandToggle={() => child.expanded = !child.expanded}
           on:addProfile={() => showAddProfile = true}
+          on:importProfile={() => showImportProfile = true}
           on:removeProfileGroup={() => showRemoveProfileGroup = true}
           />
 
@@ -120,7 +127,8 @@
                 pnode={child}
                 level={3} 
                 type='Profile'
-                on:removeProfile={() => showRemoveProfile = true}/>
+                on:removeProfile={() => showRemoveProfile = true}
+                on:exportProfile={() => showExportProfile = true}/>
             {/each}
           {/if}
 
@@ -140,7 +148,12 @@
 <RemoveProfile bind:isActive={showRemoveProfile} 
     on:removeProfileSuccess={onRemoveProfile}/>
 
-    
+<ExportProfile bind:isActive={showExportProfile}/>
+
+<ImportProfile bind:isActive={showImportProfile} 
+    on:addProfileSuccess={onAddProfile}/>
+
+
 <style>
     ul {
         list-style-type: none;

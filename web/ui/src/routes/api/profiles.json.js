@@ -21,10 +21,17 @@ export async function get ({url}) {
     }    
 }
 
-export async function post ( {params, request} ) {
-    const body = await request.json()
+export async function post ( {url, request} ) {
+    const body = await request.json();
+    const cloned = url.searchParams.get("cloned");
     
-    const res = await apiClient.post('/profiles', body)
+    let res;
+
+    if (cloned) {
+        res = await apiClient.post('/profiles?cloned=1', body);
+    } else {
+        res = await apiClient.post('/profiles', body);
+    }
 
     return {
         body: res.data

@@ -217,6 +217,7 @@ async def api_add_profile(request):
         r_json = json.loads(r_text)
         group = r_json['Group']
         name = r_json['Name']
+        cloned = request.query.get('cloned')
 
         mongoClient = MongoClient(DB_CSTRING)
         db = mongoClient[DB_NAME]
@@ -229,7 +230,8 @@ async def api_add_profile(request):
         if profile:
             return web.json_response({'status' : -1, 'message': 'already exist'})
 
-        TlsClientServer.set_profile_defaults(r_json)
+        if not cloned:
+            TlsClientServer.set_profile_defaults(r_json)
 
         profile_col.insert_one(r_json)
 
