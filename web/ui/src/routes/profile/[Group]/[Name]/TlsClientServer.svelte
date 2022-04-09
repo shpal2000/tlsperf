@@ -1,7 +1,8 @@
 <script>
   import { createEventDispatcher,
    onMount,
-   beforeUpdate, 
+   beforeUpdate,
+   afterUpdate,
    onDestroy, 
    tick } from "svelte";
   import { page } from '$app/stores'
@@ -1351,6 +1352,17 @@
 
     Profile.latencyStats = getLatencyStats();
     SavedProfile.latencyStats = getLatencyStats();
+
+    cpsChartDataSet[0].data = [];
+    cpsChartDataSet[1].data = [];
+    cpsChartDataSet[2].data = [];
+    cpsChartDataSet[3].data = [];
+
+    clntThptChartDataSet[0].data = [];
+    clntThptChartDataSet[1].data = [];
+    clntThptChartDataSet[2].data = [];
+
+    srvrThptChartDataSet[0].data = [];
   }
 
   async function onStart () {
@@ -1412,7 +1424,6 @@
 
   async function onStartCapture () {
     Profile.isTransient = true;
-    clearStats ();
 
     const action = 'onStartCapture';
     const controller = new AbortController();
@@ -1467,7 +1478,6 @@
 
   async function onStopCapture () {
     Profile.isTransient = true;
-    clearStats ();
 
     const action = 'onStopCapture';
     const controller = new AbortController();
@@ -2381,6 +2391,11 @@ async function restartWS () {
   });    
 }
 
+afterUpdate ( async () => {
+  cpsChart.update();
+  clntThptChart.update();
+  srvrThptChart.update();
+});
 
 beforeUpdate ( async () => {
 
@@ -2687,16 +2702,6 @@ onDestroy ( () => {
                           {:else}
                             Start Traffic
                           {/if} 
-                        {/if}
-                    </button>
-  
-                    <button class="button is-light is-dark" 
-                      disabled={Profile.isTransient || (!Profile.isRunning)}
-                      on:click={onCaptureAction} > 
-                        {#if Profile.isCapturing}
-                          Stop Capture
-                        {:else}
-                          Start Capture
                         {/if}
                     </button>
                   </div>
@@ -3093,17 +3098,29 @@ onDestroy ( () => {
     <button class="button is-small is-info is-outlined" 
     disabled={Profile.isTransient || Profile.isRunning}
     on:click={onAddTrafficPath} >
-    Add Traffic Path
+    + Traffic Path
     </button>  
   </div>
   
 
   <div class="column is-12">
+    <br>
+    <br>
     <!-- svelte-ignore a11y-label-has-associated-control -->
-    <label class="label ">Debug:</label>
-
-    <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}">Client PCAP</a>, &nbsp;
-    <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}">Server PCAP</a>
+    <label class="label ">PCAP:</label>
+    <button class="button is-small is-info is-dark" 
+      disabled={Profile.isTransient || (!Profile.isRunning)}
+      on:click={onCaptureAction} > 
+        {#if Profile.isCapturing}
+          Stop Capture
+        {:else}
+          Start Capture
+        {/if}
+    </button>
+    <br>
+    <br>
+    <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}" download="client_pcap.txt">Client&darr;</a>, &nbsp;
+    <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}" download="server_pcap.txt">Server&darr;</a>
 
   </div>
 
