@@ -641,7 +641,7 @@ async def api_start_profile_tcpdump(request):
                                 , client_node['Ssh']['User']
                                 , client_node['Ssh']['Pass'])
             await sshLinux.send_commamnd ('rm -f ~/{}_client.pcap'.format(client_node_iface))
-            tcpdump_command = 'nohup tshark -i {} -n -a filesize:100000 -w ~/{}_client.pcap < /dev/null > /dev/null 2>&1 &'.format(client_node_iface, client_node_iface)
+            tcpdump_command = 'nohup tshark -i {} -n -a filesize:10000 -w ~/{}_client.pcap < /dev/null > /dev/null 2>&1 &'.format(client_node_iface, client_node_iface)
             await asyncio.wait_for (sshLinux.send_commamnd2 (tcpdump_command), timeout=10.0)
 
 
@@ -649,7 +649,7 @@ async def api_start_profile_tcpdump(request):
                                 , server_node['Ssh']['User']
                                 , server_node['Ssh']['Pass'])
             await sshLinux.send_commamnd ('rm -f ~/{}_server.pcap'.format(server_node_iface))
-            tcpdump_command = 'nohup tshark -i {} -n -a filesize:100000 -w ~/{}_server.pcap < /dev/null > /dev/null 2>&1 &'.format(server_node_iface, server_node_iface)
+            tcpdump_command = 'nohup tshark -i {} -n -a filesize:10000 -w ~/{}_server.pcap < /dev/null > /dev/null 2>&1 &'.format(server_node_iface, server_node_iface)
             await asyncio.wait_for (sshLinux.send_commamnd2 (tcpdump_command), timeout=10.0)
 
             return web.json_response({'status' : 0})
