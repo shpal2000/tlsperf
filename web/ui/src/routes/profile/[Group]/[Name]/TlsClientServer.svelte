@@ -11,7 +11,6 @@
   import "carbon-components-svelte/css/white.css";
   import { ProgressBar, Loading, TextInput, FormGroup, TextArea, Checkbox} from "carbon-components-svelte";
   import Chart from 'chart.js/auto';
-import Name from "src/routes/node/[Group]/[Name].svelte";
 
   let isLoading = false;
   let showApplyDefault = false;
@@ -1855,9 +1854,9 @@ import Name from "src/routes/node/[Group]/[Name].svelte";
 
   async function onCaptureAction () {
     if (Profile.isCapturing) {
-      // await onStopCapture();
+      await onStopCapture();
     } else {
-      // await onStartCapture();
+      await onStartCapture();
     }
   }
 
@@ -2691,7 +2690,7 @@ onDestroy ( () => {
                         {/if}
                     </button>
   
-                    <!-- <button class="button is-light is-dark" 
+                    <button class="button is-light is-dark" 
                       disabled={Profile.isTransient || (!Profile.isRunning)}
                       on:click={onCaptureAction} > 
                         {#if Profile.isCapturing}
@@ -2699,7 +2698,7 @@ onDestroy ( () => {
                         {:else}
                           Start Capture
                         {/if}
-                    </button> -->
+                    </button>
                   </div>
                 </div>
               </div>
@@ -3095,17 +3094,17 @@ onDestroy ( () => {
     disabled={Profile.isTransient || Profile.isRunning}
     on:click={onAddTrafficPath} >
     Add Traffic Path
-    </button>
-
-    <br>
-    <br>
-
-    <a href="/api/profile_tcpdump?group={Profile.Group}&name={Profile.Name}&iface={Profile.ClientIface}">Client PCAP</a>
-    <a href="/api/profile_tcpdump?group={Profile.Group}&name={Profile.Name}&iface={Profile.ServerIface}">Server PCAP</a>
-    
+    </button>  
   </div>
+  
 
   <div class="column is-12">
+    <!-- svelte-ignore a11y-label-has-associated-control -->
+    <label class="label ">Debug:</label>
+
+    <a href="/api/profile_tcpdump_client.txt?group={Profile.Group}&name={Profile.Name}">Client PCAP</a>, &nbsp;
+    <a href="/api/profile_tcpdump_server.txt?group={Profile.Group}&name={Profile.Name}">Server PCAP</a>
+
   </div>
 
 </div>
