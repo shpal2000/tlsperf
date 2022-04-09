@@ -367,8 +367,11 @@ def start (group, name, stats_addr):
         volume = kubernetes.client.V1Volume(name='config-volume'
                       , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsserver-{AppMetaId}'.format(**input_map)))
 
+        node_selector = {"tgid": "{ServerNodeLabel}".format(**input_map)}
+
         server_pod.spec = kubernetes.client.V1PodSpec(containers=[container], 
                                                       volumes=[volume],
+                                                      node_selector=node_selector,
                                                       termination_grace_period_seconds=0)
 
         client_pod = kubernetes.client.V1Pod()
@@ -394,8 +397,11 @@ def start (group, name, stats_addr):
         volume = kubernetes.client.V1Volume(name='config-volume'
                       , config_map=kubernetes.client.V1ConfigMapVolumeSource(name='tlsclient-{AppMetaId}'.format(**input_map)))
 
+        node_selector = {"tgid": "{ClientNodeLabel}".format(**input_map)}
+
         client_pod.spec = kubernetes.client.V1PodSpec(containers=[container], 
                                                       volumes=[volume],
+                                                      node_selector=node_selector,
                                                       termination_grace_period_seconds=0)
 
         start_pod_info.append ({
